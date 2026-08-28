@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import type { UserIntent } from '../services/types';
 import { getEip712TypedData } from '../services/eip712Service';
 import { web3Provider } from '../services/web3Provider';
-import { sendDirectGanacheTransaction } from '../services/ganacheRpc';
 import { Lock, ShieldCheck, ArrowRight, Wallet, X, Loader2, FileCode, CheckCircle2 } from 'lucide-react';
 
 interface PreCommitModalProps {
@@ -24,8 +23,7 @@ export const PreCommitModal: React.FC<PreCommitModalProps> = ({ isOpen, intent, 
 
   const handleApproveUsdc = async () => {
     setIsApproving(true);
-    // Send direct JSON-RPC transaction to Ganache to mine Step 1 Approval block!
-    await sendDirectGanacheTransaction(`approveUSDCAllowance($${intent.sourceAmount})`);
+    await new Promise((r) => setTimeout(r, 600)); // UI step
     setIsApproving(false);
     setApprovalDone(true);
   };
@@ -33,8 +31,6 @@ export const PreCommitModal: React.FC<PreCommitModalProps> = ({ isOpen, intent, 
   const handleSignAndDeposit = async () => {
     setIsSigning(true);
     try {
-      // Send direct JSON-RPC transaction to Ganache to mine Step 2 Escrow Deposit block!
-      await sendDirectGanacheTransaction(`lockUserEscrow($${intent.sourceAmount})`);
       const signature = await web3Provider.signEip712TypedData(intent);
       onConfirm(signature);
     } catch (e) {

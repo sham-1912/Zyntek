@@ -86,14 +86,8 @@ class ContractSimulatorService {
   public async lockUserEscrow(intent: UserIntent): Promise<{ receipt: BlockReceipt; status: 'LOCKED' }> {
     this.state.escrowLockedUsd += intent.sourceAmount;
 
-    // Send real ABI-encoded lockEscrow() transaction to Ganache!
-    const realTx = await sendZyntekTransaction({
-      stage: 'lockEscrow',
-      intentId: intent.intentId,
-      amountUsdc: intent.sourceAmount,
-    });
-    const txHash = realTx.txHash || `0x8f2a${Math.random().toString(16).substring(2, 8)}c91d`;
-    const blockNum = realTx.blockNumber || Math.floor(Math.random() * 5) + 1;
+    const txHash = `0x8f2a${Math.random().toString(16).substring(2, 8)}c91d`;
+    const blockNum = 1;
 
     const evmLogs: EvmEventLog[] = [
       {
@@ -121,18 +115,11 @@ class ContractSimulatorService {
     return { receipt, status: 'LOCKED' };
   }
 
-  public async commitSolverBond(intent: UserIntent, solver: SolverBid): Promise<{ receipt: BlockReceipt; status: 'COMMITTED' }> {
+  public async commitSolverBond(_intent: UserIntent, solver: SolverBid): Promise<{ receipt: BlockReceipt; status: 'COMMITTED' }> {
     this.state.solverBondLockedUsd += solver.collateralOfferedUsd;
 
-    // Send real ABI-encoded commitBond() transaction to Ganache!
-    const realTx = await sendZyntekTransaction({
-      stage: 'commitBond',
-      intentId: intent.intentId,
-      solverAddress: solver.solverAddress,
-      amountUsdc: solver.collateralOfferedUsd,
-    });
-    const txHash = realTx.txHash || `0x3c7b${Math.random().toString(16).substring(2, 8)}e4f1`;
-    const blockNum = realTx.blockNumber || Math.floor(Math.random() * 5) + 1;
+    const txHash = `0x3c7b${Math.random().toString(16).substring(2, 8)}e4f1`;
+    const blockNum = 1;
 
     const evmLogs: EvmEventLog[] = [
       {
