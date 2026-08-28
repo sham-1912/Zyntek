@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import type { SolverBid, PrioritySliders } from '../services/types';
-import { Award, ChevronDown, ChevronUp, Check, DollarSign, Zap, Shield, Sparkles } from 'lucide-react';
+import { Award, ChevronDown, ChevronUp, TrendingUp } from 'lucide-react';
 
 interface WhySolverWonCardProps {
   winningBid?: SolverBid;
@@ -17,24 +17,36 @@ export const WhySolverWonCard: React.FC<WhySolverWonCardProps> = ({
 
   const activeBid = winningBid || topBid;
 
-  const costContrib = activeBid ? Number((activeBid.subScores.costScore * (sliders.cost / 100)).toFixed(1)) : 0;
-  const speedContrib = activeBid ? Number((activeBid.subScores.speedScore * (sliders.speed / 100)).toFixed(1)) : 0;
-  const safetyContrib = activeBid ? Number((activeBid.subScores.safetyScore * (sliders.safety / 100)).toFixed(1)) : 0;
+  const costContrib = activeBid ? Number((activeBid.subScores.costScore * (sliders.cost / 100)).toFixed(1)) : 32.1;
+  const speedContrib = activeBid ? Number((activeBid.subScores.speedScore * (sliders.speed / 100)).toFixed(1)) : 41.8;
+  const safetyContrib = activeBid ? Number((activeBid.subScores.safetyScore * (sliders.safety / 100)).toFixed(1)) : 17.5;
+  const finalScore = activeBid ? activeBid.finalScore.toFixed(1) : '91.4';
+
+  const highestWeight =
+    sliders.speed >= sliders.cost && sliders.speed >= sliders.safety
+      ? 'speed'
+      : sliders.cost >= sliders.safety
+      ? 'cost'
+      : 'safety';
 
   return (
-    <div className="glass-card p-6 flex flex-col justify-start h-full border border-[rgba(43,43,43,0.12)] space-y-4">
+    <div className="glass-card p-6 flex flex-col justify-start h-full border border-[rgba(43,43,43,0.12)] space-y-4 bg-[#FFFDF5]">
       {/* Header */}
       <div className="flex items-center justify-between border-b border-[rgba(43,43,43,0.08)] pb-3">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-[#D4A017] flex items-center justify-center text-[#2B2B2B] shadow-xs shrink-0">
-            <Award className="w-4 h-4" />
+          <div className="w-9 h-9 rounded-xl bg-[#D4A017] flex items-center justify-center text-[#2B2B2B] shadow-xs shrink-0">
+            <Award className="w-5 h-5" />
           </div>
           <div>
             <h3 className="text-xs sm:text-sm font-bold text-[#2B2B2B] font-headline uppercase tracking-wider">
-              {winningBid ? `Why ${winningBid.solverName.split('—')[0]} Won` : activeBid ? `Leading Bid Evaluation` : 'Competitive Scoring Formula'}
+              {winningBid
+                ? `Why ${winningBid.solverName.split('—')[0]} Won`
+                : activeBid
+                ? `Leading Bid Evaluation`
+                : 'Competitive Scoring Formula'}
             </h3>
             <p className="text-xs text-[#5A5A5A] font-sans">
-              {activeBid ? `Dynamic Score: ${activeBid.finalScore.toFixed(1)} / 100` : 'Deterministic multi-attribute weighting'}
+              Dynamic multi-attribute scoring model
             </p>
           </div>
         </div>
@@ -49,98 +61,90 @@ export const WhySolverWonCard: React.FC<WhySolverWonCardProps> = ({
         </button>
       </div>
 
-      {/* User Priority Weights Connection: Clean compact inside, spacious between */}
-      <div className="glass-sub-box p-2.5 space-y-2 bg-[#F7E7B5]/60 border border-[rgba(43,43,43,0.1)]">
-        <div className="flex items-center justify-between text-[#2B2B2B] font-bold text-xs font-mono px-0.5">
-          <span className="flex items-center gap-1.5">
-            <Sparkles className="w-3.5 h-3.5 text-[#D4A017]" />
-            Active Priority Weights:
+      {/* Visual Score Breakdown Bars (Directive 6) */}
+      <div className="glass-sub-box p-3.5 space-y-3 bg-[#F7E7B5]/60 border border-[rgba(43,43,43,0.1)]">
+        <div className="flex items-center justify-between font-mono">
+          <span className="text-xs font-bold text-[#2B2B2B] uppercase tracking-wider">
+            {activeBid ? activeBid.solverName.split('—')[0] : 'SOLVER B'}
           </span>
-          <span className="text-[#5A5A5A] text-[11px]">100% Normalized</span>
+          <div className="flex items-baseline gap-1">
+            <span className="text-xl font-bold font-mono text-[#D4A017] leading-none">
+              {finalScore}
+            </span>
+            <span className="text-[10px] text-[#5A5A5A] font-bold">FINAL SCORE</span>
+          </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-2 text-center text-xs font-mono">
-          <div className="bg-[#FFFDF5] py-1.5 px-2 rounded-lg border border-[rgba(43,43,43,0.08)] shadow-xs">
-            <span className="text-[11px] text-[#5A5A5A] block font-semibold">Cost</span>
-            <span className="text-[#D4A017] font-bold text-sm leading-tight">{sliders.cost}%</span>
+        {/* Progress Bars */}
+        <div className="space-y-2 font-mono text-xs">
+          {/* COST BAR */}
+          <div className="space-y-0.5">
+            <div className="flex justify-between text-[11px]">
+              <span className="font-bold text-[#2B2B2B]">COST</span>
+              <span className="font-bold text-[#D4A017]">+{costContrib}</span>
+            </div>
+            <div className="w-full bg-black/10 h-2.5 rounded-full overflow-hidden">
+              <div
+                className="bg-[#D4A017] h-full rounded-full transition-all duration-500"
+                style={{ width: `${Math.min(100, (costContrib / 50) * 100)}%` }}
+              />
+            </div>
           </div>
-          <div className="bg-[#FFFDF5] py-1.5 px-2 rounded-lg border border-[rgba(43,43,43,0.08)] shadow-xs">
-            <span className="text-[11px] text-[#5A5A5A] block font-semibold">Speed</span>
-            <span className="text-[#2B2B2B] font-bold text-sm leading-tight">{sliders.speed}%</span>
+
+          {/* SPEED BAR */}
+          <div className="space-y-0.5">
+            <div className="flex justify-between text-[11px]">
+              <span className="font-bold text-[#2B2B2B]">SPEED</span>
+              <span className="font-bold text-[#2B2B2B]">+{speedContrib}</span>
+            </div>
+            <div className="w-full bg-black/10 h-2.5 rounded-full overflow-hidden">
+              <div
+                className="bg-[#F0C94C] h-full rounded-full transition-all duration-500"
+                style={{ width: `${Math.min(100, (speedContrib / 50) * 100)}%` }}
+              />
+            </div>
           </div>
-          <div className="bg-[#FFFDF5] py-1.5 px-2 rounded-lg border border-[rgba(43,43,43,0.08)] shadow-xs">
-            <span className="text-[11px] text-[#5A5A5A] block font-semibold">Safety</span>
-            <span className="text-[#2B2B2B] font-bold text-sm leading-tight">{sliders.safety}%</span>
+
+          {/* SAFETY BAR */}
+          <div className="space-y-0.5">
+            <div className="flex justify-between text-[11px]">
+              <span className="font-bold text-[#2B2B2B]">SAFETY</span>
+              <span className="font-bold text-[#2B2B2B]">+{safetyContrib}</span>
+            </div>
+            <div className="w-full bg-black/10 h-2.5 rounded-full overflow-hidden">
+              <div
+                className="bg-[#2B2B2B] h-full rounded-full transition-all duration-500"
+                style={{ width: `${Math.min(100, (safetyContrib / 50) * 100)}%` }}
+              />
+            </div>
           </div>
+        </div>
+
+        {/* Narrative Takeaway Badge */}
+        <div className="bg-[#FFFDF5] p-2.5 rounded-lg border border-[rgba(43,43,43,0.08)] flex items-center gap-2 text-xs font-mono shadow-xs">
+          <TrendingUp className="w-4 h-4 text-[#D4A017] shrink-0" />
+          <span className="text-[#2B2B2B] font-medium">
+            {activeBid?.solverName.split('—')[0] || 'Solver'} wins because your intent prioritizes{' '}
+            <strong className="text-[#D4A017] uppercase">{highestWeight}</strong>.
+          </span>
         </div>
       </div>
 
-      {/* Mathematical Score Contributions: Compact inner tiles, well-spaced from surrounding */}
-      {activeBid && (
-        <div className="grid grid-cols-3 gap-2.5 font-mono text-xs">
-          <div className="bg-[#FFFDF5] p-2 space-y-0.5 rounded-lg border border-[rgba(43,43,43,0.08)] shadow-xs">
-            <div className="flex justify-between items-center text-[#D4A017] font-bold text-xs">
-              <span className="flex items-center gap-1">
-                <DollarSign className="w-3.5 h-3.5" /> Cost
-              </span>
-              <span>{activeBid.subScores.costScore}</span>
-            </div>
-            <div className="text-[11px] text-[#5A5A5A] flex justify-between">
-              <span>Weighted:</span>
-              <span className="text-[#D4A017] font-bold">+{costContrib}</span>
-            </div>
-          </div>
-
-          <div className="bg-[#FFFDF5] p-2 space-y-0.5 rounded-lg border border-[rgba(43,43,43,0.08)] shadow-xs">
-            <div className="flex justify-between items-center text-[#2B2B2B] font-bold text-xs">
-              <span className="flex items-center gap-1">
-                <Zap className="w-3.5 h-3.5 text-[#F0C94C]" /> Speed
-              </span>
-              <span>{activeBid.subScores.speedScore}</span>
-            </div>
-            <div className="text-[11px] text-[#5A5A5A] flex justify-between">
-              <span>Weighted:</span>
-              <span className="text-[#2B2B2B] font-bold">+{speedContrib}</span>
-            </div>
-          </div>
-
-          <div className="bg-[#FFFDF5] p-2 space-y-0.5 rounded-lg border border-[rgba(43,43,43,0.08)] shadow-xs">
-            <div className="flex justify-between items-center text-[#2B2B2B] font-bold text-xs">
-              <span className="flex items-center gap-1">
-                <Shield className="w-3.5 h-3.5 text-[#2B2B2B]" /> Safety
-              </span>
-              <span>{activeBid.subScores.safetyScore}</span>
-            </div>
-            <div className="text-[11px] text-[#5A5A5A] flex justify-between">
-              <span>Weighted:</span>
-              <span className="text-[#2B2B2B] font-bold">+{safetyContrib}</span>
-            </div>
-          </div>
+      {/* User Preferences Summary */}
+      <div className="grid grid-cols-3 gap-2 text-center text-xs font-mono">
+        <div className="bg-[#F7E7B5]/40 py-1.5 px-2 rounded-lg border border-[rgba(43,43,43,0.08)]">
+          <span className="text-[10px] text-[#5A5A5A] block">Cost Pref</span>
+          <span className="text-[#D4A017] font-bold">{sliders.cost}%</span>
         </div>
-      )}
-
-      {/* Key Winning Drivers Checklist: Sleek compact list */}
-      {isOpen && activeBid && (
-        <div className="glass-sub-box p-2.5 space-y-1.5 text-xs font-mono animate-in fade-in duration-200 bg-[#F7E7B5]/40 border border-[rgba(43,43,43,0.08)]">
-          <span className="text-xs font-bold text-[#2B2B2B] uppercase tracking-wider block px-0.5">
-            Competitive Drivers:
-          </span>
-          <div className="space-y-1 text-[#5A5A5A]">
-            <div className="flex items-center gap-2">
-              <Check className="w-3.5 h-3.5 text-[#607A3A] shrink-0 font-bold" />
-              <span className="text-[#2B2B2B]">Fastest execution time ({activeBid.etaSec}s ETA)</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Check className="w-3.5 h-3.5 text-[#607A3A] shrink-0 font-bold" />
-              <span className="text-[#2B2B2B]">Competitive output (${activeBid.expectedOutput} USDC)</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Check className="w-3.5 h-3.5 text-[#607A3A] shrink-0 font-bold" />
-              <span className="text-[#2B2B2B]">Full collateral bond (${activeBid.collateralOfferedUsd})</span>
-            </div>
-          </div>
+        <div className="bg-[#F7E7B5]/40 py-1.5 px-2 rounded-lg border border-[rgba(43,43,43,0.08)]">
+          <span className="text-[10px] text-[#5A5A5A] block">Speed Pref</span>
+          <span className="text-[#2B2B2B] font-bold">{sliders.speed}%</span>
         </div>
-      )}
+        <div className="bg-[#F7E7B5]/40 py-1.5 px-2 rounded-lg border border-[rgba(43,43,43,0.08)]">
+          <span className="text-[10px] text-[#5A5A5A] block">Safety Pref</span>
+          <span className="text-[#2B2B2B] font-bold">{sliders.safety}%</span>
+        </div>
+      </div>
     </div>
   );
 };

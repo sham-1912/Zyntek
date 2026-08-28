@@ -24,6 +24,7 @@ import { SensitiveDecisionModal } from './components/SensitiveDecisionModal';
 import { PreCommitModal } from './components/PreCommitModal';
 import { IntentHistoryDrawer } from './components/IntentHistoryDrawer';
 import { GanacheBlockLedgerDrawer } from './components/GanacheBlockLedgerDrawer';
+import { AlertTriangle, ArrowRight } from 'lucide-react';
 
 export default function App() {
   const [currentIntent, setCurrentIntent] = useState<UserIntent | null>(null);
@@ -61,6 +62,9 @@ export default function App() {
   const [isAmbiguous, setIsAmbiguous] = useState<boolean>(false);
   const [isHighValue, setIsHighValue] = useState<boolean>(false);
   const [settlementResult, setSettlementResult] = useState<SettlementResult | null>(null);
+
+  // View Mode: 'user' vs 'solver' (Directive 11)
+  const [viewMode, setViewMode] = useState<'user' | 'solver'>('user');
 
   // Activity Logs, Contract state & Drawers
   const [activityLogs, setActivityLogs] = useState<ActivityLogEntry[]>([]);
@@ -135,11 +139,11 @@ export default function App() {
       intent.sliders
     ).sort((a, b) => b.finalScore - a.finalScore);
 
-    // If ambiguous scenario, calibrate top 2 scores to within 1.6%
+    // If ambiguous scenario, calibrate top 2 scores to within 0.6%
     if (scenario === 'ambiguous') {
       scoredPool = scoredPool.map((b, idx) => {
         if (idx === 0) return { ...b, finalScore: 91.4 };
-        if (idx === 1) return { ...b, finalScore: 89.9 };
+        if (idx === 1) return { ...b, finalScore: 90.8 };
         return b;
       });
     }
@@ -147,7 +151,7 @@ export default function App() {
     // 1. Stage: INTENT
     setStage('intent');
     setLifecycleStep('intent_submitted');
-    addLog(`Intent #${intent.intentId} broadcast: ${intent.sourceAmount} USDC (Ethereum) → USDC (Solana)`, 'info');
+    addLog(`INTENT BROADCAST: ${intent.sourceAmount} USDC Ethereum → Solana USDC (#INT-8492)`, 'info');
 
     // 2. Stage: ESCROW (t = 1.2s)
     addTimeout(() => {
@@ -162,14 +166,14 @@ export default function App() {
       setStage('auction');
       setIsBroadcasting(true);
       setArrivalMessage('Searching for solvers across decentralized mesh...');
-      addLog('Solver Auction opened: Live competitive bidding started', 'info');
+      addLog('SOLVER AUCTION OPEN: Competitive bidding initialized', 'info');
 
       // Staggered Solver 01 Arrival
       addTimeout(() => {
         setIsBroadcasting(false);
         setArrivalMessage('✓ Solver 01 connected (Alpha Route)');
         setVisibleBids([scoredPool[0]]);
-        addLog('Solver 01 (Alpha) submitted route: Expected output $' + scoredPool[0].expectedOutput, 'info');
+        addLog('SOLVER 01 (Alpha Route) submitted bid: Output $' + scoredPool[0].expectedOutput, 'info');
       }, 1000);
 
       // Staggered Solver 02 Arrival
@@ -177,7 +181,7 @@ export default function App() {
         setArrivalMessage('✓ Solver 02 submitted bid (Flash Relay)');
         const currentPool = [scoredPool[0], scoredPool[1]];
         setVisibleBids(recalculateAllScores(currentPool, sliders).sort((a, b) => b.finalScore - a.finalScore));
-        addLog('Solver 02 (Flash) submitted bid: 3.5s ETA route', 'info');
+        addLog('SOLVER 02 (Flash Relay) submitted bid: 42.8s ETA route', 'info');
       }, 2200);
 
       // Staggered Solver 03 Arrival
@@ -185,14 +189,14 @@ export default function App() {
         setArrivalMessage('✓ Solver 03 submitted bid (Shield Vault)');
         const currentPool = [scoredPool[0], scoredPool[1], scoredPool[2]];
         setVisibleBids(recalculateAllScores(currentPool, sliders).sort((a, b) => b.finalScore - a.finalScore));
-        addLog('Solver 03 (Shield) submitted bid: $250K liquidity verified', 'info');
+        addLog('SOLVER 03 (Shield Vault) submitted bid: $500 collateral bond', 'info');
       }, 3400);
 
       // Staggered Solver 04 & 05 Arrival
       addTimeout(() => {
         setArrivalMessage('✓ Solvers 04 & 05 submitted bids (Nexus & Horizon)');
         setVisibleBids(recalculateAllScores(scoredPool, sliders).sort((a, b) => b.finalScore - a.finalScore));
-        addLog('Auction Pool complete: 5 independent solver bids evaluated', 'success');
+        addLog('SCORING COMPLETE: 5 solver bids ranked dynamically', 'success');
       }, 4600);
 
       // Auction Countdown: 10s down to 0
@@ -214,19 +218,19 @@ export default function App() {
   const handleAuctionClose = (scenario: DemoScenarioType, scoredPool: SolverBid[]) => {
     setIsAuctionClosed(true);
     setArrivalMessage('Auction Closed: Bidding window finalized.');
-    addLog('Solver Auction closed: Final rankings locked', 'success');
+    addLog('AUCTION CLOSED: Final rankings locked', 'success');
 
     if (scenario === 'ambiguous') {
       setIsAmbiguous(true);
       setIsSensitiveModalOpen(true);
-      addLog('⚠ Sensitive Decision Gate: Top 2 bids within 1.6% score difference', 'warn');
+      addLog('⚠ SENSITIVE DECISION REQUIRED: Top 2 bids tied within 0.6%', 'warn');
       return;
     }
 
     if (scenario === 'high_value') {
       setIsHighValue(true);
       setIsSensitiveModalOpen(true);
-      addLog('⚠ Sensitive Decision Gate: High-Value Intent ($1,500) requires ZK-Oracle sign-off', 'warn');
+      addLog('⚠ HIGH-VALUE TRANSFER: $1,500 intent requires Oracle Attestation sign-off', 'warn');
       return;
     }
 
@@ -239,21 +243,21 @@ export default function App() {
     setWinningBidId(winner.solverId);
     setStage('winner');
     setLifecycleStep('solver_selected');
-    addLog(`Winner Selected: ${winner.solverName} (Final Score: ${winner.finalScore}/100)`, 'success');
+    addLog(`SOLVER SELECTED: ${winner.solverName} (Final Score: ${winner.finalScore}/100)`, 'success');
 
     // 4. Solver Bond Posted (t = +1.5s)
     addTimeout(() => {
       setStage('commitment');
       setLifecycleStep('bond_posted');
       const b = ganacheLedger.pushIntentTransaction('commitBond', currentIntent ? currentIntent.intentId : '0x0', winner.collateralOfferedUsd);
-      addLog(`[SolverBonding.sol] Solver locked $${winner.collateralOfferedUsd} collateral bond in Block #${b.number}`, 'success');
+      addLog(`BOND POSTED: [SolverBonding.sol] Solver locked $${winner.collateralOfferedUsd} in Block #${b.number}`, 'success');
     }, 1500);
 
     // 5. Cross-Chain Execution on Solana (t = +3.0s)
     addTimeout(() => {
       setStage('execution');
       setLifecycleStep('cross_chain_execution');
-      addLog('Solana SVM Execution initiated via private relayer...', 'info');
+      addLog('EXECUTION STARTED: Solana SVM private relayer transaction dispatched', 'info');
     }, 3000);
 
     // Scenario: Solver Failure (Timeout & Bond Slashing)
@@ -263,9 +267,9 @@ export default function App() {
         setFailureReason('Solver missed destination execution deadline (Timeout on Solana SVM leg).');
         setStage('slashed_refunded');
         const b = ganacheLedger.pushIntentTransaction('slashBond', currentIntent ? currentIntent.intentId : '0x0', 500);
-        addLog('❌ EXECUTION FAILED: Solver timeout error detected on Solana SVM', 'error');
-        addLog(`⚡ Full $500 Solver Collateral Bond Slashed in Block #${b.number}`, 'error');
-        addLog('✓ User Escrow 100% Refunded & Protected', 'success');
+        addLog('❌ SOLVER FAILURE: Execution deadline exceeded on Solana SVM', 'error');
+        addLog(`⚡ FULL BOND SLASHED: $500 collateral confiscated in Block #${b.number}`, 'error');
+        addLog('✓ USER PROTECTED: $500 escrow 100% refunded to user account', 'success');
       }, 5000);
       return;
     }
@@ -273,7 +277,7 @@ export default function App() {
     // 6. Destination Delivery Confirmed (t = +5.0s)
     addTimeout(() => {
       setLifecycleStep('destination_confirmed');
-      addLog('Solana Destination Delivery Confirmed: Transaction finalized (Slot #2847192)', 'success');
+      addLog('DELIVERY CONFIRMED: Solana transaction confirmed in Slot #2847192', 'success');
     }, 5000);
 
     // 7. Verification Window / Proof Attestation (t = +6.5s)
@@ -282,8 +286,8 @@ export default function App() {
       setLifecycleStep('verification');
       addLog(
         verificationType === 'zk_oracle'
-          ? 'Enhanced ZK-Oracle Proof Attestation verified on-chain'
-          : 'Optimistic Challenge Window active (10s dispute period)',
+          ? 'VERIFICATION STARTED: Groth16 ZK-Proof Attestation verified on-chain'
+          : 'VERIFICATION STARTED: Optimistic Challenge Window active (10s dispute period)',
         'info'
       );
 
@@ -307,7 +311,7 @@ export default function App() {
     setStage('settlement');
     setLifecycleStep('settlement_complete');
     const b = ganacheLedger.pushIntentTransaction('settleIntent', currentIntent ? currentIntent.intentId : '0x0', winner.expectedOutput);
-    addLog(`✓ Settlement Finalized: Released $${winner.expectedOutput} USDC to recipient in Block #${b.number}`, 'success');
+    addLog(`✓ SETTLEMENT COMPLETE: $${winner.expectedOutput} USDC released in Block #${b.number}`, 'success');
 
     confetti({
       particleCount: 80,
@@ -320,7 +324,7 @@ export default function App() {
       winningSolverId: winner.solverId,
       escrowReleasedUsd: winner.expectedOutput,
       verificationType: verificationType,
-      txHash: b.transactions[0]?.hash || '0x8f2a18b...77e9',
+      txHash: b.transactions[0]?.hash || '0x7f3a91b8c42e91...84f29d1',
       success: true,
       executionTimeMs: 12500,
       receipts: [],
@@ -393,8 +397,8 @@ export default function App() {
         onOpenHistory={() => setIsHistoryDrawerOpen(true)}
         onOpenLedger={() => setIsLedgerDrawerOpen(true)}
         historyCount={history.length}
-        viewMode="user"
-        onToggleViewMode={() => {}}
+        viewMode={viewMode}
+        onToggleViewMode={setViewMode}
       />
 
       <main className="flex-1 max-w-[1440px] mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 space-y-6">
@@ -409,8 +413,36 @@ export default function App() {
           />
         </div>
 
+        {/* In-Dashboard Sensitive Decision Alert Banner (Directive 7) */}
+        {isAmbiguous && !winningBidId && isAuctionClosed && (
+          <div className="w-full bg-[#F7E7B5] border-2 border-[#D4A017] p-4 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-3 shadow-md animate-in fade-in duration-200">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-[#D4A017] text-[#2B2B2B] flex items-center justify-center font-bold">
+                <AlertTriangle className="w-5 h-5" />
+              </div>
+              <div>
+                <h4 className="text-sm font-bold text-[#2B2B2B] font-headline uppercase">
+                  ⚠ SENSITIVE DECISION REQUIRED — TIE DETECTED
+                </h4>
+                <p className="text-xs text-[#5A5A5A]">
+                  Two executions are effectively tied (0.6% difference). Automation paused until manual sign-off.
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setIsSensitiveModalOpen(true)}
+              className="px-4 py-2 rounded-xl bg-[#D4A017] hover:bg-[#E0AB1E] text-[#2B2B2B] font-mono text-xs font-bold shrink-0 shadow-xs cursor-pointer flex items-center gap-1.5 uppercase"
+            >
+              <span>Review Bids & Choose →</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
+        )}
+
         {/* =========================================================================
-            ROW 2 — ACTIVE INTENT (8 Columns) + NETWORK STATUS (4 Columns)
+            ROW 2 — ① WHAT IS HAPPENING: ACTIVE INTENT HERO (8 Cols) + NETWORK/TRUST (4 Cols)
            ========================================================================= */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
           <div className="lg:col-span-8 flex flex-col">
@@ -433,7 +465,7 @@ export default function App() {
         </div>
 
         {/* =========================================================================
-            ROW 3 — CROSS-CHAIN EXECUTION (Full Width: 12 Columns Horizontal Card)
+            ROW 3 — ② EXECUTION LIFECYCLE CENTERPIECE (Full Width: 12 Columns)
            ========================================================================= */}
         <div className="w-full">
           <TransactionLifecycleTracker
@@ -449,7 +481,7 @@ export default function App() {
         </div>
 
         {/* =========================================================================
-            ROW 4 — SOLVER COMPETITION (8 Columns) + WHY SOLVER WON (4 Columns)
+            ROW 4 — ③ WHO IS COMPETING & WHY SOLVER WON (8 Cols + 4 Cols)
            ========================================================================= */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
           <div className="lg:col-span-8 flex flex-col">
@@ -475,7 +507,7 @@ export default function App() {
         </div>
 
         {/* =========================================================================
-            ROW 5 — VERIFICATION (7 Columns) + PROTOCOL ACTIVITY LOG (5 Columns)
+            ROW 5 — ④ IS IT SAFE & LIVE PROTOCOL STREAM (7 Cols + 5 Cols)
            ========================================================================= */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
           <div className="lg:col-span-7 flex flex-col">
@@ -506,7 +538,7 @@ export default function App() {
         </div>
 
         {/* =========================================================================
-            ROW 6 — FINAL SETTLEMENT RECORD (Full Width: 12 Columns, 3-Col Internal Grid)
+            ROW 6 — ⑤ VISUAL CLIMAX: ✓ INTENT SUCCESSFULLY SETTLED (12 Cols)
            ========================================================================= */}
         {stage === 'settlement' && currentIntent && winningSolver && settlementResult && (
           <div className="w-full">
