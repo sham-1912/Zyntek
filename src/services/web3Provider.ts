@@ -236,8 +236,8 @@ class Web3ProviderService {
         })) as string;
 
         if (signature) return signature;
-      } catch (e) {
-        console.warn('MetaMask EIP-712 signing declined/fallback:', e);
+      } catch {
+        // Fallback to local EIP-712 signature generator
       }
     }
 
