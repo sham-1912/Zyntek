@@ -54,10 +54,18 @@ class Web3ProviderService {
 
         if (accounts && accounts.length > 0) {
           const provider = new BrowserProvider(ethereum);
-          const network = await provider.getNetwork();
-          const chainId = Number(network.chainId);
-          let bal = '100.00';
+          let chainId = GANACHE_CHAIN_ID;
+          let netName = 'Ganache Localnet (5777)';
 
+          try {
+            const network = await provider.getNetwork();
+            chainId = Number(network.chainId);
+            netName = chainId === GANACHE_CHAIN_ID ? 'Ganache Localnet (5777)' : network.name === 'unknown' ? 'Sepolia Testnet' : network.name;
+          } catch (e) {
+            console.warn('Network getNetwork timeout, defaulting to Ganache', e);
+          }
+
+          let bal = '100.00';
           try {
             const rawBal = await provider.getBalance(accounts[0]);
             bal = (Number(rawBal) / 1e18).toFixed(3);
@@ -69,7 +77,7 @@ class Web3ProviderService {
             isConnected: true,
             address: accounts[0],
             chainId,
-            networkName: chainId === GANACHE_CHAIN_ID ? 'Ganache Localnet (5777)' : network.name === 'unknown' ? 'Sepolia Testnet' : network.name,
+            networkName: netName,
             balanceEth: bal,
             isGanache: chainId === GANACHE_CHAIN_ID,
           };
@@ -130,7 +138,6 @@ class Web3ProviderService {
         return true;
       } catch (switchError: unknown) {
         const err = switchError as { code?: number };
-        // Chain not added error code 4902
         if (err.code === 4902) {
           try {
             await ethereum.request({
@@ -139,8 +146,8 @@ class Web3ProviderService {
                 {
                   chainId: '0x1691',
                   chainName: 'Ganache Localnet',
-                  rpcUrls: [GANACHE_RPC_URL],
-                  nativeCurrency: { name: 'Ganache ETH', symbol: 'ETH', decimals: 18 },
+                  rpcUrls: [GANACHE_RPC_URL, 'http://localhost:7545'],
+                  nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
                 },
               ],
             });
@@ -160,10 +167,19 @@ class Web3ProviderService {
         const ethereum = (window as unknown as { ethereum: Eip1193Provider }).ethereum;
         const provider = new BrowserProvider(ethereum);
         const accounts = (await ethereum.request({ method: 'eth_requestAccounts' })) as string[];
-        const network = await provider.getNetwork();
-        const chainId = Number(network.chainId);
 
         if (accounts && accounts.length > 0) {
+          let chainId = GANACHE_CHAIN_ID;
+          let netName = 'Ganache Localnet (5777)';
+
+          try {
+            const network = await provider.getNetwork();
+            chainId = Number(network.chainId);
+            netName = chainId === GANACHE_CHAIN_ID ? 'Ganache Localnet (5777)' : network.name === 'unknown' ? 'Sepolia Testnet' : network.name;
+          } catch (e) {
+            console.warn('Network timeout fallback', e);
+          }
+
           let bal = '100.00';
           try {
             const rawBal = await provider.getBalance(accounts[0]);
@@ -176,7 +192,7 @@ class Web3ProviderService {
             isConnected: true,
             address: accounts[0],
             chainId,
-            networkName: chainId === GANACHE_CHAIN_ID ? 'Ganache Localnet (5777)' : network.name === 'unknown' ? 'Sepolia Testnet' : network.name,
+            networkName: netName,
             balanceEth: bal,
             isGanache: chainId === GANACHE_CHAIN_ID,
           };
