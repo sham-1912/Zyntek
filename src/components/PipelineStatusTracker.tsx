@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import type { PipelineStage, VerificationType, SettlementResult } from '../services/types';
 import { ProofModal } from './ProofModal';
 import { SettlementSummaryCard } from './SettlementSummaryCard';
-import { CheckCircle2, Loader2, ShieldCheck, ShieldAlert, Lock, Cpu, ArrowRight, Clock, FileText, Info } from 'lucide-react';
+import { CheckCircle2, Loader2, ShieldCheck, ShieldAlert, Lock, Cpu, ArrowRight, Clock, FileText, Info, Award } from 'lucide-react';
 
 interface PipelineStatusTrackerProps {
   stage: PipelineStage;
@@ -61,30 +61,31 @@ export const PipelineStatusTracker: React.FC<PipelineStatusTrackerProps> = ({
 
   return (
     <div className="glass-panel p-6 space-y-6">
+      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-4">
         <div>
-          <h3 className="text-base font-bold text-white font-mono flex items-center gap-2">
-            <Cpu className="w-5 h-5 text-cyan-400" />
-            <span>Cross-Chain Status Pipeline</span>
+          <h3 className="text-section font-bold text-white font-mono flex items-center gap-2">
+            <Cpu className="w-5 h-5 text-indigo-400" />
+            <span>Cross-Chain Protocol Pipeline</span>
           </h3>
-          <p className="text-xs text-slate-400 mt-0.5">{subStatusText || 'Live protocol state transitions across EVM & Solana'}</p>
+          <p className="text-body text-slate-400 mt-0.5">{subStatusText || 'Live protocol state transitions across EVM & Solana'}</p>
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
           {solverBondUsd && (
-            <span className="text-[10px] font-mono text-cyan-300 px-2.5 py-0.5 rounded bg-slate-900 border border-cyan-800/80 font-bold">
+            <span className="text-metadata text-safety px-2.5 py-1 rounded bg-slate-900 border border-safety/40 font-bold">
               {collateralRatio}% Collateralized
             </span>
           )}
           {intentId && (
-            <span className="text-[11px] font-mono text-indigo-400 px-2.5 py-1 rounded bg-indigo-950 border border-indigo-800">
+            <span className="text-metadata text-indigo-300 px-2.5 py-1 rounded bg-indigo-950 border border-indigo-800">
               ID: {intentId}
             </span>
           )}
         </div>
       </div>
 
-      {/* Stepper Grid */}
+      {/* Requirement 4: Hero Treatment for Stage Nodes */}
       <div className="grid grid-cols-1 sm:grid-cols-5 gap-3">
         {steps.map((step, idx) => {
           const status = getStepStatus(idx);
@@ -93,26 +94,36 @@ export const PipelineStatusTracker: React.FC<PipelineStatusTrackerProps> = ({
           return (
             <div
               key={step.id}
-              className={`p-3.5 rounded-xl border flex flex-col justify-between transition-all ${
+              className={`p-4 rounded-xl border-2 flex flex-col justify-between transition-all ${
                 status === 'completed'
-                  ? 'bg-emerald-950/40 border-emerald-800/80 text-emerald-300'
+                  ? 'bg-emerald-950/40 border-cost text-cost shadow-md shadow-cost/10'
                   : status === 'active'
                   ? 'bg-indigo-950/80 border-indigo-500 text-indigo-200 animate-pulse-glow shadow-lg shadow-indigo-900/50'
                   : status === 'failed'
-                  ? 'bg-rose-950/80 border-rose-600 text-rose-300'
-                  : 'bg-slate-900/50 border-slate-800 text-slate-500'
+                  ? 'bg-alert/15 border-alert text-alert'
+                  : 'bg-slate-900/50 border-slate-800/80 text-slate-500'
               }`}
             >
               <div className="flex items-center justify-between">
-                <Icon className="w-4 h-4" />
-                {status === 'completed' && <CheckCircle2 className="w-4 h-4 text-emerald-400" />}
-                {status === 'active' && <Loader2 className="w-4 h-4 text-indigo-400 animate-spin" />}
-                {status === 'failed' && <ShieldAlert className="w-4 h-4 text-rose-400" />}
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                  status === 'completed'
+                    ? 'bg-cost/20 border border-cost/40'
+                    : status === 'active'
+                    ? 'bg-indigo-500/20 border border-indigo-500/40'
+                    : status === 'failed'
+                    ? 'bg-alert/20 border border-alert/40'
+                    : 'bg-slate-800'
+                }`}>
+                  <Icon className="w-4 h-4" />
+                </div>
+                {status === 'completed' && <CheckCircle2 className="w-5 h-5 text-cost" />}
+                {status === 'active' && <Loader2 className="w-5 h-5 text-indigo-400 animate-spin" />}
+                {status === 'failed' && <ShieldAlert className="w-5 h-5 text-alert" />}
               </div>
 
               <div className="mt-3">
-                <p className="text-xs font-semibold leading-tight">{step.label}</p>
-                <span className="text-[10px] font-mono capitalize opacity-75">
+                <p className="text-xs font-bold leading-tight">{step.label}</p>
+                <span className="text-metadata font-mono capitalize mt-1 block">
                   {status}
                 </span>
               </div>
@@ -121,14 +132,30 @@ export const PipelineStatusTracker: React.FC<PipelineStatusTrackerProps> = ({
         })}
       </div>
 
-      {/* Stage 6 Multi-Substep Solana Execution Details during execution */}
+      {/* Requirement 4: Standalone Hero Settlement Amount Readout */}
+      {settlementResult && (
+        <div className="bg-slate-950/90 border-2 border-cost rounded-2xl p-6 text-center space-y-2 shadow-2xl shadow-cost/10 animate-in fade-in zoom-in duration-300">
+          <div className="flex items-center justify-center gap-2 text-cost font-mono text-xs uppercase font-bold tracking-widest">
+            <Award className="w-4 h-4 text-cost" />
+            <span>Final Settlement Outcome Delivered</span>
+          </div>
+          <div className="text-hero text-cost font-mono tracking-tight">
+            ${settlementResult.escrowReleasedUsd} USDC
+          </div>
+          <p className="text-body text-slate-300 font-sans">
+            Delivered directly to destination wallet on Solana (TX: {settlementResult.proofPayload?.solanaTxSignature.slice(0, 10) || settlementResult.txHash.slice(0, 10)}...)
+          </p>
+        </div>
+      )}
+
+      {/* Stage Execution Details */}
       {stage === 'executing_cross_chain' && (
-        <div className="bg-slate-900/90 border border-cyan-500/50 p-4 rounded-xl space-y-2 font-mono text-xs text-cyan-200 animate-in fade-in duration-200">
+        <div className="bg-slate-900/90 border border-cyan-500/50 p-4 rounded-xl space-y-2 font-mono text-xs text-cyan-200">
           <span className="font-bold text-white uppercase text-[10px] tracking-wider block border-b border-cyan-900/60 pb-1">
             Solana Destination Leg Execution Substeps:
           </span>
           <div className="space-y-1 text-[11px]">
-            <div className="flex items-center gap-2 text-emerald-400 font-bold">
+            <div className="flex items-center gap-2 text-cost font-bold">
               <span>✓ 3a. Solver broadcasting transaction on Solana network</span>
             </div>
             <div className="flex items-center gap-2 text-amber-300">
@@ -142,7 +169,7 @@ export const PipelineStatusTracker: React.FC<PipelineStatusTrackerProps> = ({
         </div>
       )}
 
-      {/* Stage 7 Hybrid Verification Challenge Countdown & Path Note */}
+      {/* Verification Challenge Note */}
       {stage === 'verifying' && (
         <div className="bg-indigo-950/60 border border-indigo-800 p-4 rounded-xl space-y-3 font-mono text-xs">
           <div className="flex items-center justify-between gap-3">
@@ -154,18 +181,18 @@ export const PipelineStatusTracker: React.FC<PipelineStatusTrackerProps> = ({
                     ? 'ZK/Oracle Attestation Verification Active'
                     : 'Optimistic Challenge Window Active'}
                 </span>
-                <span className="text-[11px] text-slate-400 font-sans">
+                <span className="text-metadata text-slate-400 font-sans">
                   In production, this window is typically 15–30 minutes. Compressed for demo.
                 </span>
               </div>
             </div>
             <div className="text-right shrink-0">
-              <span className="text-lg font-bold text-amber-400">0:{challengeCountdownSec.toString().padStart(2, '0')}</span>
-              <span className="block text-[10px] text-slate-500">Auto-settles if unchallenged</span>
+              <span className="text-hero-sm font-bold text-amber-400 font-mono">0:{challengeCountdownSec.toString().padStart(2, '0')}</span>
+              <span className="block text-metadata">Auto-settles if unchallenged</span>
             </div>
           </div>
 
-          <div className="flex items-center justify-between pt-2 border-t border-indigo-900/60 text-[11px]">
+          <div className="flex items-center justify-between pt-2 border-t border-indigo-900/60 text-metadata">
             <span className="text-slate-400 flex items-center gap-1 font-sans">
               <Info className="w-3.5 h-3.5 text-indigo-400" />
               {verificationType === 'zk_oracle'
@@ -187,7 +214,7 @@ export const PipelineStatusTracker: React.FC<PipelineStatusTrackerProps> = ({
         </div>
       )}
 
-      {/* Stage 8 Settlement Summary Card */}
+      {/* Settlement Details */}
       {settlementResult && (
         <>
           <SettlementSummaryCard result={settlementResult} />
