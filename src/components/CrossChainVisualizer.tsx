@@ -19,16 +19,16 @@ export const CrossChainVisualizer: React.FC<CrossChainVisualizerProps> = ({
   const isVerified = stage === 'settlement' || stage === 'settled';
 
   return (
-    <div className="bg-[#151526] border border-white/10 rounded-2xl p-5 space-y-4 shadow-xl">
+    <div className="bg-[#162A46] border border-[#8DC2FF]/20 rounded-2xl p-5 space-y-4 shadow-xl">
       {/* Header */}
       <div className="flex items-center justify-between border-b border-white/10 pb-3">
         <div className="flex items-center gap-2">
-          <Layers className="w-4 h-4 text-[#A9A7FF]" />
-          <h3 className="text-xs font-bold text-white uppercase tracking-wider font-mono">
+          <Layers className="w-4 h-4 text-[#8DC2FF]" />
+          <h3 className="text-xs font-bold text-[#F3F6FF] uppercase tracking-wider font-mono">
             Cross-Chain Topology: Ethereum L1 → Solver Mesh → Solana SVM
           </h3>
         </div>
-        <span className="text-[10px] font-mono text-[#D1FE5D] font-bold">
+        <span className="text-[10px] font-mono text-[#CEF26D] font-bold">
           {stage === 'settlement' || stage === 'settled' ? '✓ Settled' : stage !== 'idle' ? '◉ Live' : '○ Standby'}
         </span>
       </div>
@@ -38,21 +38,21 @@ export const CrossChainVisualizer: React.FC<CrossChainVisualizerProps> = ({
         {/* Node 1: Ethereum Source */}
         <div className={`p-3.5 rounded-xl border transition-all ${
           isEscrowLocked
-            ? 'bg-[#20203A] border-[#D1FE5D]/50 text-white'
-            : 'bg-[#0B0B14] border-white/5 text-[#A5A5B8]'
+            ? 'bg-[#1A3152] border-[#CEF26D]/60 text-[#F3F6FF]'
+            : 'bg-[#101C2C] border-white/5 text-[#8DC2FF]/70'
         }`}>
           <div className="flex justify-between items-center mb-1.5">
-            <span className="text-[10px] text-[#A5A5B8] uppercase">1. Ethereum Source</span>
+            <span className="text-[10px] text-[#8DC2FF]/80 uppercase">1. Ethereum Source</span>
             {isEscrowLocked ? (
-              <Check className="w-3.5 h-3.5 text-[#D1FE5D]" />
+              <Check className="w-3.5 h-3.5 text-[#CEF26D]" />
             ) : (
               <Circle className="w-3 h-3 text-white/20" />
             )}
           </div>
-          <div className="font-bold text-white text-xs">
+          <div className="font-bold text-[#F3F6FF] text-xs">
             {intent ? `$${intent.sourceAmount} ${intent.sourceAsset}` : '500 USDC'}
           </div>
-          <span className={`text-[10px] mt-1 block font-bold ${isEscrowLocked ? 'text-[#D1FE5D]' : 'text-[#A5A5B8]'}`}>
+          <span className={`text-[10px] mt-1 block font-bold ${isEscrowLocked ? 'text-[#CEF26D]' : 'text-[#8DC2FF]/60'}`}>
             {isEscrowLocked ? '✓ Funds in Escrow' : '○ Awaiting Deposit'}
           </span>
         </div>
@@ -60,26 +60,26 @@ export const CrossChainVisualizer: React.FC<CrossChainVisualizerProps> = ({
         {/* Node 2: Solver Network */}
         <div className={`p-3.5 rounded-xl border transition-all ${
           isExecuting
-            ? 'bg-[#20203A] border-[#1053D4] text-white shadow-lg shadow-[#1053D4]/20'
+            ? 'bg-[#1A3152] border-[#8DC2FF] text-[#F3F6FF] shadow-lg shadow-[#2F6690]/30'
             : isDelivered
-            ? 'bg-[#20203A] border-[#D1FE5D]/50 text-white'
-            : 'bg-[#0B0B14] border-white/5 text-[#A5A5B8]'
+            ? 'bg-[#1A3152] border-[#CEF26D]/60 text-[#F3F6FF]'
+            : 'bg-[#101C2C] border-white/5 text-[#8DC2FF]/70'
         }`}>
           <div className="flex justify-between items-center mb-1.5">
-            <span className="text-[10px] text-[#A5A5B8] uppercase">2. Solver Mesh</span>
+            <span className="text-[10px] text-[#8DC2FF]/80 uppercase">2. Solver Mesh</span>
             {isExecuting ? (
-              <Loader2 className="w-3.5 h-3.5 text-[#1053D4] animate-spin" />
+              <Loader2 className="w-3.5 h-3.5 text-[#8DC2FF] animate-spin" />
             ) : isDelivered ? (
-              <Check className="w-3.5 h-3.5 text-[#D1FE5D]" />
+              <Check className="w-3.5 h-3.5 text-[#CEF26D]" />
             ) : (
               <Circle className="w-3 h-3 text-white/20" />
             )}
           </div>
-          <div className="font-bold text-white text-xs">
+          <div className="font-bold text-[#F3F6FF] text-xs">
             {selectedBid ? selectedBid.solverName.split('—')[0] : 'Alpha / Flash'}
           </div>
           <span className={`text-[10px] mt-1 block font-bold ${
-            isExecuting ? 'text-[#A9A7FF]' : isDelivered ? 'text-[#D1FE5D]' : 'text-[#A5A5B8]'
+            isExecuting ? 'text-[#8DC2FF]' : isDelivered ? 'text-[#CEF26D]' : 'text-[#8DC2FF]/60'
           }`}>
             {isExecuting ? '◉ Executing Leg' : isDelivered ? '✓ Fulfill Completed' : '○ Standby'}
           </span>
@@ -88,21 +88,21 @@ export const CrossChainVisualizer: React.FC<CrossChainVisualizerProps> = ({
         {/* Node 3: Solana Destination */}
         <div className={`p-3.5 rounded-xl border transition-all ${
           isDelivered
-            ? 'bg-[#20203A] border-[#D1FE5D]/50 text-white'
-            : 'bg-[#0B0B14] border-white/5 text-[#A5A5B8]'
+            ? 'bg-[#1A3152] border-[#CEF26D]/60 text-[#F3F6FF]'
+            : 'bg-[#101C2C] border-white/5 text-[#8DC2FF]/70'
         }`}>
           <div className="flex justify-between items-center mb-1.5">
-            <span className="text-[10px] text-[#A5A5B8] uppercase">3. Solana Target</span>
+            <span className="text-[10px] text-[#8DC2FF]/80 uppercase">3. Solana Target</span>
             {isDelivered ? (
-              <Check className="w-3.5 h-3.5 text-[#D1FE5D]" />
+              <Check className="w-3.5 h-3.5 text-[#CEF26D]" />
             ) : (
               <Circle className="w-3 h-3 text-white/20" />
             )}
           </div>
-          <div className="font-bold text-[#D1FE5D] text-xs">
+          <div className="font-bold text-[#CEF26D] text-xs">
             {selectedBid ? `~$${selectedBid.expectedOutput} USDC` : '~496.50 USDC'}
           </div>
-          <span className={`text-[10px] mt-1 block font-bold ${isDelivered ? 'text-[#D1FE5D]' : 'text-[#A5A5B8]'}`}>
+          <span className={`text-[10px] mt-1 block font-bold ${isDelivered ? 'text-[#CEF26D]' : 'text-[#8DC2FF]/60'}`}>
             {isDelivered ? '✓ Delivered' : '○ Awaiting Delivery'}
           </span>
         </div>
@@ -110,21 +110,21 @@ export const CrossChainVisualizer: React.FC<CrossChainVisualizerProps> = ({
         {/* Node 4: Verification & Release */}
         <div className={`p-3.5 rounded-xl border transition-all ${
           isVerified
-            ? 'bg-[#20203A] border-[#D1FE5D]/50 text-white'
-            : 'bg-[#0B0B14] border-white/5 text-[#A5A5B8]'
+            ? 'bg-[#1A3152] border-[#CEF26D]/60 text-[#F3F6FF]'
+            : 'bg-[#101C2C] border-white/5 text-[#8DC2FF]/70'
         }`}>
           <div className="flex justify-between items-center mb-1.5">
-            <span className="text-[10px] text-[#A5A5B8] uppercase">4. Verification</span>
+            <span className="text-[10px] text-[#8DC2FF]/80 uppercase">4. Verification</span>
             {isVerified ? (
-              <ShieldCheck className="w-3.5 h-3.5 text-[#D1FE5D]" />
+              <ShieldCheck className="w-3.5 h-3.5 text-[#CEF26D]" />
             ) : (
               <Circle className="w-3 h-3 text-white/20" />
             )}
           </div>
-          <div className="font-bold text-white text-xs">
+          <div className="font-bold text-[#F3F6FF] text-xs">
             Optimistic / ZK
           </div>
-          <span className={`text-[10px] mt-1 block font-bold ${isVerified ? 'text-[#D1FE5D]' : 'text-[#A5A5B8]'}`}>
+          <span className={`text-[10px] mt-1 block font-bold ${isVerified ? 'text-[#CEF26D]' : 'text-[#8DC2FF]/60'}`}>
             {isVerified ? '✓ Settlement Final' : '○ Pending Proof'}
           </span>
         </div>

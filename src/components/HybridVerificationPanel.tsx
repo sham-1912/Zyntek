@@ -19,73 +19,73 @@ export const HybridVerificationPanel: React.FC<HybridVerificationPanelProps> = (
   const isOptimistic = verificationType === 'optimistic';
 
   return (
-    <div className="bg-[#151526] border border-white/10 rounded-2xl p-6 space-y-5 shadow-xl">
+    <div className="bg-[#162A46] border border-[#8DC2FF]/20 rounded-2xl p-6 space-y-5 shadow-xl">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#20203A] border border-[#1053D4]/40 flex items-center justify-center text-[#1053D4]">
-            {isOptimistic ? <ShieldCheck className="w-5 h-5" /> : <Cpu className="w-5 h-5 text-[#7171DE]" />}
+          <div className="w-10 h-10 rounded-xl bg-[#1A3152] border border-[#2F6690]/50 flex items-center justify-center text-[#8DC2FF]">
+            {isOptimistic ? <ShieldCheck className="w-5 h-5 text-[#8DC2FF]" /> : <Cpu className="w-5 h-5 text-[#CEF26D]" />}
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-xs uppercase font-mono tracking-widest text-[#A9A7FF] font-bold">
+              <span className="text-xs uppercase font-mono tracking-widest text-[#8DC2FF] font-bold">
                 Settlement Verification Panel
               </span>
               <span className={`text-[10px] px-2 py-0.5 rounded font-mono font-bold ${
                 isOptimistic
-                  ? 'bg-[#1053D4]/20 text-[#A9A7FF] border border-[#1053D4]/30'
-                  : 'bg-[#7171DE]/20 text-[#7171DE] border border-[#7171DE]/30'
+                  ? 'bg-[#2F6690]/30 text-[#8DC2FF] border border-[#8DC2FF]/30'
+                  : 'bg-[#1A3152] text-[#CEF26D] border border-[#CEF26D]/30'
               }`}>
                 {isOptimistic ? 'Standard: Optimistic Window' : 'High-Value: Enhanced ZK/Oracle'}
               </span>
             </div>
-            <h3 className="text-base font-bold text-white font-mono mt-0.5">
+            <h3 className="text-base font-bold text-[#F3F6FF] font-mono mt-0.5">
               {isOptimistic ? '🛡 Optimistic Challenge Window' : '◈ Enhanced Oracle / Proof Attestation'}
             </h3>
           </div>
         </div>
 
         <div className="font-mono text-xs text-right">
-          <span className="text-[#A5A5B8] block text-[10px]">Verification Mode</span>
-          <span className="text-[#D1FE5D] font-bold">{isOptimistic ? 'Challenge Guard' : 'Cryptographic Proof'}</span>
+          <span className="text-[#8DC2FF]/70 block text-[10px]">Verification Mode</span>
+          <span className="text-[#CEF26D] font-bold">{isOptimistic ? 'Challenge Guard' : 'Cryptographic Proof'}</span>
         </div>
       </div>
 
       {/* Path 1: Standard Optimistic Verification */}
       {isOptimistic ? (
         <div className="space-y-4 font-mono text-xs">
-          <div className="bg-[#0B0B14] p-4 rounded-xl border border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="bg-[#101C2C] p-4 rounded-xl border border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="space-y-1">
-              <span className="text-[11px] text-[#A5A5B8] block">Solver Delivery Proof Status</span>
-              <div className="flex items-center gap-2 text-white font-bold">
-                <CheckCircle2 className="w-4 h-4 text-[#D1FE5D]" />
+              <span className="text-[11px] text-[#8DC2FF]/70 block">Solver Delivery Proof Status</span>
+              <div className="flex items-center gap-2 text-[#F3F6FF] font-bold">
+                <CheckCircle2 className="w-4 h-4 text-[#CEF26D]" />
                 <span>Solana Transaction Signature Attested (Slot #2847192)</span>
               </div>
-              <div className="flex items-center gap-2 text-[11px] text-[#D1FE5D]">
-                <span className="w-2 h-2 rounded-full bg-[#D1FE5D] animate-pulse" />
+              <div className="flex items-center gap-2 text-[11px] text-[#CEF26D]">
+                <span className="w-2 h-2 rounded-full bg-[#CEF26D] animate-pulse" />
                 <span>Status: No challenges detected on-chain</span>
               </div>
             </div>
 
             {/* Countdown Box */}
-            <div className="bg-[#20203A] p-3 rounded-xl border border-white/10 text-center shrink-0">
-              <span className="text-[10px] text-[#A5A5B8] block">Challenge Window</span>
-              <span className="text-xl font-bold text-[#D1FE5D]">
+            <div className="bg-[#1A3152] p-3 rounded-xl border border-[#8DC2FF]/20 text-center shrink-0">
+              <span className="text-[10px] text-[#8DC2FF]/70 block">Challenge Window</span>
+              <span className="text-xl font-bold text-[#CEF26D]">
                 00:{countdownSec.toString().padStart(2, '0')}
               </span>
-              <span className="text-[10px] text-[#A5A5B8] block">Auto-settles on zero</span>
+              <span className="text-[10px] text-[#8DC2FF]/70 block">Auto-settles on zero</span>
             </div>
           </div>
 
           {/* Progress Bar */}
           <div className="space-y-1">
-            <div className="flex justify-between text-[10px] text-[#A5A5B8]">
+            <div className="flex justify-between text-[10px] text-[#8DC2FF]/70">
               <span>Dispute Period Monitoring</span>
               <span>{Math.round(((15 - countdownSec) / 15) * 100)}%</span>
             </div>
-            <div className="w-full bg-[#20203A] h-2 rounded-full overflow-hidden">
+            <div className="w-full bg-[#101C2C] h-2 rounded-full overflow-hidden">
               <div
-                className="bg-[#D1FE5D] h-full transition-all duration-1000 ease-linear rounded-full"
+                className="bg-[#CEF26D] h-full transition-all duration-1000 ease-linear rounded-full"
                 style={{ width: `${((15 - countdownSec) / 15) * 100}%` }}
               />
             </div>
@@ -95,39 +95,39 @@ export const HybridVerificationPanel: React.FC<HybridVerificationPanelProps> = (
         /* Path 2: High Value Enhanced Verification */
         <div className="space-y-4 font-mono text-xs">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div className="bg-[#0B0B14] p-3.5 rounded-xl border border-white/5 space-y-1">
-              <span className="text-[10px] text-[#A5A5B8] block">Oracle / Proof Attestation</span>
-              <span className="text-[#D1FE5D] font-bold flex items-center gap-1.5">
-                <CheckCircle2 className="w-4 h-4 text-[#D1FE5D]" /> Verified
+            <div className="bg-[#101C2C] p-3.5 rounded-xl border border-white/5 space-y-1">
+              <span className="text-[10px] text-[#8DC2FF]/70 block">Oracle / Proof Attestation</span>
+              <span className="text-[#CEF26D] font-bold flex items-center gap-1.5">
+                <CheckCircle2 className="w-4 h-4 text-[#CEF26D]" /> Verified
               </span>
-              <span className="text-[10px] text-[#A5A5B8]">zk-SNARK Groth16 valid</span>
+              <span className="text-[10px] text-[#8DC2FF]/60">zk-SNARK Groth16 valid</span>
             </div>
 
-            <div className="bg-[#0B0B14] p-3.5 rounded-xl border border-white/5 space-y-1">
-              <span className="text-[10px] text-[#A5A5B8] block">Proof Status</span>
-              <span className="text-white font-bold flex items-center gap-1.5">
-                <CheckCircle2 className="w-4 h-4 text-[#1053D4]" /> CONFIRMED
+            <div className="bg-[#101C2C] p-3.5 rounded-xl border border-white/5 space-y-1">
+              <span className="text-[10px] text-[#8DC2FF]/70 block">Proof Status</span>
+              <span className="text-[#F3F6FF] font-bold flex items-center gap-1.5">
+                <CheckCircle2 className="w-4 h-4 text-[#8DC2FF]" /> CONFIRMED
               </span>
-              <span className="text-[10px] text-[#A5A5B8]">Solana CPI receipt logged</span>
+              <span className="text-[10px] text-[#8DC2FF]/60">Solana CPI receipt logged</span>
             </div>
 
-            <div className="bg-[#0B0B14] p-3.5 rounded-xl border border-white/5 space-y-1">
-              <span className="text-[10px] text-[#A5A5B8] block">Network Attestation</span>
-              <span className="text-[#7171DE] font-bold flex items-center gap-1.5">
-                <CheckCircle2 className="w-4 h-4 text-[#7171DE]" /> VALID
+            <div className="bg-[#101C2C] p-3.5 rounded-xl border border-white/5 space-y-1">
+              <span className="text-[10px] text-[#8DC2FF]/70 block">Network Attestation</span>
+              <span className="text-[#8DC2FF] font-bold flex items-center gap-1.5">
+                <CheckCircle2 className="w-4 h-4 text-[#2F6690]" /> VALID
               </span>
-              <span className="text-[10px] text-[#A5A5B8]">Multisig quorum 4/5</span>
+              <span className="text-[10px] text-[#8DC2FF]/60">Multisig quorum 4/5</span>
             </div>
           </div>
 
           {/* User Confirmation Sign-off Gate */}
           {!isConfirmedByUser && status === 'verifying' && onConfirmSettlement && (
-            <div className="bg-[#20203A] p-4 rounded-xl border border-[#D1FE5D]/40 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="bg-[#1A3152] p-4 rounded-xl border border-[#CEF26D]/40 flex flex-col sm:flex-row items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                <ShieldAlert className="w-5 h-5 text-[#D1FE5D] shrink-0" />
+                <ShieldAlert className="w-5 h-5 text-[#CEF26D] shrink-0" />
                 <div>
-                  <span className="font-bold text-white block">User Confirmation Required Before Final Settlement</span>
-                  <span className="text-[#A5A5B8] text-[11px] font-sans">
+                  <span className="font-bold text-[#F3F6FF] block">User Confirmation Required Before Final Settlement</span>
+                  <span className="text-[#8DC2FF]/80 text-[11px] font-sans">
                     High-value proof confirmed. Click below to sign release authorization.
                   </span>
                 </div>
@@ -136,7 +136,7 @@ export const HybridVerificationPanel: React.FC<HybridVerificationPanelProps> = (
               <button
                 type="button"
                 onClick={onConfirmSettlement}
-                className="px-5 py-2.5 rounded-xl bg-[#D1FE5D] text-[#0B0B14] hover:bg-lime-300 font-mono text-xs font-bold shrink-0 transition-all shadow-md cursor-pointer"
+                className="px-5 py-2.5 rounded-xl bg-[#CEF26D] text-[#101C2C] hover:bg-[#D8F582] font-mono text-xs font-bold shrink-0 transition-all shadow-md cursor-pointer"
               >
                 Confirm Settlement
               </button>
@@ -144,7 +144,7 @@ export const HybridVerificationPanel: React.FC<HybridVerificationPanelProps> = (
           )}
 
           {isConfirmedByUser && (
-            <div className="bg-[#0B0B14] p-3 rounded-xl border border-[#D1FE5D]/30 flex items-center gap-2 text-[#D1FE5D]">
+            <div className="bg-[#101C2C] p-3 rounded-xl border border-[#CEF26D]/30 flex items-center gap-2 text-[#CEF26D]">
               <CheckCircle2 className="w-4 h-4" />
               <span>User Confirmation Signed: Settlement Approved.</span>
             </div>

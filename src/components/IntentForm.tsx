@@ -73,30 +73,30 @@ export const IntentForm: React.FC<IntentFormProps> = ({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-[#151526] border border-white/10 rounded-2xl p-6 space-y-6 shadow-xl">
+    <form onSubmit={handleSubmit} className="bg-[#162A46] border border-[#8DC2FF]/20 rounded-2xl p-6 space-y-6 shadow-xl">
       {/* Header & Connected Wallet Badge */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/10 pb-4">
         <div>
-          <h2 className="text-lg font-bold text-white font-mono flex items-center gap-2">
+          <h2 className="text-lg font-bold text-[#F3F6FF] font-mono flex items-center gap-2">
             <span>State Cross-Chain Intent & Constraints</span>
           </h2>
-          <p className="text-xs text-[#A5A5B8] mt-0.5">
+          <p className="text-xs text-[#8DC2FF]/80 mt-0.5">
             Declare your target outcome & safety guardrails. Solvers compete to fulfill within parameters.
           </p>
         </div>
 
         <div className="flex items-center gap-2 font-mono text-xs">
           {walletState.isConnected ? (
-            <span className="px-2.5 py-1 rounded bg-[#20203A] border border-white/10 text-[#A9A7FF] font-semibold flex items-center gap-1.5 shadow-sm">
-              <span className="w-2 h-2 rounded-full bg-[#D1FE5D] animate-pulse" />
+            <span className="px-2.5 py-1 rounded bg-[#1A3152] border border-[#8DC2FF]/30 text-[#8DC2FF] font-semibold flex items-center gap-1.5 shadow-sm">
+              <span className="w-2 h-2 rounded-full bg-[#CEF26D] animate-pulse" />
               <span>{walletState.address.slice(0, 6)}...{walletState.address.slice(-4)}</span>
-              <span className="text-[#A5A5B8] font-normal">({walletState.balanceEth} ETH)</span>
+              <span className="text-[#8DC2FF]/60 font-normal">({walletState.balanceEth} ETH)</span>
             </span>
           ) : (
             <button
               type="button"
               onClick={handleConnectWalletClick}
-              className="px-3 py-1.5 rounded-lg bg-[#1053D4] hover:bg-blue-600 text-white font-semibold flex items-center gap-1.5 shadow-md transition-all font-mono cursor-pointer"
+              className="px-3 py-1.5 rounded-lg bg-[#2F6690] hover:bg-[#3D7BAA] text-[#F3F6FF] font-semibold flex items-center gap-1.5 shadow-md transition-all font-mono cursor-pointer"
             >
               <Plug className="w-3.5 h-3.5" />
               <span>Connect Wallet</span>
@@ -108,10 +108,10 @@ export const IntentForm: React.FC<IntentFormProps> = ({
       {/* Source & Destination Grids */}
       <div className="space-y-3">
         {/* Source Asset & Amount Box */}
-        <div className="bg-[#0B0B14] p-4 rounded-xl border border-white/5 space-y-3">
-          <div className="flex justify-between items-center text-xs text-[#A5A5B8]">
+        <div className="bg-[#101C2C] p-4 rounded-xl border border-white/5 space-y-3">
+          <div className="flex justify-between items-center text-xs text-[#8DC2FF]/70">
             <span className="font-mono">SOURCE (Deposit into Escrow)</span>
-            <span className="font-mono text-[#A9A7FF]">Ethereum L1</span>
+            <span className="font-mono text-[#8DC2FF]">Ethereum L1</span>
           </div>
 
           <div className="flex items-center gap-3">
@@ -120,12 +120,12 @@ export const IntentForm: React.FC<IntentFormProps> = ({
               value={sourceAmount}
               onChange={(e) => handleAmountUpdate(Math.max(1, Number(e.target.value)))}
               disabled={disabled}
-              className="w-full bg-transparent text-2xl font-mono font-bold text-white focus:outline-none"
+              className="w-full bg-transparent text-2xl font-mono font-bold text-[#F3F6FF] focus:outline-none"
               placeholder="500"
             />
 
-            <div className="flex items-center gap-2 bg-[#20203A] px-3 py-1.5 rounded-lg border border-white/10 font-mono text-sm font-semibold">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#1053D4]" />
+            <div className="flex items-center gap-2 bg-[#1A3152] px-3 py-1.5 rounded-lg border border-[#8DC2FF]/30 font-mono text-sm font-semibold text-[#F3F6FF]">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#2F6690]" />
               <span>{sourceAsset}</span>
             </div>
           </div>
@@ -133,58 +133,58 @@ export const IntentForm: React.FC<IntentFormProps> = ({
 
         {/* Direction Divider */}
         <div className="flex justify-center -my-2 relative z-10">
-          <div className="bg-[#20203A] p-2 rounded-full border border-white/10 shadow-lg text-[#A9A7FF]">
+          <div className="bg-[#1A3152] p-2 rounded-full border border-[#8DC2FF]/30 shadow-lg text-[#8DC2FF]">
             <ArrowDownUp className="w-4 h-4" />
           </div>
         </div>
 
         {/* Target Destination Asset Box */}
-        <div className="bg-[#0B0B14] p-4 rounded-xl border border-white/5 space-y-3">
-          <div className="flex justify-between items-center text-xs text-[#A5A5B8]">
+        <div className="bg-[#101C2C] p-4 rounded-xl border border-white/5 space-y-3">
+          <div className="flex justify-between items-center text-xs text-[#8DC2FF]/70">
             <span className="font-mono">DESTINATION (Target Delivery)</span>
-            <span className="font-mono text-[#7171DE]">Solana SVM</span>
+            <span className="font-mono text-[#8DC2FF]">Solana SVM</span>
           </div>
 
           <div className="flex items-center justify-between">
-            <div className="text-xl font-mono font-bold text-[#D1FE5D]">
+            <div className="text-xl font-mono font-bold text-[#CEF26D]">
               ~${estimatedMinOutput.toLocaleString()} USDC
             </div>
 
-            <div className="flex items-center gap-2 bg-[#20203A] px-3 py-1.5 rounded-lg border border-white/10 font-mono text-sm font-semibold">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#7171DE]" />
+            <div className="flex items-center gap-2 bg-[#1A3152] px-3 py-1.5 rounded-lg border border-[#8DC2FF]/30 font-mono text-sm font-semibold text-[#F3F6FF]">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#8DC2FF]" />
               <span>{destinationAsset}</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Module 7: Explicit Intent Constraints Panel */}
-      <div className="bg-[#20203A]/60 border border-white/10 rounded-xl p-4 space-y-2.5 font-mono text-xs">
-        <div className="flex items-center justify-between text-[#A9A7FF] text-[11px] font-bold border-b border-white/5 pb-1.5">
+      {/* Explicit Intent Constraints Panel */}
+      <div className="bg-[#1A3152]/70 border border-[#8DC2FF]/20 rounded-xl p-4 space-y-2.5 font-mono text-xs">
+        <div className="flex items-center justify-between text-[#8DC2FF] text-[11px] font-bold border-b border-white/5 pb-1.5">
           <span className="flex items-center gap-1.5">
-            <Sliders className="w-3.5 h-3.5 text-[#D1FE5D]" />
+            <Sliders className="w-3.5 h-3.5 text-[#CEF26D]" />
             MANDATORY INTENT CONSTRAINTS
           </span>
-          <span className="text-[#A5A5B8]">Enforced on-chain</span>
+          <span className="text-[#8DC2FF]/60">Enforced on-chain</span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-[#A5A5B8]">
-          <div className="bg-[#0B0B14] p-2.5 rounded-lg border border-white/5">
-            <span className="text-[10px] block text-[#A5A5B8]">Minimum Acceptable</span>
-            <span className="text-[#D1FE5D] font-bold">≥ ${estimatedMinOutput} USDC</span>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-[#8DC2FF]/80">
+          <div className="bg-[#101C2C] p-2.5 rounded-lg border border-white/5">
+            <span className="text-[10px] block text-[#8DC2FF]/70">Minimum Acceptable</span>
+            <span className="text-[#CEF26D] font-bold">≥ ${estimatedMinOutput} USDC</span>
           </div>
 
-          <div className="bg-[#0B0B14] p-2.5 rounded-lg border border-white/5">
-            <span className="text-[10px] block text-[#A5A5B8]">Execution Deadline</span>
-            <span className="text-white font-bold flex items-center gap-1">
-              <Clock className="w-3 h-3 text-[#A9A7FF]" /> 10:00 mins
+          <div className="bg-[#101C2C] p-2.5 rounded-lg border border-white/5">
+            <span className="text-[10px] block text-[#8DC2FF]/70">Execution Deadline</span>
+            <span className="text-[#F3F6FF] font-bold flex items-center gap-1">
+              <Clock className="w-3 h-3 text-[#8DC2FF]" /> 10:00 mins
             </span>
           </div>
 
-          <div className="bg-[#0B0B14] p-2.5 rounded-lg border border-white/5">
-            <span className="text-[10px] block text-[#A5A5B8]">Maximum Slippage</span>
-            <span className="text-white font-bold flex items-center gap-1">
-              <Percent className="w-3 h-3 text-[#1053D4]" /> 0.5% Limit
+          <div className="bg-[#101C2C] p-2.5 rounded-lg border border-white/5">
+            <span className="text-[10px] block text-[#8DC2FF]/70">Maximum Slippage</span>
+            <span className="text-[#F3F6FF] font-bold flex items-center gap-1">
+              <Percent className="w-3 h-3 text-[#8DC2FF]" /> 0.5% Limit
             </span>
           </div>
         </div>
@@ -201,7 +201,7 @@ export const IntentForm: React.FC<IntentFormProps> = ({
       <button
         type="submit"
         disabled={disabled}
-        className="w-full py-3.5 rounded-xl bg-[#1053D4] hover:bg-blue-600 font-mono text-sm font-bold text-white shadow-lg shadow-[#1053D4]/20 flex items-center justify-center gap-2 transition-all disabled:opacity-50 cursor-pointer"
+        className="w-full py-3.5 rounded-xl bg-[#2F6690] hover:bg-[#3D7BAA] font-mono text-sm font-bold text-[#F3F6FF] shadow-lg shadow-[#2F6690]/30 flex items-center justify-center gap-2 transition-all disabled:opacity-50 cursor-pointer"
       >
         <Send className="w-4 h-4" />
         <span>Broadcast Intent to Solver Mesh</span>

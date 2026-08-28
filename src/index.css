@@ -5,89 +5,87 @@
   line-height: 1.5;
   font-weight: 400;
   color-scheme: dark;
-  color: #FFFFFF;
-  background-color: #0B0B14;
+  color: #F3F6FF;
+  background-color: #101C2C;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  /* Strict Brand Palette */
-  --color-bg: #0B0B14;
-  --color-surface: #151526;
-  --color-elevated: #20203A;
-  --color-primary: #1053D4;
-  --color-purple: #7171DE;
-  --color-lime: #D1FE5D;
-  --color-orange: #FF7032;
-  --color-lavender: #A9A7FF;
-  --color-muted: #A5A5B8;
-  --color-white: #FFFFFF;
+  /* Midnight Harbor Palette */
+  --color-midnight: #101C2C; /* Midnight Harbor (Background) */
+  --color-deep-navy: #162A46; /* Deep Navy (Surface Cards) */
+  --color-harbor-blue: #2F6690; /* Harbor Blue (Primary) */
+  --color-ice-blue: #8DC2FF; /* Ice Blue (Secondary / Soft Blue) */
+  --color-sunny-herb: #CEF26D; /* Sunny Herb (Accent / Success / Cost) */
+  --color-moon-tint: #F3F6FF; /* Moon Tint (Text / Highlight) */
+  --color-alert: #FF7032; /* Alert Orange */
 }
 
 body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  background: #0B0B14;
-  color: #FFFFFF;
+  background: #101C2C;
+  color: #F3F6FF;
 }
 
 /* Custom Surface Card Styling */
 .surface-card {
-  background: #151526;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: #162A46;
+  border: 1px solid rgba(141, 194, 255, 0.12);
   border-radius: 1rem;
 }
 
 .surface-elevated {
-  background: #20203A;
-  border: 1px solid rgba(169, 167, 255, 0.2);
+  background: #1A3152;
+  border: 1px solid rgba(141, 194, 255, 0.25);
   border-radius: 1rem;
 }
 
 .glass-panel {
-  background: #151526;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+  background: #162A46;
+  border: 1px solid rgba(141, 194, 255, 0.12);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.35);
   border-radius: 1rem;
 }
 
 .glass-panel-glow {
-  background: #20203A;
-  border: 1px solid rgba(113, 113, 222, 0.3);
-  box-shadow: 0 0 25px rgba(113, 113, 222, 0.15);
+  background: #1A3152;
+  border: 1px solid rgba(141, 194, 255, 0.35);
+  box-shadow: 0 0 25px rgba(47, 102, 144, 0.25);
   border-radius: 1rem;
 }
 
-/* Brand Colors */
-.text-cost { color: #D1FE5D; }
-.bg-cost { background-color: #D1FE5D; }
-.border-cost { border-color: #D1FE5D; }
+/* Semantic Brand Colors mapped to Palette */
+.text-cost { color: #CEF26D; }
+.bg-cost { background-color: #CEF26D; }
+.border-cost { border-color: #CEF26D; }
 
-.text-speed { color: #1053D4; }
-.bg-speed { background-color: #1053D4; }
-.border-speed { border-color: #1053D4; }
+.text-speed { color: #8DC2FF; }
+.bg-speed { background-color: #8DC2FF; }
+.border-speed { border-color: #8DC2FF; }
 
-.text-safety { color: #7171DE; }
-.bg-safety { background-color: #7171DE; }
-.border-safety { border-color: #7171DE; }
+.text-safety { color: #2F6690; }
+.bg-safety { background-color: #2F6690; }
+.border-safety { border-color: #2F6690; }
 
 .text-alert { color: #FF7032; }
 .bg-alert { background-color: #FF7032; }
 .border-alert { border-color: #FF7032; }
 
-.text-lavender { color: #A9A7FF; }
-.bg-lavender { background-color: #A9A7FF; }
-.border-lavender { border-color: #A9A7FF; }
+.text-lavender { color: #8DC2FF; }
+.bg-lavender { background-color: #8DC2FF; }
+.border-lavender { border-color: #8DC2FF; }
 
-.text-muted { color: #A5A5B8; }
+.text-moon { color: #F3F6FF; }
+.text-muted { color: #8DC2FF; opacity: 0.75; }
 
-/* Custom Sliders */
+/* Custom Sliders with Palette Colors */
 input[type="range"] {
   -webkit-appearance: none;
   appearance: none;
-  background: #20203A;
+  background: #101C2C;
   border-radius: 9999px;
   height: 6px;
 }
@@ -108,16 +106,16 @@ input[type="range"]::-webkit-slider-thumb:hover {
 }
 
 .slider-cost::-webkit-slider-thumb {
-  background: #D1FE5D;
-  box-shadow: 0 0 10px rgba(209, 254, 93, 0.6);
+  background: #CEF26D;
+  box-shadow: 0 0 10px rgba(206, 242, 109, 0.6);
 }
 
 .slider-speed::-webkit-slider-thumb {
-  background: #1053D4;
-  box-shadow: 0 0 10px rgba(16, 83, 212, 0.6);
+  background: #8DC2FF;
+  box-shadow: 0 0 10px rgba(141, 194, 255, 0.6);
 }
 
 .slider-safety::-webkit-slider-thumb {
-  background: #7171DE;
-  box-shadow: 0 0 10px rgba(113, 113, 222, 0.6);
+  background: #2F6690;
+  box-shadow: 0 0 10px rgba(47, 102, 144, 0.8);
 }

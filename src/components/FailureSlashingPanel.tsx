@@ -15,7 +15,7 @@ export const FailureSlashingPanel: React.FC<FailureSlashingPanelProps> = ({
   onReset,
 }) => {
   return (
-    <div className="bg-[#151526] border-2 border-[#FF7032] rounded-2xl p-6 space-y-6 shadow-2xl shadow-[#FF7032]/10 animate-in fade-in zoom-in duration-300">
+    <div className="bg-[#162A46] border-2 border-[#FF7032] rounded-2xl p-6 space-y-6 shadow-2xl shadow-[#FF7032]/10 animate-in fade-in zoom-in duration-300">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-4">
         <div className="flex items-center gap-3">
@@ -31,7 +31,7 @@ export const FailureSlashingPanel: React.FC<FailureSlashingPanelProps> = ({
                 Full Bond Slashed
               </span>
             </div>
-            <h3 className="text-lg font-bold text-white font-mono mt-0.5">
+            <h3 className="text-lg font-bold text-[#F3F6FF] font-mono mt-0.5">
               ❌ EXECUTION FAILED — SOLVER COLLATERAL SLASHED
             </h3>
           </div>
@@ -41,7 +41,7 @@ export const FailureSlashingPanel: React.FC<FailureSlashingPanelProps> = ({
           <button
             type="button"
             onClick={onReset}
-            className="px-3.5 py-2 rounded-xl bg-[#20203A] hover:bg-[#20203A]/80 border border-white/10 text-xs font-mono text-[#A9A7FF] flex items-center gap-1.5 transition-all self-start sm:self-auto cursor-pointer"
+            className="px-3.5 py-2 rounded-xl bg-[#1A3152] hover:bg-[#1A3152]/80 border border-[#8DC2FF]/20 text-xs font-mono text-[#8DC2FF] flex items-center gap-1.5 transition-all self-start sm:self-auto cursor-pointer"
           >
             <RefreshCw className="w-3.5 h-3.5" />
             <span>Reset Demo</span>
@@ -50,36 +50,36 @@ export const FailureSlashingPanel: React.FC<FailureSlashingPanelProps> = ({
       </div>
 
       {/* Visual Transition Sequence */}
-      <div className="bg-[#0B0B14] p-3.5 rounded-xl border border-white/5 flex flex-wrap items-center justify-center gap-2 text-xs font-mono">
-        <span className="text-[#A5A5B8]">EXECUTING</span>
-        <ArrowRight className="w-3.5 h-3.5 text-[#A5A5B8]" />
+      <div className="bg-[#101C2C] p-3.5 rounded-xl border border-white/5 flex flex-wrap items-center justify-center gap-2 text-xs font-mono">
+        <span className="text-[#8DC2FF]/70">EXECUTING</span>
+        <ArrowRight className="w-3.5 h-3.5 text-[#8DC2FF]/70" />
         <span className="text-[#FF7032] font-bold">FAILED</span>
-        <ArrowRight className="w-3.5 h-3.5 text-[#A5A5B8]" />
+        <ArrowRight className="w-3.5 h-3.5 text-[#8DC2FF]/70" />
         <span className="text-[#FF7032] font-bold">BOND SLASHED</span>
-        <ArrowRight className="w-3.5 h-3.5 text-[#A5A5B8]" />
-        <span className="text-[#D1FE5D] font-bold">USER REFUNDED</span>
+        <ArrowRight className="w-3.5 h-3.5 text-[#8DC2FF]/70" />
+        <span className="text-[#CEF26D] font-bold">USER REFUNDED</span>
       </div>
 
       {/* Reason Box */}
-      <div className="bg-[#20203A] p-3.5 rounded-xl border border-white/10 text-xs font-mono space-y-1">
-        <span className="text-[10px] text-[#A5A5B8] uppercase block">Failure Reason:</span>
-        <p className="text-white font-sans">
-          {solverName} missed the destination execution deadline (Timeout error on Solana SVM leg). Automatic slashing triggered by protocol smart contract.
+      <div className="bg-[#1A3152] p-3.5 rounded-xl border border-white/10 text-xs font-mono space-y-1">
+        <span className="text-[10px] text-[#8DC2FF]/70 uppercase block">Failure Reason:</span>
+        <p className="text-[#F3F6FF] font-sans">
+          {solverName} missed destination execution deadline (Timeout error on Solana SVM leg). Automatic slashing triggered by protocol smart contract.
         </p>
       </div>
 
       {/* 3 Protection Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 font-mono text-xs">
         {/* Solver Collateral Slashed */}
-        <div className="bg-[#0B0B14] p-4 rounded-xl border border-[#FF7032]/40 space-y-2">
+        <div className="bg-[#101C2C] p-4 rounded-xl border border-[#FF7032]/40 space-y-2">
           <div className="flex items-center gap-2 text-[#FF7032] font-bold text-[11px] border-b border-white/5 pb-1.5">
             <AlertTriangle className="w-4 h-4" />
             <span>SOLVER COLLATERAL</span>
           </div>
-          <div className="space-y-1 text-[#A5A5B8]">
+          <div className="space-y-1 text-[#8DC2FF]/70">
             <div className="flex justify-between">
               <span>Bond Posted:</span>
-              <span className="text-white">${bondAmountUsd} USDC</span>
+              <span className="text-[#F3F6FF]">${bondAmountUsd} USDC</span>
             </div>
             <div className="flex justify-between">
               <span>Bond Slashed:</span>
@@ -89,21 +89,21 @@ export const FailureSlashingPanel: React.FC<FailureSlashingPanelProps> = ({
         </div>
 
         {/* User Protection */}
-        <div className="bg-[#0B0B14] p-4 rounded-xl border border-[#D1FE5D]/40 space-y-2">
-          <div className="flex items-center gap-2 text-[#D1FE5D] font-bold text-[11px] border-b border-white/5 pb-1.5">
+        <div className="bg-[#101C2C] p-4 rounded-xl border border-[#CEF26D]/40 space-y-2">
+          <div className="flex items-center gap-2 text-[#CEF26D] font-bold text-[11px] border-b border-white/5 pb-1.5">
             <ShieldCheck className="w-4 h-4" />
             <span>USER PROTECTION</span>
           </div>
-          <div className="space-y-1 text-[#A5A5B8] text-[11px]">
-            <div className="flex items-center gap-1.5 text-[#D1FE5D]">
+          <div className="space-y-1 text-[#8DC2FF]/70 text-[11px]">
+            <div className="flex items-center gap-1.5 text-[#CEF26D]">
               <span>✓</span>
               <span>Escrow funds protected (${escrowAmountUsd})</span>
             </div>
-            <div className="flex items-center gap-1.5 text-[#D1FE5D]">
+            <div className="flex items-center gap-1.5 text-[#CEF26D]">
               <span>✓</span>
               <span>Automatic full refund initiated</span>
             </div>
-            <div className="flex items-center gap-1.5 text-[#D1FE5D]">
+            <div className="flex items-center gap-1.5 text-[#CEF26D]">
               <span>✓</span>
               <span>Compensation fee transferred</span>
             </div>
@@ -111,12 +111,12 @@ export const FailureSlashingPanel: React.FC<FailureSlashingPanelProps> = ({
         </div>
 
         {/* Solver Status Penalty */}
-        <div className="bg-[#0B0B14] p-4 rounded-xl border border-white/10 space-y-2">
-          <div className="flex items-center gap-2 text-[#7171DE] font-bold text-[11px] border-b border-white/5 pb-1.5">
+        <div className="bg-[#101C2C] p-4 rounded-xl border border-white/10 space-y-2">
+          <div className="flex items-center gap-2 text-[#8DC2FF] font-bold text-[11px] border-b border-white/5 pb-1.5">
             <UserCheck className="w-4 h-4" />
             <span>SOLVER STATUS</span>
           </div>
-          <div className="space-y-1 text-[#A5A5B8] text-[11px]">
+          <div className="space-y-1 text-[#8DC2FF]/70 text-[11px]">
             <div>• Reputation score deducted (-15 pts)</div>
             <div>• Solver node flagged for failure</div>
             <div>• Collateral reserve re-staked</div>

@@ -1,16 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { web3Provider, GANACHE_CHAIN_ID, GANACHE_CHAIN_ID_ALT } from '../services/web3Provider';
+import { Layers, Wallet, Plug, History, AlertTriangle, UserCheck, Cpu } from 'lucide-react';
+import { web3Provider } from '../services/web3Provider';
 import type { WalletState } from '../services/web3Provider';
+import type { ContractSimulationState } from '../services/types';
 import { GanacheChainWidget } from './GanacheChainWidget';
-import { Layers, Cpu, Wallet, History, Plug, AlertTriangle, UserCheck } from 'lucide-react';
 
 interface HeaderProps {
-  contractState: {
-    escrowLockedUsd: number;
-    solverBondLockedUsd: number;
-    slashedTotalUsd: number;
-    settledTotalUsd: number;
-  };
+  contractState: ContractSimulationState;
   onOpenHistory: () => void;
   historyCount: number;
   viewMode: 'user' | 'solver';
@@ -25,18 +21,22 @@ export const Header: React.FC<HeaderProps> = ({
   onToggleViewMode,
 }) => {
   const [wallet, setWallet] = useState<WalletState>(web3Provider.getWalletState());
-  const [isSwitching, setIsSwitching] = useState<boolean>(false);
+  const [isSwitching, setIsSwitching] = useState(false);
 
   useEffect(() => {
-    const unsubscribe = web3Provider.subscribe((updatedState) => {
-      setWallet(updatedState);
+    const unsubscribe = web3Provider.subscribe((updated) => {
+      setWallet(updated);
     });
     return unsubscribe;
   }, []);
 
   const handleToggleWallet = async () => {
-    const updated = await web3Provider.connectWallet();
-    setWallet(updated);
+    if (wallet.isConnected) {
+      // Disconnect fallback
+      setWallet((prev) => ({ ...prev, isConnected: false }));
+    } else {
+      await web3Provider.connectWallet();
+    }
   };
 
   const handleSwitchNetwork = async () => {
@@ -45,16 +45,15 @@ export const Header: React.FC<HeaderProps> = ({
     setIsSwitching(false);
   };
 
-  const isGanache = wallet.chainId === GANACHE_CHAIN_ID || wallet.chainId === GANACHE_CHAIN_ID_ALT;
-  const isWrongNetwork = wallet.isConnected && !isGanache && wallet.chainId !== 11155111;
+  const isWrongNetwork = wallet.isConnected && !wallet.isGanache;
 
   return (
     <div className="sticky top-0 z-50">
       {/* Wrong Network Warning Banner */}
       {isWrongNetwork && (
-        <div className="bg-amber-950 border-b border-amber-800 px-4 py-2 text-xs font-mono flex items-center justify-between text-amber-200">
+        <div className="bg-[#FF7032]/20 border-b border-[#FF7032] px-4 py-2 text-xs font-mono flex items-center justify-between text-[#FF7032]">
           <div className="flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
+            <AlertTriangle className="w-4 h-4 text-[#FF7032] shrink-0" />
             <span>Wrong Network Detected (Chain ID #{wallet.chainId}). Please switch to Ganache Localnet or Sepolia.</span>
           </div>
 
@@ -62,7 +61,7 @@ export const Header: React.FC<HeaderProps> = ({
             type="button"
             onClick={handleSwitchNetwork}
             disabled={isSwitching}
-            className="px-3 py-1 rounded bg-amber-600 hover:bg-amber-500 text-white font-bold text-[11px] transition-all shrink-0"
+            className="px-3 py-1 rounded bg-[#FF7032] hover:bg-[#FF7032]/80 text-white font-bold text-[11px] transition-all shrink-0 cursor-pointer"
           >
             {isSwitching ? 'Switching...' : 'Switch to Ganache (1337)'}
           </button>
@@ -70,34 +69,34 @@ export const Header: React.FC<HeaderProps> = ({
       )}
 
       {/* Main Header */}
-      <header className="border-b border-indigo-900/40 bg-slate-950/80 backdrop-blur-md">
+      <header className="border-b border-[#8DC2FF]/20 bg-[#101C2C]/90 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
           
           {/* Brand Logo & Title */}
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl gradient-bg flex items-center justify-center shadow-lg shadow-indigo-500/20">
-              <Layers className="w-6 h-6 text-white" />
+            <div className="w-10 h-10 rounded-xl bg-[#1A3152] border border-[#2F6690] flex items-center justify-center shadow-lg shadow-[#2F6690]/30">
+              <Layers className="w-6 h-6 text-[#8DC2FF]" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-xl font-bold tracking-tight text-white font-mono">ZYNTEK</h1>
-                <span className="text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded-full bg-indigo-950 text-indigo-400 border border-indigo-800/60">
+                <h1 className="text-xl font-bold tracking-tight text-[#F3F6FF] font-mono">ZYNTEK</h1>
+                <span className="text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded-full bg-[#1A3152] text-[#8DC2FF] border border-[#8DC2FF]/30">
                   {wallet.networkName}
                 </span>
               </div>
-              <p className="text-xs text-slate-400">Decentralized Cross-Chain Intent Solver Network</p>
+              <p className="text-xs text-[#8DC2FF]/80">Decentralized Cross-Chain Intent Solver Network</p>
             </div>
           </div>
 
           {/* User View vs. Solver Dashboard Mode Switcher */}
-          <div className="flex items-center p-1 rounded-xl bg-slate-900 border border-slate-800 font-mono text-xs">
+          <div className="flex items-center p-1 rounded-xl bg-[#162A46] border border-[#8DC2FF]/20 font-mono text-xs">
             <button
               type="button"
               onClick={() => onToggleViewMode('user')}
-              className={`px-3 py-1.5 rounded-lg font-bold transition-all flex items-center gap-1.5 ${
+              className={`px-3 py-1.5 rounded-lg font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
                 viewMode === 'user'
-                  ? 'bg-indigo-600 text-white shadow-md'
-                  : 'text-slate-400 hover:text-slate-200'
+                  ? 'bg-[#2F6690] text-[#F3F6FF] shadow-md'
+                  : 'text-[#8DC2FF]/70 hover:text-[#F3F6FF]'
               }`}
             >
               <Wallet className="w-3.5 h-3.5" />
@@ -107,10 +106,10 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               type="button"
               onClick={() => onToggleViewMode('solver')}
-              className={`px-3 py-1.5 rounded-lg font-bold transition-all flex items-center gap-1.5 ${
+              className={`px-3 py-1.5 rounded-lg font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
                 viewMode === 'solver'
-                  ? 'bg-cyan-600 text-white shadow-md'
-                  : 'text-slate-400 hover:text-slate-200'
+                  ? 'bg-[#2F6690] text-[#F3F6FF] shadow-md'
+                  : 'text-[#8DC2FF]/70 hover:text-[#F3F6FF]'
               }`}
             >
               <UserCheck className="w-3.5 h-3.5" />
@@ -121,16 +120,16 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Live Network Metrics & Wallet Buttons */}
           <div className="flex items-center gap-3 font-mono">
             <div className="hidden lg:flex items-center gap-4 text-xs">
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900/80 border border-slate-800">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-                <span className="text-slate-400">Escrow TVL:</span>
-                <span className="text-emerald-400 font-bold">${contractState.escrowLockedUsd.toLocaleString()}</span>
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#162A46] border border-[#8DC2FF]/20">
+                <span className="w-2 h-2 rounded-full bg-[#CEF26D] animate-ping" />
+                <span className="text-[#8DC2FF]/70">Escrow TVL:</span>
+                <span className="text-[#CEF26D] font-bold">${contractState.escrowLockedUsd.toLocaleString()}</span>
               </div>
 
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900/80 border border-slate-800">
-                <Cpu className="w-3.5 h-3.5 text-cyan-400" />
-                <span className="text-slate-400">Bonds:</span>
-                <span className="text-cyan-400 font-bold">${contractState.solverBondLockedUsd.toLocaleString()}</span>
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#162A46] border border-[#8DC2FF]/20">
+                <Cpu className="w-3.5 h-3.5 text-[#8DC2FF]" />
+                <span className="text-[#8DC2FF]/70">Bonds:</span>
+                <span className="text-[#8DC2FF] font-bold">${contractState.solverBondLockedUsd.toLocaleString()}</span>
               </div>
             </div>
 
@@ -139,12 +138,12 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               type="button"
               onClick={onOpenHistory}
-              className="flex items-center gap-1.5 px-3 py-2 text-xs rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-indigo-300 transition-all"
+              className="flex items-center gap-1.5 px-3 py-2 text-xs rounded-lg bg-[#162A46] hover:bg-[#1A3152] border border-[#8DC2FF]/20 text-[#8DC2FF] transition-all cursor-pointer"
             >
-              <History className="w-3.5 h-3.5 text-indigo-400" />
+              <History className="w-3.5 h-3.5 text-[#8DC2FF]" />
               <span>My Intents</span>
               {historyCount > 0 && (
-                <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-indigo-600 text-white font-bold">
+                <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-[#2F6690] text-[#F3F6FF] font-bold">
                   {historyCount}
                 </span>
               )}
@@ -153,10 +152,10 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               type="button"
               onClick={handleToggleWallet}
-              className={`flex items-center gap-2 px-4 py-2 text-xs font-medium rounded-lg transition-all shadow-md ${
+              className={`flex items-center gap-2 px-4 py-2 text-xs font-medium rounded-lg transition-all shadow-md cursor-pointer ${
                 wallet.isConnected
-                  ? 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-indigo-600/30'
-                  : 'bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700'
+                  ? 'bg-[#2F6690] hover:bg-[#3D7BAA] text-[#F3F6FF] shadow-[#2F6690]/30'
+                  : 'bg-[#162A46] hover:bg-[#1A3152] text-[#8DC2FF] border border-[#8DC2FF]/30'
               }`}
             >
               {wallet.isConnected ? <Wallet className="w-3.5 h-3.5" /> : <Plug className="w-3.5 h-3.5" />}

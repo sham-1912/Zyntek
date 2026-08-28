@@ -4,6 +4,13 @@ export interface PrioritySliders {
   safety: number; // 0-100%
 }
 
+export interface ContractSimulationState {
+  escrowLockedUsd: number;
+  solverBondLockedUsd: number;
+  slashedTotalUsd: number;
+  settledTotalUsd: number;
+}
+
 export type ChainId = 'ethereum' | 'arbitrum' | 'optimism' | 'solana' | 'polygon';
 
 export interface UserIntent {

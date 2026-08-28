@@ -95,7 +95,7 @@ export default function App() {
       const recalculated = recalculateAllScores(visibleBids, newSliders);
       const sorted = [...recalculated].sort((a, b) => b.finalScore - a.finalScore);
       setVisibleBids(sorted);
-      addLog(`Dynamic scoring updated: Cost ${newSliders.cost}%, Speed ${newSliders.speed}%, Safety ${newSliders.safety}%`, 'info');
+      addLog(`Dynamic weights adjusted: Cost ${newSliders.cost}%, Speed ${newSliders.speed}%, Safety ${newSliders.safety}%`, 'info');
     }
   };
 
@@ -140,13 +140,13 @@ export default function App() {
     // 1. Stage: INTENT
     setStage('intent');
     setLifecycleStep('intent_submitted');
-    addLog(`Intent #${intent.intentId} broadcast: ${intent.sourceAmount} USDC (EVM) → USDC (Solana)`, 'info');
+    addLog(`Intent #${intent.intentId} broadcast: ${intent.sourceAmount} USDC (Ethereum) → USDC (Solana)`, 'info');
 
     // 2. Stage: ESCROW (t = 1.2s)
     addTimeout(() => {
       setStage('escrow');
       setLifecycleStep('funds_locked');
-      addLog(`[EVM EscrowVault.sol] Locked $${intent.sourceAmount} USDC deposit`, 'success');
+      addLog(`[EVM EscrowVault.sol] Locked $${intent.sourceAmount} USDC deposit on Ethereum`, 'success');
     }, 1200);
 
     // 3. Stage: SOLVER AUCTION (t = 2.4s)
@@ -154,7 +154,7 @@ export default function App() {
       setStage('auction');
       setIsBroadcasting(true);
       setArrivalMessage('Searching for solvers across decentralized mesh...');
-      addLog('Solver Auction opened: Bids broadcast across mesh', 'info');
+      addLog('Solver Auction opened: Live competitive bidding started', 'info');
 
       // Staggered Solver 01 Arrival
       addTimeout(() => {
@@ -205,7 +205,7 @@ export default function App() {
   // Auction close & winner handling
   const handleAuctionClose = (scenario: DemoScenarioType, scoredPool: SolverBid[]) => {
     setIsAuctionClosed(true);
-    setArrivalMessage('Auction Closed: Bidding finished.');
+    setArrivalMessage('Auction Closed: Bidding window finalized.');
     addLog('Solver Auction closed: Final rankings locked', 'success');
 
     if (scenario === 'ambiguous') {
@@ -251,7 +251,7 @@ export default function App() {
     if (forceFailure) {
       addTimeout(() => {
         setIsFailed(true);
-        setFailureReason('Solver missed execution deadline (Timeout on Solana SVM leg).');
+        setFailureReason('Solver missed destination execution deadline (Timeout on Solana SVM leg).');
         setStage('slashed_refunded');
         addLog('❌ EXECUTION FAILED: Solver timeout error detected on Solana SVM', 'error');
         addLog('⚡ Full $500 Solver Collateral Bond Slashed via SolverBonding.sol', 'error');
@@ -372,7 +372,7 @@ export default function App() {
   const winningSolver = visibleBids.find((b) => b.solverId === winningBidId);
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#0B0B14] text-white relative font-sans">
+    <div className="min-h-screen flex flex-col bg-[#101C2C] text-[#F3F6FF] relative font-sans">
       <Header
         contractState={contractState}
         onOpenHistory={() => setIsHistoryDrawerOpen(true)}
@@ -386,7 +386,6 @@ export default function App() {
         <DemoScenarioBar
           activeScenario={activeScenario}
           onSelectScenario={handleSelectScenario}
-          isRunning={stage !== 'idle' && stage !== 'settlement' && !isFailed}
         />
 
         {/* Module 6: Cross-Chain Topology Visualizer */}
