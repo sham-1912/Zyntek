@@ -8,6 +8,12 @@ export const ZYNTEK_EIP712_DOMAIN: Eip712Domain = {
 };
 
 export const EIP712_TYPES = {
+  EIP712Domain: [
+    { name: 'name', type: 'string' },
+    { name: 'version', type: 'string' },
+    { name: 'chainId', type: 'uint256' },
+    { name: 'verifyingContract', type: 'address' },
+  ],
   Intent: [
     { name: 'intentId', type: 'string' },
     { name: 'sourceChain', type: 'string' },
@@ -22,23 +28,27 @@ export const EIP712_TYPES = {
 };
 
 export function getEip712TypedData(intent: UserIntent, activeChainId?: number) {
+  const messageData = {
+    intentId: intent.intentId,
+    sourceChain: intent.sourceChain,
+    sourceAsset: intent.sourceAsset,
+    sourceAmount: Math.round(intent.sourceAmount * 1e6), // USDC 6 decimals
+    destinationChain: intent.destinationChain,
+    destinationAsset: intent.destinationAsset,
+    minAcceptableOutput: Math.round(intent.minAcceptableOutput * 1e6),
+    deadlineMinutes: intent.deadlineMinutes,
+    timestamp: intent.timestamp,
+  };
+
   return {
     domain: {
       ...ZYNTEK_EIP712_DOMAIN,
       chainId: activeChainId || ZYNTEK_EIP712_DOMAIN.chainId,
     },
     types: EIP712_TYPES,
-    value: {
-      intentId: intent.intentId,
-      sourceChain: intent.sourceChain,
-      sourceAsset: intent.sourceAsset,
-      sourceAmount: Math.round(intent.sourceAmount * 1e6), // USDC 6 decimals
-      destinationChain: intent.destinationChain,
-      destinationAsset: intent.destinationAsset,
-      minAcceptableOutput: Math.round(intent.minAcceptableOutput * 1e6),
-      deadlineMinutes: intent.deadlineMinutes,
-      timestamp: intent.timestamp,
-    },
+    primaryType: 'Intent',
+    message: messageData,
+    value: messageData,
   };
 }
 
