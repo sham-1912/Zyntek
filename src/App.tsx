@@ -149,48 +149,48 @@ export default function App() {
       });
     }
 
-    // 1. Stage: INTENT
+    // 1. Stage: INTENT (t = 0.0s)
     setStage('intent');
     setLifecycleStep('intent_submitted');
     addLog(`INTENT BROADCAST: ${intent.sourceAmount} USDC Ethereum → Solana USDC (#INT-8492)`, 'info');
 
-    // 2. Stage: ESCROW (t = 1.2s)
+    // 2. Stage: ESCROW LOCKED (t = +1.8s)
     addTimeout(() => {
       setStage('escrow');
       setLifecycleStep('funds_locked');
       const b = ganacheLedger.pushIntentTransaction('lockEscrow', intent.intentId, intent.sourceAmount);
       addLog(`[EVM EscrowVault.sol] Locked $${intent.sourceAmount} USDC deposit in Block #${b.number}`, 'success');
-    }, 1200);
+    }, 1800);
 
-    // 3. Stage: SOLVER AUCTION (t = 2.4s) — 3 Registered Solvers
+    // 3. Stage: SOLVER AUCTION & ASYNCHRONOUS BIDDING (t = +4.2s) — gives judges ample time on Pipeline
     addTimeout(() => {
       setStage('auction');
       setIsBroadcasting(true);
       setArrivalMessage('Searching for registered solvers across decentralized mesh...');
       addLog('SOLVER AUCTION OPEN: 3 registered solvers competing', 'info');
 
-      // Staggered Solver B Arrival
+      // Staggered Solver B Arrival (t = +1.5s into auction)
       addTimeout(() => {
         setIsBroadcasting(false);
         setArrivalMessage('✓ Solver B connected (Balanced Executor)');
         setVisibleBids([scoredPool[0]]);
         addLog('SOLVER B (Balanced Executor) submitted bid: Output $' + scoredPool[0].expectedOutput, 'info');
-      }, 1000);
+      }, 1500);
 
-      // Staggered Solver A Arrival
+      // Staggered Solver A Arrival (t = +3.2s into auction)
       addTimeout(() => {
         setArrivalMessage('✓ Solver A submitted bid (Cost Optimizer)');
         const currentPool = [scoredPool[0], scoredPool[1]];
         setVisibleBids(recalculateAllScores(currentPool, sliders).sort((a, b) => b.finalScore - a.finalScore));
         addLog('SOLVER A (Cost Optimizer) submitted bid: Lowest fee route', 'info');
-      }, 2200);
+      }, 3200);
 
-      // Staggered Solver C Arrival
+      // Staggered Solver C Arrival (t = +5.0s into auction)
       addTimeout(() => {
         setArrivalMessage('✓ Solver C submitted bid (Speed Specialist)');
         setVisibleBids(recalculateAllScores(scoredPool, sliders).sort((a, b) => b.finalScore - a.finalScore));
         addLog('SOLVER C (Speed Specialist) submitted bid: 28.4s ETA route', 'info');
-      }, 3400);
+      }, 5000);
 
       // Auction Countdown: 10s down to 0
       let timerVal = 10;
@@ -204,7 +204,7 @@ export default function App() {
         }
       }, 1000);
       demoTimeoutsRef.current.push(interval as unknown as NodeJS.Timeout);
-    }, 2400);
+    }, 4200);
   };
 
   // Auction close & winner handling
@@ -230,7 +230,7 @@ export default function App() {
     proceedWithSelectedSolver(scoredPool[0], scenario === 'solver_failure');
   };
 
-  // Execute pipeline stages from Winner selection to Settlement or Failure
+  // Execute pipeline stages with measured, clear pacing so judges see every transition
   const proceedWithSelectedSolver = (winner: SolverBid, forceFailure = false) => {
     setIsSensitiveModalOpen(false);
     setWinningBidId(winner.solverId);
@@ -238,20 +238,20 @@ export default function App() {
     setLifecycleStep('solver_selected');
     addLog(`SOLVER SELECTED: ${winner.solverName} (Final Score: ${winner.finalScore}/100)`, 'success');
 
-    // 4. Solver Bond Posted (t = +1.5s)
+    // 4. Solver Bond Posted (t = +2.5s)
     addTimeout(() => {
       setStage('commitment');
       setLifecycleStep('bond_posted');
       const b = ganacheLedger.pushIntentTransaction('commitBond', currentIntent ? currentIntent.intentId : '0x0', winner.collateralOfferedUsd);
       addLog(`BOND POSTED: [SolverBonding.sol] Solver locked $${winner.collateralOfferedUsd} in Block #${b.number}`, 'success');
-    }, 1500);
+    }, 2500);
 
-    // 5. Cross-Chain Execution on Solana (t = +3.0s)
+    // 5. Cross-Chain Execution on Solana (t = +5.0s)
     addTimeout(() => {
       setStage('execution');
       setLifecycleStep('cross_chain_execution');
       addLog('EXECUTION STARTED: Solana SVM private relayer transaction dispatched', 'info');
-    }, 3000);
+    }, 5000);
 
     // Scenario: Solver Failure (Timeout & Bond Slashing)
     if (forceFailure) {
@@ -263,17 +263,17 @@ export default function App() {
         addLog('❌ SOLVER FAILURE: Execution deadline exceeded on Solana SVM', 'error');
         addLog(`⚡ FULL BOND SLASHED: $500 collateral confiscated in Block #${b.number}`, 'error');
         addLog('✓ USER PROTECTED: $500 escrow 100% refunded to user account', 'success');
-      }, 5000);
+      }, 7500);
       return;
     }
 
-    // 6. Destination Delivery Confirmed (t = +5.0s)
+    // 6. Destination Delivery Confirmed (t = +7.5s)
     addTimeout(() => {
       setLifecycleStep('destination_confirmed');
       addLog('DELIVERY CONFIRMED: Solana transaction confirmed in Slot #2847192', 'success');
-    }, 5000);
+    }, 7500);
 
-    // 7. Verification Window / Proof Attestation (t = +6.5s)
+    // 7. Verification Window / Proof Attestation (t = +10.0s)
     addTimeout(() => {
       setStage('verifying');
       setLifecycleStep('verification');
@@ -296,7 +296,7 @@ export default function App() {
         }
       }, 1000);
       demoTimeoutsRef.current.push(vInterval as unknown as NodeJS.Timeout);
-    }, 6500);
+    }, 10000);
   };
 
   // 8. Settlement Finalized
