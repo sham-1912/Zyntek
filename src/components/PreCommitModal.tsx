@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import type { UserIntent } from '../services/types';
 import { getEip712TypedData } from '../services/eip712Service';
 import { web3Provider } from '../services/web3Provider';
+import { sendDirectGanacheTransaction } from '../services/ganacheRpc';
 import { Lock, ShieldCheck, ArrowRight, Wallet, X, Loader2, FileCode, CheckCircle2 } from 'lucide-react';
 
 interface PreCommitModalProps {
@@ -23,7 +24,8 @@ export const PreCommitModal: React.FC<PreCommitModalProps> = ({ isOpen, intent, 
 
   const handleApproveUsdc = async () => {
     setIsApproving(true);
-    await new Promise((resolve) => setTimeout(resolve, 1200));
+    // Send direct JSON-RPC transaction to Ganache to mine Step 1 Approval block!
+    await sendDirectGanacheTransaction(`approveUSDCAllowance($${intent.sourceAmount})`);
     setIsApproving(false);
     setApprovalDone(true);
   };
@@ -31,6 +33,8 @@ export const PreCommitModal: React.FC<PreCommitModalProps> = ({ isOpen, intent, 
   const handleSignAndDeposit = async () => {
     setIsSigning(true);
     try {
+      // Send direct JSON-RPC transaction to Ganache to mine Step 2 Escrow Deposit block!
+      await sendDirectGanacheTransaction(`lockUserEscrow($${intent.sourceAmount})`);
       const signature = await web3Provider.signEip712TypedData(intent);
       onConfirm(signature);
     } catch (e) {
@@ -111,7 +115,7 @@ export const PreCommitModal: React.FC<PreCommitModalProps> = ({ isOpen, intent, 
               <FileCode className="w-4 h-4 text-indigo-400" />
               <span>EIP-712 Typed Data Message Schema (Upfront Preview):</span>
             </span>
-            <span className="text-[10px] text-slate-500 font-mono">ChainId: {typedData.domain.chainId} (Ganache 5777)</span>
+            <span className="text-[10px] text-slate-500 font-mono">ChainId: {typedData.domain.chainId} (Ganache)</span>
           </div>
 
           <div className="bg-slate-950 p-4 rounded-xl border border-indigo-900/80 text-[11px] space-y-2 text-indigo-200 max-h-44 overflow-y-auto">
@@ -170,7 +174,7 @@ export const PreCommitModal: React.FC<PreCommitModalProps> = ({ isOpen, intent, 
               {isApproving ? (
                 <>
                   <Loader2 className="w-4 h-4 text-white animate-spin" />
-                  <span>Approving USDC in Wallet...</span>
+                  <span>Approving USDC in Ganache...</span>
                 </>
               ) : (
                 <>
@@ -185,7 +189,7 @@ export const PreCommitModal: React.FC<PreCommitModalProps> = ({ isOpen, intent, 
               type="button"
               onClick={handleSignAndDeposit}
               disabled={isSigning}
-              className="flex-1 py-2.5 rounded-lg gradient-bg hover:opacity-90 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/30 transition-all disabled:opacity-60"
+              className="flex-1 py-2.5 rounded-lg gradient-bg hover:opacity-95 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/30 transition-all disabled:opacity-60"
             >
               {isSigning ? (
                 <>
