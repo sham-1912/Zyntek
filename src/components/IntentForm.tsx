@@ -99,7 +99,7 @@ export const IntentForm: React.FC<IntentFormProps> = ({
                   value={sourceAmount}
                   onChange={(e) => onAmountChange(Number(e.target.value))}
                   disabled={disabled}
-                  className="w-24 text-base font-bold font-mono text-[#2B2B2B] bg-[#F7E7B5]/60 border border-[rgba(43,43,43,0.15)] rounded px-2 py-0.5 focus:outline-none focus:border-[#D4A017]"
+                  className="w-28 text-lg sm:text-xl font-bold font-mono text-[#2B2B2B] bg-[#F7E7B5]/60 border border-[rgba(43,43,43,0.15)] rounded px-2.5 py-1 focus:outline-none focus:border-[#D4A017]"
                 />
                 <span className="text-xs font-bold font-mono text-[#2B2B2B]">USDC</span>
               </div>
@@ -124,7 +124,7 @@ export const IntentForm: React.FC<IntentFormProps> = ({
                 Solana
               </span>
               <div className="flex items-center gap-1.5 mt-1 justify-center sm:justify-end">
-                <span className="text-base font-bold font-mono text-[#D4A017]">~{minReceived}</span>
+                <span className="text-lg sm:text-xl font-bold font-mono text-[#D4A017]">~{minReceived}</span>
                 <span className="text-xs font-bold font-mono text-[#2B2B2B]">USDC</span>
               </div>
             </div>
@@ -132,17 +132,17 @@ export const IntentForm: React.FC<IntentFormProps> = ({
 
           {/* Outcome Constraints Grid */}
           <div className="grid grid-cols-3 gap-2 text-xs font-mono">
-            <div className="bg-[#FFFDF5] p-2 rounded-lg border border-[rgba(43,43,43,0.08)] shadow-xs">
+            <div className="bg-[#FFFDF5] p-2.5 rounded-lg border border-[rgba(43,43,43,0.08)] shadow-xs">
               <span className="text-[10px] text-[#5A5A5A] block font-semibold">Min Received</span>
-              <span className="font-bold text-[#2B2B2B] text-xs">≥ ${minReceived} USDC</span>
+              <span className="font-bold text-[#2B2B2B] text-xs sm:text-sm">≥ ${minReceived} USDC</span>
             </div>
-            <div className="bg-[#FFFDF5] p-2 rounded-lg border border-[rgba(43,43,43,0.08)] shadow-xs">
+            <div className="bg-[#FFFDF5] p-2.5 rounded-lg border border-[rgba(43,43,43,0.08)] shadow-xs">
               <span className="text-[10px] text-[#5A5A5A] block font-semibold">Deadline</span>
-              <span className="font-bold text-[#2B2B2B] text-xs">10:00 mins</span>
+              <span className="font-bold text-[#2B2B2B] text-xs sm:text-sm">10:00 mins</span>
             </div>
-            <div className="bg-[#FFFDF5] p-2 rounded-lg border border-[rgba(43,43,43,0.08)] shadow-xs">
+            <div className="bg-[#FFFDF5] p-2.5 rounded-lg border border-[rgba(43,43,43,0.08)] shadow-xs">
               <span className="text-[10px] text-[#5A5A5A] block font-semibold">Max Slippage</span>
-              <span className="font-bold text-[#2B2B2B] text-xs">0.50%</span>
+              <span className="font-bold text-[#2B2B2B] text-xs sm:text-sm">0.50%</span>
             </div>
           </div>
         </div>

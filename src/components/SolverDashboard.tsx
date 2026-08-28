@@ -11,6 +11,8 @@ import {
   Radio,
   Lock,
   FileSearch,
+  Maximize2,
+  Minimize2,
 } from 'lucide-react';
 
 interface SolverDashboardProps {
@@ -125,10 +127,23 @@ const SOLVERS_DATA: SolverDetail[] = [
   },
 ];
 
+const SOLVER_FEED_LOGS = [
+  { time: '10:42:18', text: 'Solver B joined auction #INT-8492 (EVM ⇄ Solana)', type: 'info' },
+  { time: '10:42:19', text: 'Solver A submitted bid ($498.90 output · 52.1s ETA)', type: 'info' },
+  { time: '10:42:19', text: 'Solver B submitted bid ($497.82 output · 42.8s ETA)', type: 'info' },
+  { time: '10:42:20', text: 'Solver C submitted bid ($495.50 output · 28.4s ETA)', type: 'info' },
+  { time: '10:42:22', text: 'Solver B selected as Rank #1 Winner (91.4 Score)', type: 'success' },
+  { time: '10:42:23', text: 'Solver B locked $500 collateral bond in SolverBonding.sol', type: 'success' },
+  { time: '10:42:24', text: 'Atomic SVM Execution route dispatched to Solana Relayer', type: 'info' },
+  { time: '10:42:27', text: 'SVM destination receipt confirmed: Slot #2847192', type: 'success' },
+  { time: '10:42:28', text: 'Groth16 ZK-Proof verified on-chain · Bond returned to Solver B', type: 'success' },
+];
+
 export const SolverDashboard: React.FC<SolverDashboardProps> = () => {
   const [selectedProfile, setSelectedProfile] = useState<SolverDetail | null>(null);
   const [isRiskModalOpen, setIsRiskModalOpen] = useState<boolean>(false);
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState<boolean>(false);
+  const [isExpandedSolverLogs, setIsExpandedSolverLogs] = useState<boolean>(false);
   const [activeChartPoint, setActiveChartPoint] = useState<{ day: string; score: number; note: string }>({
     day: 'Today',
     score: 94.0,
@@ -682,7 +697,7 @@ export const SolverDashboard: React.FC<SolverDashboardProps> = () => {
           </div>
         </div>
 
-        {/* Live Solver Activity Stream */}
+        {/* Live Solver Activity Stream (Enlarged + Expandable) */}
         <div className="lg:col-span-6 glass-card p-6 rounded-2xl border border-[rgba(43,43,43,0.12)] bg-[#FFFDF5] space-y-4 shadow-xs flex flex-col justify-between">
           <div className="flex items-center justify-between border-b border-[rgba(43,43,43,0.08)] pb-3">
             <div className="flex items-center gap-2.5">
@@ -691,21 +706,86 @@ export const SolverDashboard: React.FC<SolverDashboardProps> = () => {
                 Live Solver Activity Stream
               </h3>
             </div>
-            <span className="text-xs font-mono font-bold text-[#607A3A] bg-[#607A3A]/15 px-2.5 py-1 rounded-lg">
-              ● Relayer Stream
-            </span>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setIsExpandedSolverLogs(true)}
+                className="p-1.5 rounded-lg bg-[#FFFDF5] hover:bg-[#F7E7B5] border border-[rgba(43,43,43,0.12)] text-[#2B2B2B] transition-all cursor-pointer shadow-xs"
+                title="Expand live solver terminal"
+              >
+                <Maximize2 className="w-3.5 h-3.5" />
+              </button>
+
+              <span className="text-xs font-mono font-bold text-[#607A3A] bg-[#607A3A]/15 px-2.5 py-1 rounded-lg">
+                ● Relayer Stream
+              </span>
+            </div>
           </div>
 
-          <div className="bg-[#2B2B2B] text-[#FFFDF5] p-3.5 rounded-xl space-y-1.5 font-mono text-xs max-h-48 overflow-y-auto shadow-inner">
-            <div className="text-[11px]"><span className="text-[#F0C94C] font-bold">[10:42:18]</span> Solver B joined auction #INT-8492</div>
-            <div className="text-[11px]"><span className="text-[#F0C94C] font-bold">[10:42:19]</span> Solver A submitted bid ($498.90 output)</div>
-            <div className="text-[11px]"><span className="text-[#F0C94C] font-bold">[10:42:19]</span> Solver B submitted bid ($497.82 output, 42.8s)</div>
-            <div className="text-[11px]"><span className="text-[#F0C94C] font-bold">[10:42:20]</span> Solver C submitted bid ($495.50 output, 28.4s)</div>
-            <div className="text-[11px] text-[#CEF26D]"><span className="text-[#F0C94C] font-bold">[10:42:22]</span> Solver B selected as Rank #1 Winner (91.4 Score)</div>
-            <div className="text-[11px] text-[#CEF26D]"><span className="text-[#F0C94C] font-bold">[10:42:23]</span> Solver B locked $500 bond in SolverBonding.sol</div>
+          <div className="bg-[#2B2B2B] text-[#FFFDF5] p-4 sm:p-5 rounded-2xl border border-black/20 flex-1 min-h-[280px] max-h-[360px] overflow-y-auto space-y-2.5 font-mono text-xs sm:text-[13.5px] shadow-inner leading-relaxed">
+            {SOLVER_FEED_LOGS.map((log, index) => (
+              <div key={index} className="flex items-start gap-2.5">
+                <span className="text-[#F0C94C] text-xs shrink-0 font-bold">[{log.time}]</span>
+                <span className={log.type === 'success' ? 'text-[#CEF26D] font-bold' : 'text-[#FFFDF5]'}>
+                  {log.text}
+                </span>
+              </div>
+            ))}
           </div>
         </div>
       </div>
+
+      {/* Expanded Modal Takeover for Live Solver Activity */}
+      {isExpandedSolverLogs && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#2B2B2B]/75 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-[#2B2B2B] text-[#FFFDF5] border-2 border-[#D4A017] rounded-3xl max-w-4xl w-full p-6 sm:p-8 space-y-5 shadow-2xl font-mono">
+            <div className="flex items-center justify-between border-b border-white/10 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-[#D4A017] text-[#2B2B2B] flex items-center justify-center font-bold">
+                  <Radio className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="text-base sm:text-lg font-bold text-[#F0C94C] font-headline uppercase">
+                    Solver Relayer Network Live Feed
+                  </h3>
+                  <p className="text-xs text-[#FFFDF5]/70">Full asynchronous bid competition & settlement stream</p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsExpandedSolverLogs(false)}
+                className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="bg-black/60 p-5 rounded-2xl border border-white/10 max-h-[60vh] overflow-y-auto space-y-3 text-sm sm:text-base leading-relaxed">
+              {SOLVER_FEED_LOGS.map((log, index) => (
+                <div key={index} className="flex items-start gap-3">
+                  <span className="text-[#F0C94C] text-sm shrink-0 font-bold">[{log.time}]</span>
+                  <span className={log.type === 'success' ? 'text-[#CEF26D] font-bold' : 'text-[#FFFDF5]'}>
+                    {log.text}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex items-center justify-between text-xs text-[#FFFDF5]/60 pt-2 border-t border-white/10">
+              <span>● 3 Active Solvers Relaying Atomic Swaps</span>
+              <button
+                type="button"
+                onClick={() => setIsExpandedSolverLogs(false)}
+                className="px-4 py-2 rounded-xl bg-[#D4A017] text-[#2B2B2B] font-bold hover:bg-[#E0AB1E] transition-all cursor-pointer uppercase flex items-center gap-1.5"
+              >
+                <Minimize2 className="w-4 h-4" /> Close Feed
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* =========================================================================
           5. MODAL: RISK SIGNAL & COORDINATED BIDDING EVIDENCE (Refinement #3)
