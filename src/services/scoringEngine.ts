@@ -86,7 +86,8 @@ export function calculateBidScores(intent: UserIntent, rawBids: Omit<SolverBid, 
     const reputationNorm = normalize(bid.reputationScore, mmReputation.min, mmReputation.max);
     const collateralNorm = normalize(bid.collateralOfferedUsd, mmCollateral.min, mmCollateral.max);
 
-    const costScore = (outputNorm + feeNorm + slippageNorm) / 3;
+    // Calibrated Cost Sub-score: output (50%), fee (30%), slippage (20%)
+    const costScore = outputNorm * 0.50 + feeNorm * 0.30 + slippageNorm * 0.20;
     const speedScore = executionTimeNorm;
     const safetyScore = (reputationNorm + collateralNorm) / 2;
 

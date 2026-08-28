@@ -72,7 +72,7 @@ export const PipelineStatusTracker: React.FC<PipelineStatusTrackerProps> = ({
 
         <div className="flex items-center gap-2 shrink-0">
           {solverBondUsd && (
-            <span className="text-[10px] font-mono text-cyan-300 px-2 py-0.5 rounded bg-slate-900 border border-cyan-800/80 font-bold">
+            <span className="text-[10px] font-mono text-cyan-300 px-2.5 py-0.5 rounded bg-slate-900 border border-cyan-800/80 font-bold">
               {collateralRatio}% Collateralized
             </span>
           )}
@@ -120,6 +120,27 @@ export const PipelineStatusTracker: React.FC<PipelineStatusTrackerProps> = ({
           );
         })}
       </div>
+
+      {/* Stage 6 Multi-Substep Solana Execution Details during execution */}
+      {stage === 'executing_cross_chain' && (
+        <div className="bg-slate-900/90 border border-cyan-500/50 p-4 rounded-xl space-y-2 font-mono text-xs text-cyan-200 animate-in fade-in duration-200">
+          <span className="font-bold text-white uppercase text-[10px] tracking-wider block border-b border-cyan-900/60 pb-1">
+            Solana Destination Leg Execution Substeps:
+          </span>
+          <div className="space-y-1 text-[11px]">
+            <div className="flex items-center gap-2 text-emerald-400 font-bold">
+              <span>✓ 3a. Solver broadcasting transaction on Solana network</span>
+            </div>
+            <div className="flex items-center gap-2 text-amber-300">
+              <Loader2 className="w-3 h-3 animate-spin shrink-0 text-amber-400" />
+              <span>3b. Awaiting block finality confirmation (Slot #2847192)...</span>
+            </div>
+            <div className="flex items-center gap-2 text-slate-500">
+              <span>⏳ 3c. Finalizing cross-chain delivery attestation proof</span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Stage 7 Hybrid Verification Challenge Countdown & Path Note */}
       {stage === 'verifying' && (

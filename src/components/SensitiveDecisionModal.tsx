@@ -1,6 +1,6 @@
 import React from 'react';
 import type { SolverBid, UserIntent } from '../services/types';
-import { ShieldAlert, AlertTriangle, CheckCircle, Lock, ArrowRight } from 'lucide-react';
+import { ShieldAlert, AlertTriangle, CheckCircle, Lock, ArrowRight, XCircle } from 'lucide-react';
 
 interface SensitiveDecisionModalProps {
   isOpen: boolean;
@@ -100,7 +100,7 @@ export const SensitiveDecisionModal: React.FC<SensitiveDecisionModalProps> = ({
               <button
                 type="button"
                 onClick={() => onApproveBid(bid1)}
-                className="w-full py-2 px-3 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold flex items-center justify-center gap-1 transition-all"
+                className="w-full py-2 px-3 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold flex items-center justify-center gap-1 transition-all shadow-md shadow-indigo-600/30"
               >
                 <span>Authorize Option #1</span>
                 <CheckCircle className="w-3.5 h-3.5" />
@@ -136,14 +136,16 @@ export const SensitiveDecisionModal: React.FC<SensitiveDecisionModalProps> = ({
           </div>
         </div>
 
-        {/* Cancel Button */}
-        <div className="flex justify-end pt-2">
+        {/* Visually Confident Exit/Refund Button */}
+        <div className="flex items-center justify-between pt-2 border-t border-slate-800">
+          <span className="text-[11px] text-slate-400">Not satisfied with solver bids?</span>
           <button
             type="button"
             onClick={onCancel}
-            className="px-4 py-2 rounded-lg text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-900 transition-all"
+            className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-rose-950/80 border border-rose-800/80 text-rose-300 text-xs font-semibold flex items-center gap-1.5 transition-all shadow-md"
           >
-            Cancel Intent & Refund Escrow
+            <XCircle className="w-4 h-4 text-rose-400" />
+            <span>Cancel Intent & Refund Escrow</span>
           </button>
         </div>
       </div>

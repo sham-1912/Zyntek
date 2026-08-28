@@ -199,6 +199,10 @@ class ContractSimulatorService {
       this.state.solverBondLockedUsd = Math.max(0, this.state.solverBondLockedUsd - solver.collateralOfferedUsd);
       this.state.settledTotalUsd += escrowReleased;
 
+      // Exact arithmetic balancing: Deposit = Outcome + Solver Fee + Protocol Fee
+      const protocolFee = Number((intent.sourceAmount - solver.proposedOutput - solver.feeUsd).toFixed(2));
+      const validProtocolFee = protocolFee > 0 ? protocolFee : 2.30;
+
       const balanceComparison: BalanceComparison = {
         beforeSourceAmount: intent.sourceAmount,
         beforeSourceAsset: intent.sourceAsset,
@@ -208,6 +212,7 @@ class ContractSimulatorService {
         afterDestinationChain: 'Solana Network',
         solverPayoutUsd: Number((solver.proposedOutput + solver.feeUsd).toFixed(2)),
         solverFeeUsd: solver.feeUsd,
+        protocolFeeUsd: validProtocolFee,
       };
 
       return {

@@ -71,7 +71,7 @@ export const SolverBidTable: React.FC<SolverBidTableProps> = ({
           <Clock className="w-4 h-4 text-indigo-400 animate-spin" />
           <span>
             {biddingCountdownSec > 0
-              ? `Bidding window closes in ${biddingCountdownSec}s`
+              ? `Bidding window closes in 0:0${biddingCountdownSec}`
               : 'Auction Bidding Closed'}
           </span>
         </div>
@@ -167,9 +167,16 @@ export const SolverBidTable: React.FC<SolverBidTableProps> = ({
                         </span>
                       )}
 
+                      {/* Neutral Badge during ambiguous state vs Winner Badge during auto-selected state */}
                       {isWinner && (
-                        <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-indigo-950 text-indigo-300 border border-indigo-800">
-                          Rank #1 Winner
+                        <span
+                          className={`text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded font-mono ${
+                            isClearWinner
+                              ? 'bg-indigo-950 text-indigo-300 border border-indigo-800'
+                              : 'bg-amber-950 text-amber-400 border border-amber-800'
+                          }`}
+                        >
+                          {isClearWinner ? 'Rank #1 Winner' : 'Leading Bid (Pending Your Confirmation)'}
                         </span>
                       )}
                     </div>
@@ -260,18 +267,27 @@ export const SolverBidTable: React.FC<SolverBidTableProps> = ({
                 </div>
               </div>
 
-              {/* Action Button */}
+              {/* Action Button: Disabled during ambiguous modal state */}
               <div className="mt-4 flex justify-end">
                 <button
                   type="button"
+                  disabled={!isClearWinner}
                   onClick={() => onSelectBid(bid)}
                   className={`px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
-                    isWinner
+                    !isClearWinner
+                      ? 'bg-slate-800/60 text-amber-400/80 border border-amber-900/40 cursor-not-allowed'
+                      : isWinner
                       ? 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-md shadow-indigo-600/30'
                       : 'bg-slate-800 hover:bg-slate-700 text-slate-200'
                   }`}
                 >
-                  <span>{isWinner ? 'Accept & Execute Top Bid' : 'Select Solver'}</span>
+                  <span>
+                    {!isClearWinner
+                      ? 'Review Sensitive Decision Above'
+                      : isWinner
+                      ? 'Accept & Execute Top Bid'
+                      : 'Select Solver'}
+                  </span>
                   <ChevronRight className="w-3.5 h-3.5" />
                 </button>
               </div>

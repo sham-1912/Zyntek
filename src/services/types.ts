@@ -96,6 +96,7 @@ export interface BalanceComparison {
   afterDestinationChain: string;
   solverPayoutUsd: number;
   solverFeeUsd: number;
+  protocolFeeUsd: number; // Explicit line item for 100% balancing math
 }
 
 export interface SettlementResult {

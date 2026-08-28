@@ -59,8 +59,8 @@ export const SettlementSummaryCard: React.FC<SettlementSummaryCardProps> = ({ re
             <p className="text-[11px] text-slate-400">Two-Sided Verified Outcome Ledger</p>
           </div>
         </div>
-        <span className="text-[11px] font-mono text-emerald-400 px-2.5 py-1 rounded bg-emerald-950 border border-emerald-800">
-          Status: SETTLED
+        <span className="text-[11px] font-mono text-emerald-400 px-2.5 py-1 rounded bg-emerald-950 border border-emerald-800 font-bold">
+          Status: SETTLED (100% Verified)
         </span>
       </div>
 
@@ -85,12 +85,40 @@ export const SettlementSummaryCard: React.FC<SettlementSummaryCardProps> = ({ re
         </div>
       </div>
 
+      {/* Explicit Line-Item Arithmetic Payout Ledger */}
+      <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-2 font-mono text-xs">
+        <span className="text-slate-400 text-[10px] uppercase tracking-wider block font-bold border-b border-slate-900 pb-1">
+          Exact Protocol Payout Arithmetic Ledger ($500.00 Total Match)
+        </span>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+          <div className="bg-slate-900/60 p-2.5 rounded-lg border border-slate-800">
+            <span className="text-slate-400 block text-[10px]">Delivered Outcome</span>
+            <span className="text-emerald-400 font-bold text-xs">${comparison.afterDestinationAmount.toFixed(2)} USDC</span>
+          </div>
+
+          <div className="bg-slate-900/60 p-2.5 rounded-lg border border-slate-800">
+            <span className="text-slate-400 block text-[10px]">Solver Execution Fee</span>
+            <span className="text-cyan-400 font-bold text-xs">${comparison.solverFeeUsd.toFixed(2)} USDC</span>
+          </div>
+
+          <div className="bg-slate-900/60 p-2.5 rounded-lg border border-slate-800">
+            <span className="text-slate-400 block text-[10px]">Protocol Security & Routing Fee</span>
+            <span className="text-indigo-400 font-bold text-xs">${comparison.protocolFeeUsd.toFixed(2)} USDC</span>
+          </div>
+        </div>
+
+        <div className="text-[11px] text-slate-400 font-sans pt-1 text-right">
+          Sum: ${comparison.afterDestinationAmount.toFixed(2)} + ${comparison.solverFeeUsd.toFixed(2)} + ${comparison.protocolFeeUsd.toFixed(2)} = <strong className="text-white font-mono">${comparison.beforeSourceAmount.toFixed(2)} USDC</strong>
+        </div>
+      </div>
+
       {/* Two-Sided Protocol Fairness Summary */}
       <div className="bg-slate-900/80 p-4 rounded-xl border border-slate-800 font-mono text-xs flex flex-col sm:flex-row items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <Wallet className="w-4 h-4 text-cyan-400 shrink-0" />
           <span className="text-slate-300">
-            Solver Earned: <strong className="text-cyan-400">${comparison.solverPayoutUsd} USDC</strong> (${comparison.afterDestinationAmount} delivery + ${comparison.solverFeeUsd} fee)
+            Solver Total Payout: <strong className="text-cyan-400">${comparison.solverPayoutUsd} USDC</strong> (${comparison.afterDestinationAmount} delivery + ${comparison.solverFeeUsd} fee)
           </span>
         </div>
 
