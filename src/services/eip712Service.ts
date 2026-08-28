@@ -21,9 +21,12 @@ export const EIP712_TYPES = {
   ],
 };
 
-export function getEip712TypedData(intent: UserIntent) {
+export function getEip712TypedData(intent: UserIntent, activeChainId?: number) {
   return {
-    domain: ZYNTEK_EIP712_DOMAIN,
+    domain: {
+      ...ZYNTEK_EIP712_DOMAIN,
+      chainId: activeChainId || ZYNTEK_EIP712_DOMAIN.chainId,
+    },
     types: EIP712_TYPES,
     value: {
       intentId: intent.intentId,

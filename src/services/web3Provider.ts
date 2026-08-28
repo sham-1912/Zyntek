@@ -220,7 +220,7 @@ class Web3ProviderService {
   }
 
   public async signEip712TypedData(intent: UserIntent): Promise<string> {
-    const typedData = getEip712TypedData(intent);
+    const typedData = getEip712TypedData(intent, this.walletState.chainId);
 
     if (
       this.walletState.isConnected &&
