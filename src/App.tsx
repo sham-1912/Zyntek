@@ -9,7 +9,6 @@ import { Header } from './components/Header';
 import { DemoScenarioBar } from './components/DemoScenarioBar';
 import type { DemoScenarioType } from './components/DemoScenarioBar';
 import { NetworkStatusOverview } from './components/NetworkStatusOverview';
-import { CrossChainVisualizer } from './components/CrossChainVisualizer';
 import { IntentForm } from './components/IntentForm';
 import { SolverBidTable } from './components/SolverBidTable';
 import { WhySolverWonCard } from './components/WhySolverWonCard';
@@ -19,7 +18,6 @@ import { HybridVerificationPanel } from './components/HybridVerificationPanel';
 import { FailureSlashingPanel } from './components/FailureSlashingPanel';
 import { ProtocolActivityFeed } from './components/ProtocolActivityFeed';
 import type { ActivityLogEntry } from './components/ProtocolActivityFeed';
-import { NetworkHealthCard } from './components/NetworkHealthCard';
 import { FinalSettlementRecordCard } from './components/FinalSettlementRecordCard';
 import { SensitiveDecisionModal } from './components/SensitiveDecisionModal';
 import { PreCommitModal } from './components/PreCommitModal';
@@ -379,6 +377,7 @@ export default function App() {
   }, []);
 
   const winningSolver = visibleBids.find((b) => b.solverId === winningBidId) || (isAuctionClosed && visibleBids.length > 0 ? visibleBids[0] : undefined);
+  const defaultTopBid = visibleBids.length > 0 ? visibleBids[0] : undefined;
 
   return (
     <div className="min-h-screen flex flex-col bg-[#101C2C] text-[#F3F6FF] relative font-sans">
@@ -390,15 +389,20 @@ export default function App() {
         onToggleViewMode={() => {}}
       />
 
-      <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-        {/* Top Interactive Scenario Controller Bar */}
-        <DemoScenarioBar
-          activeScenario={activeScenario}
-          onSelectScenario={handleSelectScenario}
-        />
+      <main className="flex-1 max-w-[1440px] mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+        
+        {/* =========================================================================
+            ROW 1 — DEMO SCENARIOS (Full Width: 12 Columns)
+           ========================================================================= */}
+        <div className="w-full">
+          <DemoScenarioBar
+            activeScenario={activeScenario}
+            onSelectScenario={handleSelectScenario}
+          />
+        </div>
 
         {/* =========================================================================
-            ROW 1 — PROTOCOL OVERVIEW: ACTIVE INTENT (Hero) + NETWORK STATUS OVERVIEW
+            ROW 2 — ACTIVE INTENT (8 Columns) + NETWORK STATUS (4 Columns)
            ========================================================================= */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
           <div className="lg:col-span-8 flex flex-col">
@@ -415,109 +419,95 @@ export default function App() {
           <div className="lg:col-span-4 flex flex-col">
             <NetworkStatusOverview
               contractState={contractState}
-              activeSolversCount={5}
+              activeSolversCount={visibleBids.length > 0 ? visibleBids.length : 5}
             />
           </div>
         </div>
 
         {/* =========================================================================
-            ROW 2 — MAIN EXECUTION AREA: LIFECYCLE TRACKER + TOPOLOGY + ACTIVITY LOG
+            ROW 3 — CROSS-CHAIN EXECUTION (Full Width: 12 Columns Horizontal Card)
+           ========================================================================= */}
+        <div className="w-full">
+          <TransactionLifecycleTracker
+            currentStepId={lifecycleStep}
+            isFailed={isFailed}
+            failureReason={failureReason}
+            selectedSolverName={winningSolver?.solverName}
+            bondAmountUsd={winningSolver?.collateralOfferedUsd || 500}
+            intent={currentIntent}
+            selectedBid={winningSolver || defaultTopBid || null}
+            stage={stage}
+          />
+        </div>
+
+        {/* =========================================================================
+            ROW 4 — SOLVER COMPETITION (8 Columns) + WHY SOLVER WON (4 Columns)
            ========================================================================= */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-          {/* Left Hero Box (8 cols): Execution Lifecycle + Cross-Chain Topology */}
-          <div className="lg:col-span-8 space-y-4 flex flex-col">
-            <TransactionLifecycleTracker
-              currentStepId={lifecycleStep}
-              isFailed={isFailed}
-              failureReason={failureReason}
-              selectedSolverName={winningSolver?.solverName}
-              bondAmountUsd={winningSolver?.collateralOfferedUsd || 500}
-            />
-
-            <CrossChainVisualizer
-              intent={currentIntent}
-              selectedBid={winningSolver || visibleBids[0] || null}
-              stage={stage}
+          <div className="lg:col-span-8 flex flex-col">
+            <SolverBidTable
+              bids={visibleBids}
+              sliders={sliders}
+              isBroadcasting={isBroadcasting}
+              biddingCountdownSec={biddingCountdownSec}
+              arrivalMessage={arrivalMessage}
+              isAuctionClosed={isAuctionClosed}
+              winningBidId={winningBidId}
+              onSelectBid={(b) => proceedWithSelectedSolver(b, activeScenario === 'solver_failure')}
             />
           </div>
 
-          {/* Right Bento Card (4 cols): Monospace Protocol Activity Stream */}
           <div className="lg:col-span-4 flex flex-col">
+            <WhySolverWonCard
+              winningBid={winningSolver}
+              topBid={defaultTopBid}
+              sliders={sliders}
+            />
+          </div>
+        </div>
+
+        {/* =========================================================================
+            ROW 5 — VERIFICATION (7 Columns) + PROTOCOL ACTIVITY LOG (5 Columns)
+           ========================================================================= */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+          <div className="lg:col-span-7 flex flex-col">
+            {isFailed ? (
+              <FailureSlashingPanel
+                solverName={winningSolver?.solverName || 'Solver 02 (Flash Relay)'}
+                bondAmountUsd={winningSolver?.collateralOfferedUsd || 500}
+                escrowAmountUsd={currentIntent?.sourceAmount || 500}
+                onReset={handleReset}
+              />
+            ) : (
+              <HybridVerificationPanel
+                verificationType={verificationType}
+                countdownSec={verificationCountdownSec}
+                isConfirmedByUser={isConfirmedByUser}
+                onConfirmSettlement={() => {
+                  setIsConfirmedByUser(true);
+                  if (winningSolver) finalizeSettlement(winningSolver);
+                }}
+                status={stage === 'settlement' ? 'settled' : 'verifying'}
+              />
+            )}
+          </div>
+
+          <div className="lg:col-span-5 flex flex-col">
             <ProtocolActivityFeed logs={activityLogs} />
           </div>
         </div>
 
         {/* =========================================================================
-            ROW 3 — SOLVER COMPETITION: LIVE SOLVER BIDS + WHY THIS SOLVER WON
-           ========================================================================= */}
-        {(visibleBids.length > 0 || isBroadcasting) && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-            <div className={`transition-all ${isAuctionClosed && winningSolver ? 'lg:col-span-7' : 'lg:col-span-12'}`}>
-              <SolverBidTable
-                bids={visibleBids}
-                sliders={sliders}
-                isBroadcasting={isBroadcasting}
-                biddingCountdownSec={biddingCountdownSec}
-                arrivalMessage={arrivalMessage}
-                isAuctionClosed={isAuctionClosed}
-                winningBidId={winningBidId}
-                onSelectBid={(b) => proceedWithSelectedSolver(b, activeScenario === 'solver_failure')}
-              />
-            </div>
-
-            {isAuctionClosed && winningSolver && (
-              <div className="lg:col-span-5 flex flex-col">
-                <WhySolverWonCard
-                  winningBid={winningSolver}
-                  sliders={sliders}
-                />
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* =========================================================================
-            ROW 4 — VERIFICATION + RISK MANAGEMENT: VERIFICATION PANEL + HEALTH CARD
-           ========================================================================= */}
-        {(stage === 'verifying' || isFailed || stage === 'settlement') && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-            <div className="lg:col-span-8 flex flex-col">
-              {isFailed ? (
-                <FailureSlashingPanel
-                  solverName={winningSolver?.solverName || 'Solver 02 (Flash Relay)'}
-                  bondAmountUsd={winningSolver?.collateralOfferedUsd || 500}
-                  escrowAmountUsd={currentIntent?.sourceAmount || 500}
-                  onReset={handleReset}
-                />
-              ) : (
-                <HybridVerificationPanel
-                  verificationType={verificationType}
-                  countdownSec={verificationCountdownSec}
-                  isConfirmedByUser={isConfirmedByUser}
-                  onConfirmSettlement={() => {
-                    setIsConfirmedByUser(true);
-                    if (winningSolver) finalizeSettlement(winningSolver);
-                  }}
-                  status={stage === 'settlement' ? 'settled' : 'verifying'}
-                />
-              )}
-            </div>
-
-            <div className="lg:col-span-4 flex flex-col">
-              <NetworkHealthCard />
-            </div>
-          </div>
-        )}
-
-        {/* =========================================================================
-            ROW 5 — FINAL COMPLETION RECORD: FULFILLED INTENT + ON-CHAIN JSON RECORD
+            ROW 6 — FINAL SETTLEMENT RECORD (Full Width: 12 Columns, 3-Col Internal Grid)
            ========================================================================= */}
         {stage === 'settlement' && currentIntent && winningSolver && settlementResult && (
-          <FinalSettlementRecordCard
-            intent={currentIntent}
-            winningBid={winningSolver}
-            settlementResult={settlementResult}
-          />
+          <div className="w-full">
+            <FinalSettlementRecordCard
+              intent={currentIntent}
+              winningBid={winningSolver}
+              settlementResult={settlementResult}
+            />
+          </div>
         )}
       </main>
 

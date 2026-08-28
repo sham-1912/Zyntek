@@ -29,8 +29,8 @@ export const ProtocolActivityFeed: React.FC<ProtocolActivityFeedProps> = ({ logs
         </span>
       </div>
 
-      {/* Terminal Stream Box */}
-      <div className="glass-sub-box p-3 h-52 overflow-y-auto space-y-1.5 font-mono text-[11px]">
+      {/* Terminal Stream Box (Flex-1 to dynamically match height) */}
+      <div className="glass-sub-box p-3 flex-1 min-h-[180px] max-h-[260px] overflow-y-auto space-y-1.5 font-mono text-[11px]">
         {logs.length === 0 ? (
           <div className="text-[#CBD5E1]/50 py-12 text-center text-xs">
             Awaiting intent broadcast to stream live execution events...

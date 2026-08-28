@@ -41,44 +41,28 @@ export const PrioritySliders: React.FC<PrioritySlidersProps> = ({ sliders, onCha
   };
 
   return (
-    <div className="bg-[#0E1E38] border border-[#8DC2FF]/20 rounded-2xl p-5 space-y-4 shadow-xl">
-      {/* Header & Auto-Balancing Validation Indicator */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/10 pb-3">
-        <div>
-          <h3 className="text-sm font-bold text-white font-mono flex items-center gap-2">
-            <span>Dynamic Bid Scoring Weights</span>
-          </h3>
-          <p className="text-[11px] text-[#CBD5E1] mt-0.5">
-            Adjusting weights recalculates solver rankings and winner live. Sum auto-balances to 100%.
-          </p>
+    <div className="glass-sub-box p-3.5 space-y-2.5">
+      {/* Header & Strategy Preview */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 border-b border-white/10 pb-2">
+        <div className="flex items-center gap-1.5 text-xs font-mono text-white font-bold">
+          <Compass className="w-4 h-4 text-[#8DC2FF]" />
+          <span>Dynamic Weights: <span className="font-normal text-xs text-[#E2E8F0]">{meaningPreview}</span></span>
         </div>
-        <div className="flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full font-mono font-bold bg-[#142848] border border-[#CEF26D]/30 text-[#CEF26D] shrink-0 self-start sm:self-auto">
+        <div className="flex items-center gap-1 text-[11px] font-mono font-bold text-[#CEF26D] shrink-0 bg-[rgba(10,20,38,0.7)] px-2 py-0.5 rounded border border-[#CEF26D]/30">
           <CheckCircle2 className="w-3.5 h-3.5" />
-          <span>Total: {sum}% (100% Normalized)</span>
+          <span>{sum}% Normalized</span>
         </div>
       </div>
 
-      {/* Live Strategy Meaning Preview */}
-      <div className="bg-[#142848] border border-[#8DC2FF]/20 p-3 rounded-xl flex items-start gap-2.5 text-xs font-mono">
-        <Compass className="w-4 h-4 text-[#8DC2FF] shrink-0 mt-0.5" />
-        <div>
-          <span className="font-bold text-white uppercase text-[10px] tracking-wider block mb-0.5">
-            Active Strategy Direction:
-          </span>
-          <p className="text-[11px] text-[#CBD5E1] font-sans leading-tight">{meaningPreview}</p>
-        </div>
-      </div>
-
-      {/* 3 Priority Sliders */}
-      <div className="space-y-4 pt-1">
-        {/* Cost Slider (#CEF26D Sunny Herb) */}
-        <div className="space-y-1.5">
-          <div className="flex justify-between text-xs font-medium">
-            <span className="text-[#CEF26D] flex items-center gap-1.5 font-bold font-mono">
-              <DollarSign className="w-3.5 h-3.5 text-[#CEF26D]" />
-              Cost Priority (Max Output & Lowest Fees)
+      {/* 3 Inline Sliders with High Contrast Text */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5 font-mono text-xs">
+        {/* Cost Slider */}
+        <div className="space-y-1.5 bg-[rgba(10,20,38,0.6)] p-2.5 rounded-lg border border-white/5">
+          <div className="flex justify-between items-center text-xs">
+            <span className="text-[#CEF26D] flex items-center gap-1 font-bold">
+              <DollarSign className="w-3.5 h-3.5 text-[#CEF26D]" /> Cost
             </span>
-            <span className="font-mono font-bold text-[#CEF26D] text-sm">{sliders.cost}%</span>
+            <span className="font-bold text-[#CEF26D] text-xs">{sliders.cost}%</span>
           </div>
           <input
             type="range"
@@ -91,14 +75,13 @@ export const PrioritySliders: React.FC<PrioritySlidersProps> = ({ sliders, onCha
           />
         </div>
 
-        {/* Speed Slider (#8DC2FF Ice Blue) */}
-        <div className="space-y-1.5">
-          <div className="flex justify-between text-xs font-medium">
-            <span className="text-[#8DC2FF] flex items-center gap-1.5 font-bold font-mono">
-              <Zap className="w-3.5 h-3.5 text-[#8DC2FF]" />
-              Speed Priority (Fastest Execution Latency)
+        {/* Speed Slider */}
+        <div className="space-y-1.5 bg-[rgba(10,20,38,0.6)] p-2.5 rounded-lg border border-white/5">
+          <div className="flex justify-between items-center text-xs">
+            <span className="text-[#8DC2FF] flex items-center gap-1 font-bold">
+              <Zap className="w-3.5 h-3.5 text-[#8DC2FF]" /> Speed
             </span>
-            <span className="font-mono font-bold text-[#8DC2FF] text-sm">{sliders.speed}%</span>
+            <span className="font-bold text-[#8DC2FF] text-xs">{sliders.speed}%</span>
           </div>
           <input
             type="range"
@@ -111,14 +94,13 @@ export const PrioritySliders: React.FC<PrioritySlidersProps> = ({ sliders, onCha
           />
         </div>
 
-        {/* Safety Slider (#2F6690 Harbor Blue) */}
-        <div className="space-y-1.5">
-          <div className="flex justify-between text-xs font-medium">
-            <span className="text-white flex items-center gap-1.5 font-bold font-mono">
-              <Shield className="w-3.5 h-3.5 text-[#2F6690]" />
-              Safety Priority (Reputation & Collateral Bond)
+        {/* Safety Slider */}
+        <div className="space-y-1.5 bg-[rgba(10,20,38,0.6)] p-2.5 rounded-lg border border-white/5">
+          <div className="flex justify-between items-center text-xs">
+            <span className="text-white flex items-center gap-1 font-bold">
+              <Shield className="w-3.5 h-3.5 text-[#2F6690]" /> Safety
             </span>
-            <span className="font-mono font-bold text-[#8DC2FF] text-sm">{sliders.safety}%</span>
+            <span className="font-bold text-[#8DC2FF] text-xs">{sliders.safety}%</span>
           </div>
           <input
             type="range"

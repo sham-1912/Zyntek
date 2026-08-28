@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CheckCircle2, ChevronDown, ChevronUp, Copy, FileCode, Check, ShieldCheck } from 'lucide-react';
+import { CheckCircle2, Copy, FileCode, Check, ShieldCheck, ArrowRight } from 'lucide-react';
 import type { SettlementResult, UserIntent, SolverBid } from '../services/types';
 
 interface FinalSettlementRecordCardProps {
@@ -13,7 +13,6 @@ export const FinalSettlementRecordCard: React.FC<FinalSettlementRecordCardProps>
   winningBid,
   settlementResult,
 }) => {
-  const [isJsonExpanded, setIsJsonExpanded] = useState<boolean>(true);
   const [copiedHash, setCopiedHash] = useState<string | null>(null);
 
   const handleCopy = (text: string, label: string) => {
@@ -22,163 +21,161 @@ export const FinalSettlementRecordCard: React.FC<FinalSettlementRecordCardProps>
     setTimeout(() => setCopiedHash(null), 2000);
   };
 
-  const jsonRecord = {
-    protocol: 'Zyntek Cross-Chain Intent Settlement v1.0',
+  const canonicalJson = {
     intentId: intent.intentId,
-    timestamp: new Date(intent.timestamp).toISOString(),
-    sourceLeg: {
-      network: 'Ethereum (EVM)',
-      asset: intent.sourceAsset,
-      amountDeposited: intent.sourceAmount,
-      escrowContract: '0x345cA3e014Aaf5caA4570b2CD70FB3FE',
-      status: 'RELEASED_TO_SOLVER',
-    },
-    destinationLeg: {
-      network: 'Solana (SVM)',
-      asset: intent.destinationAsset,
-      amountDelivered: winningBid.expectedOutput,
-      recipientAddress: '7vA1...B8k9SolanaVault',
-      slotNumber: 2847192,
-      txSignature: '5Kn8...F2vP7SolTxSignatureFinalized',
-    },
-    solverFulfillment: {
-      solverId: winningBid.solverId,
-      solverName: winningBid.solverName,
-      collateralBondSecuredUsd: winningBid.collateralOfferedUsd,
-      netPayoutUsd: winningBid.expectedOutput,
-      executionLatencySec: (settlementResult.executionTimeMs / 1000).toFixed(1),
-    },
-    verificationProof: {
-      mode: settlementResult.verificationType === 'zk_oracle' ? 'Enhanced ZK-SNARK Attestation' : 'Optimistic Dispute Window',
-      zkRootHash: '0x8f2a18b6e8a002bc0f1c9d4b31a89c9277e9',
-      disputeState: 'NO_CHALLENGES_RAISED',
-      status: 'FINALIZED',
-    },
+    source: `${intent.sourceAmount} ${intent.sourceAsset} (Ethereum)`,
+    destination: `${winningBid.expectedOutput} ${intent.destinationAsset} (Solana)`,
+    solver: winningBid.solverName,
+    collateralSecured: `$${winningBid.collateralOfferedUsd} USDC`,
+    verification: settlementResult.verificationType === 'zk_oracle' ? 'ZK_SNARK_GROTH16' : 'OPTIMISTIC_CHALLENGE',
+    latencyMs: settlementResult.executionTimeMs,
+    settlementTx: settlementResult.txHash,
+    status: 'FULFILLED',
   };
 
   return (
-    <div className="glass-card p-6 space-y-6 border-[#CEF26D]/30 shadow-2xl animate-in fade-in zoom-in duration-300">
-      {/* Header Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-4">
-        <div className="flex items-center gap-3.5">
-          <div className="w-11 h-11 rounded-xl bg-[#CEF26D]/20 border border-[#CEF26D] flex items-center justify-center text-[#CEF26D] shrink-0">
+    <div className="glass-card p-6 space-y-5 border-[#CEF26D]/40 shadow-2xl animate-in fade-in zoom-in duration-300 w-full">
+      {/* Top Banner */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-[#CEF26D]/20 border border-[#CEF26D] flex items-center justify-center text-[#CEF26D]">
             <CheckCircle2 className="w-6 h-6" />
           </div>
           <div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <h3 className="text-base font-bold text-white font-mono">
-                ✓ INTENT FULFILLED & SETTLED ON-CHAIN
-              </h3>
-              <span className="text-[10px] uppercase font-mono font-bold px-2.5 py-0.5 rounded-full bg-[#CEF26D]/20 text-[#CEF26D] border border-[#CEF26D]/30">
-                Finalized
+            <h3 className="text-base font-bold text-white font-mono flex items-center gap-2">
+              <span>✓ INTENT SUCCESSFULLY SETTLED</span>
+              <span className="text-[10px] uppercase font-mono font-bold px-2 py-0.5 rounded-full bg-[#CEF26D]/20 text-[#CEF26D] border border-[#CEF26D]/30">
+                Finalized On-Chain
               </span>
-            </div>
+            </h3>
             <p className="text-xs text-[#CBD5E1] mt-0.5">
-              Protocol verification complete. Escrow funds released to solver and target assets delivered to recipient.
+              Protocol verification cleared. Escrow unlocked and funds settled across EVM and SVM legs.
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 font-mono text-xs text-[#CEF26D] bg-[rgba(14,30,56,0.65)] px-3 py-1.5 rounded-xl border border-[#CEF26D]/30 shrink-0 self-start sm:self-auto">
+        <div className="flex items-center gap-2 text-xs font-mono text-[#CEF26D] bg-[rgba(14,30,56,0.65)] px-3 py-1.5 rounded-lg border border-[#CEF26D]/30">
           <ShieldCheck className="w-4 h-4" />
-          <span>Settlement Proof Validated</span>
+          <span>Proof Verified & Archived</span>
         </div>
       </div>
 
-      {/* 4 Summary Metric Columns */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 font-mono text-xs">
-        <div className="glass-sub-box p-3 space-y-1">
-          <span className="text-[10px] text-[#8DC2FF]/70 block">Deposited (EVM)</span>
-          <span className="text-sm font-bold text-white">${intent.sourceAmount} USDC</span>
-          <span className="text-[10px] text-[#CBD5E1] block">Escrow released</span>
-        </div>
-
-        <div className="glass-sub-box p-3 space-y-1">
-          <span className="text-[10px] text-[#8DC2FF]/70 block">Delivered (SVM)</span>
-          <span className="text-sm font-bold text-[#CEF26D]">${winningBid.expectedOutput} USDC</span>
-          <span className="text-[10px] text-[#CBD5E1] block">Destination confirmed</span>
-        </div>
-
-        <div className="glass-sub-box p-3 space-y-1">
-          <span className="text-[10px] text-[#8DC2FF]/70 block">Fulfilling Solver</span>
-          <span className="text-sm font-bold text-white">{winningBid.solverName.split('—')[0]}</span>
-          <span className="text-[10px] text-[#8DC2FF] block">${winningBid.collateralOfferedUsd} Bond returned</span>
-        </div>
-
-        <div className="glass-sub-box p-3 space-y-1">
-          <span className="text-[10px] text-[#8DC2FF]/70 block">Total Latency</span>
-          <span className="text-sm font-bold text-[#E9B872]">
-            {(settlementResult.executionTimeMs / 1000).toFixed(1)}s
+      {/* Middle: 3 Equal / Proportionally Balanced Columns */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-stretch font-mono text-xs">
+        {/* Column 1: Settlement Summary */}
+        <div className="glass-sub-box p-4 space-y-2.5 flex flex-col justify-between">
+          <div>
+            <span className="text-[10px] font-bold text-[#8DC2FF] uppercase tracking-wider block border-b border-white/5 pb-1 mb-2">
+              1. Settlement Summary
+            </span>
+            <div className="space-y-1.5 text-[#CBD5E1]">
+              <div className="flex justify-between">
+                <span>Deposited:</span>
+                <span className="text-white font-bold">${intent.sourceAmount} USDC</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Delivered:</span>
+                <span className="text-[#CEF26D] font-bold">${winningBid.expectedOutput} USDC</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Solver:</span>
+                <span className="text-white font-bold">{winningBid.solverName.split('—')[0]}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Bond Returned:</span>
+                <span className="text-[#8DC2FF] font-bold">${winningBid.collateralOfferedUsd} USDC</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Execution Latency:</span>
+                <span className="text-[#E9B872] font-bold">{(settlementResult.executionTimeMs / 1000).toFixed(1)}s</span>
+              </div>
+            </div>
+          </div>
+          <span className="text-[9px] text-[#CBD5E1]/60 block border-t border-white/5 pt-1.5">
+            EVM EscrowVault.sol → Solana CPI
           </span>
-          <span className="text-[10px] text-[#CBD5E1] block">Verification cleared</span>
         </div>
-      </div>
 
-      {/* Cryptographic Hash & Receipts Strip */}
-      <div className="glass-sub-box p-3.5 space-y-2 font-mono text-xs">
-        <span className="text-[10px] uppercase font-bold text-[#8DC2FF]/80 tracking-wider block">
-          Verifiable Cryptographic Proofs & Transaction Hashes:
-        </span>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-[11px]">
-          {/* Solana Settlement Tx */}
-          <div className="flex items-center justify-between p-2 rounded-lg bg-[rgba(22,42,70,0.55)] border border-white/5">
-            <div className="flex items-center gap-2 truncate">
-              <span className="text-[#8DC2FF] shrink-0">Solana SVM Delivery:</span>
-              <span className="text-white truncate font-bold">5Kn8...F2vP7</span>
+        {/* Column 2: Canonical JSON Record */}
+        <div className="glass-sub-box p-4 space-y-2 flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between border-b border-white/5 pb-1 mb-1">
+              <span className="text-[10px] font-bold text-[#8DC2FF] uppercase tracking-wider flex items-center gap-1">
+                <FileCode className="w-3 h-3 text-[#8DC2FF]" />
+                2. Canonical JSON Record
+              </span>
+              <button
+                type="button"
+                onClick={() => handleCopy(JSON.stringify(canonicalJson, null, 2), 'json')}
+                className="text-[10px] text-[#8DC2FF] hover:text-white transition-colors cursor-pointer flex items-center gap-0.5"
+              >
+                {copiedHash === 'json' ? <Check className="w-3 h-3 text-[#CEF26D]" /> : <Copy className="w-3 h-3" />}
+                <span>{copiedHash === 'json' ? 'Copied' : 'Copy'}</span>
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={() => handleCopy('5Kn87sF2vP79aK201SolanaTxSignatureFinalized', 'sol')}
-              className="p-1 rounded hover:bg-white/10 text-[#8DC2FF] hover:text-white transition-colors shrink-0 cursor-pointer ml-2"
-              title="Copy Hash"
-            >
-              {copiedHash === 'sol' ? <Check className="w-3.5 h-3.5 text-[#CEF26D]" /> : <Copy className="w-3.5 h-3.5" />}
-            </button>
-          </div>
-
-          {/* EVM Escrow Release Tx */}
-          <div className="flex items-center justify-between p-2 rounded-lg bg-[rgba(22,42,70,0.55)] border border-white/5">
-            <div className="flex items-center gap-2 truncate">
-              <span className="text-[#8DC2FF] shrink-0">EVM Escrow Release:</span>
-              <span className="text-white truncate font-bold">{settlementResult.txHash}</span>
-            </div>
-            <button
-              type="button"
-              onClick={() => handleCopy(settlementResult.txHash, 'evm')}
-              className="p-1 rounded hover:bg-white/10 text-[#8DC2FF] hover:text-white transition-colors shrink-0 cursor-pointer ml-2"
-              title="Copy Hash"
-            >
-              {copiedHash === 'evm' ? <Check className="w-3.5 h-3.5 text-[#CEF26D]" /> : <Copy className="w-3.5 h-3.5" />}
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Expandable JSON Record Box */}
-      <div className="space-y-2 font-mono text-xs">
-        <div
-          className="flex items-center justify-between text-[#8DC2FF] cursor-pointer hover:text-white transition-colors"
-          onClick={() => setIsJsonExpanded(!isJsonExpanded)}
-        >
-          <div className="flex items-center gap-1.5 font-bold">
-            <FileCode className="w-4 h-4 text-[#8DC2FF]" />
-            <span>On-Chain Settlement JSON Record (Verifiable Payload):</span>
-          </div>
-
-          <div className="flex items-center gap-1 text-[11px] text-[#8DC2FF]/80">
-            <span>{isJsonExpanded ? 'Collapse Record' : 'Expand Record'}</span>
-            {isJsonExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-          </div>
-        </div>
-
-        {isJsonExpanded && (
-          <div className="glass-sub-box p-4 text-[11px] overflow-x-auto max-h-60 overflow-y-auto animate-in fade-in duration-200">
-            <pre className="text-[#CEF26D] font-mono leading-relaxed">
-              {JSON.stringify(jsonRecord, null, 2)}
+            <pre className="text-[#CEF26D] text-[10px] bg-[rgba(10,20,38,0.8)] p-2 rounded-lg max-h-36 overflow-y-auto leading-tight">
+              {JSON.stringify(canonicalJson, null, 2)}
             </pre>
           </div>
-        )}
+          <span className="text-[9px] text-[#CBD5E1]/60 block">EIP-712 Structured Envelope</span>
+        </div>
+
+        {/* Column 3: Cryptographic Proof */}
+        <div className="glass-sub-box p-4 space-y-2.5 flex flex-col justify-between">
+          <div>
+            <span className="text-[10px] font-bold text-[#8DC2FF] uppercase tracking-wider block border-b border-white/5 pb-1 mb-2">
+              3. Cryptographic Proof
+            </span>
+            <div className="space-y-2">
+              <div>
+                <span className="text-[10px] text-[#CBD5E1] block">Settlement Root Hash</span>
+                <div className="flex items-center justify-between bg-[rgba(10,20,38,0.8)] p-2 rounded-lg text-[11px] font-bold text-white mt-1">
+                  <span className="truncate">{settlementResult.txHash}</span>
+                  <button
+                    type="button"
+                    onClick={() => handleCopy(settlementResult.txHash, 'tx')}
+                    className="text-[#8DC2FF] hover:text-white ml-1.5 cursor-pointer"
+                    title="Copy Tx Hash"
+                  >
+                    {copiedHash === 'tx' ? <Check className="w-3.5 h-3.5 text-[#CEF26D]" /> : <Copy className="w-3.5 h-3.5" />}
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <span className="text-[10px] text-[#CBD5E1] block">Solana Slot Signature</span>
+                <div className="flex items-center justify-between bg-[rgba(10,20,38,0.8)] p-2 rounded-lg text-[11px] font-bold text-white mt-1">
+                  <span className="truncate">5Kn87s...9aK201</span>
+                  <button
+                    type="button"
+                    onClick={() => handleCopy('5Kn87sF2vP79aK201SolanaTxSignatureFinalized', 'sol')}
+                    className="text-[#8DC2FF] hover:text-white ml-1.5 cursor-pointer"
+                    title="Copy Sol Signature"
+                  >
+                    {copiedHash === 'sol' ? <Check className="w-3.5 h-3.5 text-[#CEF26D]" /> : <Copy className="w-3.5 h-3.5" />}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <span className="text-[9px] text-[#CEF26D] block border-t border-white/5 pt-1.5">
+            ✓ Verified on-chain via Groth16 / Dual-Consensus
+          </span>
+        </div>
+      </div>
+
+      {/* Bottom: Cross-Chain References Chain Strip */}
+      <div className="glass-sub-box p-3 flex flex-wrap items-center justify-between gap-3 text-xs font-mono text-[#CBD5E1] border-t border-white/10">
+        <div className="flex items-center gap-2">
+          <span className="text-white font-bold">Execution Reference Trail:</span>
+          <span className="text-[#8DC2FF]">Ethereum TX (Deposit Locked)</span>
+          <ArrowRight className="w-3.5 h-3.5 text-white/40" />
+          <span className="text-[#8DC2FF]">Solver Execution (Relayed)</span>
+          <ArrowRight className="w-3.5 h-3.5 text-white/40" />
+          <span className="text-[#CEF26D] font-bold">Solana Confirmation (Settled)</span>
+        </div>
+
+        <span className="text-[10px] text-[#CBD5E1]/70">Zyntek Intent Settlement Engine</span>
       </div>
     </div>
   );
