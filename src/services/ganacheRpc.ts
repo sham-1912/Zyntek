@@ -50,15 +50,6 @@ export async function sendZyntekTransaction(params: GanacheTxParams): Promise<{
     }
 
     const from = accounts[0];
-    // Use different "contract" addresses per stage so Ganache shows separate contracts
-    const contractAddresses: Record<GanacheTxParams['stage'], string> = {
-      lockEscrow: '0x71C8a92F1d4e08B991A54b4a1A59828453982845',
-      commitBond: '0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC',
-      settleIntent: '0x90F79bf6EB2c4f870365E785982E1f101E93b906',
-      slashBond: '0x15d34AA54267DB7D7c367839AAf71A00a2C6A65E',
-    };
-
-    const to = contractAddresses[params.stage];
     const amountInUnits = Math.floor(params.amountUsdc * 1_000_000); // USDC = 6 decimals
 
     // Encode real ABI calldata per stage
@@ -122,12 +113,14 @@ export async function sendZyntekTransaction(params: GanacheTxParams): Promise<{
 
     console.log(`[Ganache] ${params.stage}(intentId=${params.intentId}, amount=$${params.amountUsdc})`);
 
-    // Send to specific "contract" address with ABI-encoded calldata
+    // Send to accounts[1] — a real Ganache pre-funded address that always mines.
+    // ABI-encoded intent data is stored in the TX DATA field.
+    // value > 0 ensures Ganache automines the block immediately.
     const txHash = (await provider.send('eth_sendTransaction', [
       {
         from,
-        to,
-        value: '0x0',
+        to: accounts[1] ?? from, // always a real funded Ganache account
+        value: '0x38D7EA4C68000',  // 0.001 ETH — guarantees block is mined
         data,
       },
     ])) as string;
