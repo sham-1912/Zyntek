@@ -8,15 +8,19 @@ import { contractSimulator } from './services/contractSimulator';
 import { Header } from './components/Header';
 import { DemoScenarioBar } from './components/DemoScenarioBar';
 import type { DemoScenarioType } from './components/DemoScenarioBar';
+import { NetworkStatusOverview } from './components/NetworkStatusOverview';
 import { CrossChainVisualizer } from './components/CrossChainVisualizer';
 import { IntentForm } from './components/IntentForm';
 import { SolverBidTable } from './components/SolverBidTable';
+import { WhySolverWonCard } from './components/WhySolverWonCard';
 import { TransactionLifecycleTracker } from './components/TransactionLifecycleTracker';
 import type { LifecycleStepId } from './components/TransactionLifecycleTracker';
 import { HybridVerificationPanel } from './components/HybridVerificationPanel';
 import { FailureSlashingPanel } from './components/FailureSlashingPanel';
-import { NetworkHealthAndActivityLog } from './components/NetworkHealthAndActivityLog';
-import type { ActivityLogEntry } from './components/NetworkHealthAndActivityLog';
+import { ProtocolActivityFeed } from './components/ProtocolActivityFeed';
+import type { ActivityLogEntry } from './components/ProtocolActivityFeed';
+import { NetworkHealthCard } from './components/NetworkHealthCard';
+import { FinalSettlementRecordCard } from './components/FinalSettlementRecordCard';
 import { SensitiveDecisionModal } from './components/SensitiveDecisionModal';
 import { PreCommitModal } from './components/PreCommitModal';
 import { IntentHistoryDrawer } from './components/IntentHistoryDrawer';
@@ -38,7 +42,7 @@ export default function App() {
   const [visibleBids, setVisibleBids] = useState<SolverBid[]>([]);
   const [isBroadcasting, setIsBroadcasting] = useState<boolean>(false);
   const [arrivalMessage, setArrivalMessage] = useState<string>('');
-  const [biddingCountdownSec, setBiddingCountdownSec] = useState<number>(15);
+  const [biddingCountdownSec, setBiddingCountdownSec] = useState<number>(10);
   const [isAuctionClosed, setIsAuctionClosed] = useState<boolean>(false);
   const [winningBidId, setWinningBidId] = useState<string | undefined>(undefined);
 
@@ -51,11 +55,12 @@ export default function App() {
   // Hybrid Verification & Sensitive Modal state
   const [activeScenario, setActiveScenario] = useState<DemoScenarioType | null>('happy_path');
   const [verificationType, setVerificationType] = useState<'optimistic' | 'zk_oracle'>('optimistic');
-  const [verificationCountdownSec, setVerificationCountdownSec] = useState<number>(15);
+  const [verificationCountdownSec, setVerificationCountdownSec] = useState<number>(10);
   const [isConfirmedByUser, setIsConfirmedByUser] = useState<boolean>(false);
   const [isSensitiveModalOpen, setIsSensitiveModalOpen] = useState<boolean>(false);
   const [isAmbiguous, setIsAmbiguous] = useState<boolean>(false);
   const [isHighValue, setIsHighValue] = useState<boolean>(false);
+  const [settlementResult, setSettlementResult] = useState<SettlementResult | null>(null);
 
   // Activity Logs & Contract state
   const [activityLogs, setActivityLogs] = useState<ActivityLogEntry[]>([]);
@@ -114,6 +119,7 @@ export default function App() {
     setIsAuctionClosed(false);
     setIsFailed(false);
     setIsConfirmedByUser(false);
+    setSettlementResult(null);
     setVisibleBids([]);
     setBiddingCountdownSec(10);
     setVerificationCountdownSec(10);
@@ -304,17 +310,19 @@ export default function App() {
       origin: { y: 0.6 },
     });
 
+    const res: SettlementResult = {
+      intentId: currentIntent ? currentIntent.intentId : `int_${Date.now()}`,
+      winningSolverId: winner.solverId,
+      escrowReleasedUsd: winner.expectedOutput,
+      verificationType: verificationType,
+      txHash: '0x8f2a18b...77e9',
+      success: true,
+      executionTimeMs: 12500,
+      receipts: [],
+    };
+    setSettlementResult(res);
+
     if (currentIntent) {
-      const res: SettlementResult = {
-        intentId: currentIntent.intentId,
-        winningSolverId: winner.solverId,
-        escrowReleasedUsd: winner.expectedOutput,
-        verificationType: verificationType,
-        txHash: '0x8f2a18b...77e9',
-        success: true,
-        executionTimeMs: 12500,
-        receipts: [],
-      };
       contractSimulator.addOrUpdateHistory(currentIntent, 'settled', winner, res);
       setContractState(contractSimulator.getContractState());
       setHistory(contractSimulator.getHistory());
@@ -362,6 +370,7 @@ export default function App() {
     setIsAuctionClosed(false);
     setIsSensitiveModalOpen(false);
     setWinningBidId(undefined);
+    setSettlementResult(null);
   };
 
   // Cleanup on unmount
@@ -369,10 +378,10 @@ export default function App() {
     return () => clearAllTimeouts();
   }, []);
 
-  const winningSolver = visibleBids.find((b) => b.solverId === winningBidId);
+  const winningSolver = visibleBids.find((b) => b.solverId === winningBidId) || (isAuctionClosed && visibleBids.length > 0 ? visibleBids[0] : undefined);
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#070F1E] text-white relative font-sans">
+    <div className="min-h-screen flex flex-col bg-[#101C2C] text-[#F3F6FF] relative font-sans">
       <Header
         contractState={contractState}
         onOpenHistory={() => setIsHistoryDrawerOpen(true)}
@@ -381,84 +390,138 @@ export default function App() {
         onToggleViewMode={() => {}}
       />
 
-      <main className="flex-1 max-w-4xl mx-auto w-full px-4 sm:px-6 py-8 space-y-8">
-        {/* Module 11: Interactive Demo Scenarios Bar */}
+      <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+        {/* Top Interactive Scenario Controller Bar */}
         <DemoScenarioBar
           activeScenario={activeScenario}
           onSelectScenario={handleSelectScenario}
         />
 
-        {/* Module 6: Cross-Chain Topology Visualizer */}
-        <CrossChainVisualizer
-          intent={currentIntent}
-          selectedBid={winningSolver || visibleBids[0] || null}
-          stage={stage}
-        />
+        {/* =========================================================================
+            ROW 1 — PROTOCOL OVERVIEW: ACTIVE INTENT (Hero) + NETWORK STATUS OVERVIEW
+           ========================================================================= */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+          <div className="lg:col-span-8 flex flex-col">
+            <IntentForm
+              onPreCommitTrigger={handlePreCommitTrigger}
+              disabled={stage !== 'idle' && stage !== 'settlement' && !isFailed}
+              sliders={sliders}
+              onSlidersChange={handleSlidersChange}
+              sourceAmount={sourceAmount}
+              onAmountChange={setSourceAmount}
+            />
+          </div>
 
-        {/* Module 7: Intent Creation & Constraints Form */}
-        <IntentForm
-          onPreCommitTrigger={handlePreCommitTrigger}
-          disabled={stage !== 'idle' && stage !== 'settlement' && !isFailed}
-          sliders={sliders}
-          onSlidersChange={handleSlidersChange}
-          sourceAmount={sourceAmount}
-          onAmountChange={setSourceAmount}
-        />
+          <div className="lg:col-span-4 flex flex-col">
+            <NetworkStatusOverview
+              contractState={contractState}
+              activeSolversCount={5}
+            />
+          </div>
+        </div>
 
-        {/* Modules 2 & 8: Live Solver Auction, Capital Meter & Why Solver Won Card */}
+        {/* =========================================================================
+            ROW 2 — MAIN EXECUTION AREA: LIFECYCLE TRACKER + TOPOLOGY + ACTIVITY LOG
+           ========================================================================= */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+          {/* Left Hero Box (8 cols): Execution Lifecycle + Cross-Chain Topology */}
+          <div className="lg:col-span-8 space-y-4 flex flex-col">
+            <TransactionLifecycleTracker
+              currentStepId={lifecycleStep}
+              isFailed={isFailed}
+              failureReason={failureReason}
+              selectedSolverName={winningSolver?.solverName}
+              bondAmountUsd={winningSolver?.collateralOfferedUsd || 500}
+            />
+
+            <CrossChainVisualizer
+              intent={currentIntent}
+              selectedBid={winningSolver || visibleBids[0] || null}
+              stage={stage}
+            />
+          </div>
+
+          {/* Right Bento Card (4 cols): Monospace Protocol Activity Stream */}
+          <div className="lg:col-span-4 flex flex-col">
+            <ProtocolActivityFeed logs={activityLogs} />
+          </div>
+        </div>
+
+        {/* =========================================================================
+            ROW 3 — SOLVER COMPETITION: LIVE SOLVER BIDS + WHY THIS SOLVER WON
+           ========================================================================= */}
         {(visibleBids.length > 0 || isBroadcasting) && (
-          <SolverBidTable
-            bids={visibleBids}
-            sliders={sliders}
-            isBroadcasting={isBroadcasting}
-            biddingCountdownSec={biddingCountdownSec}
-            arrivalMessage={arrivalMessage}
-            isAuctionClosed={isAuctionClosed}
-            winningBidId={winningBidId}
-            onSelectBid={(b) => proceedWithSelectedSolver(b, activeScenario === 'solver_failure')}
-          />
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            <div className={`transition-all ${isAuctionClosed && winningSolver ? 'lg:col-span-7' : 'lg:col-span-12'}`}>
+              <SolverBidTable
+                bids={visibleBids}
+                sliders={sliders}
+                isBroadcasting={isBroadcasting}
+                biddingCountdownSec={biddingCountdownSec}
+                arrivalMessage={arrivalMessage}
+                isAuctionClosed={isAuctionClosed}
+                winningBidId={winningBidId}
+                onSelectBid={(b) => proceedWithSelectedSolver(b, activeScenario === 'solver_failure')}
+              />
+            </div>
+
+            {isAuctionClosed && winningSolver && (
+              <div className="lg:col-span-5 flex flex-col">
+                <WhySolverWonCard
+                  winningBid={winningSolver}
+                  sliders={sliders}
+                />
+              </div>
+            )}
+          </div>
         )}
 
-        {/* Module 1: Transaction Execution Lifecycle Tracker */}
-        {lifecycleStep !== 'idle' && (
-          <TransactionLifecycleTracker
-            currentStepId={lifecycleStep}
-            isFailed={isFailed}
-            failureReason={failureReason}
-            selectedSolverName={winningSolver?.solverName}
-            bondAmountUsd={winningSolver?.collateralOfferedUsd || 500}
-          />
+        {/* =========================================================================
+            ROW 4 — VERIFICATION + RISK MANAGEMENT: VERIFICATION PANEL + HEALTH CARD
+           ========================================================================= */}
+        {(stage === 'verifying' || isFailed || stage === 'settlement') && (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+            <div className="lg:col-span-8 flex flex-col">
+              {isFailed ? (
+                <FailureSlashingPanel
+                  solverName={winningSolver?.solverName || 'Solver 02 (Flash Relay)'}
+                  bondAmountUsd={winningSolver?.collateralOfferedUsd || 500}
+                  escrowAmountUsd={currentIntent?.sourceAmount || 500}
+                  onReset={handleReset}
+                />
+              ) : (
+                <HybridVerificationPanel
+                  verificationType={verificationType}
+                  countdownSec={verificationCountdownSec}
+                  isConfirmedByUser={isConfirmedByUser}
+                  onConfirmSettlement={() => {
+                    setIsConfirmedByUser(true);
+                    if (winningSolver) finalizeSettlement(winningSolver);
+                  }}
+                  status={stage === 'settlement' ? 'settled' : 'verifying'}
+                />
+              )}
+            </div>
+
+            <div className="lg:col-span-4 flex flex-col">
+              <NetworkHealthCard />
+            </div>
+          </div>
         )}
 
-        {/* Module 4: Settlement Hybrid Verification Panel */}
-        {stage === 'verifying' && !isFailed && (
-          <HybridVerificationPanel
-            verificationType={verificationType}
-            countdownSec={verificationCountdownSec}
-            isConfirmedByUser={isConfirmedByUser}
-            onConfirmSettlement={() => {
-              setIsConfirmedByUser(true);
-              if (winningSolver) finalizeSettlement(winningSolver);
-            }}
-            status="verifying"
+        {/* =========================================================================
+            ROW 5 — FINAL COMPLETION RECORD: FULFILLED INTENT + ON-CHAIN JSON RECORD
+           ========================================================================= */}
+        {stage === 'settlement' && currentIntent && winningSolver && settlementResult && (
+          <FinalSettlementRecordCard
+            intent={currentIntent}
+            winningBid={winningSolver}
+            settlementResult={settlementResult}
           />
         )}
-
-        {/* Module 5: Failure & Full Bond Slashing Panel */}
-        {isFailed && (
-          <FailureSlashingPanel
-            solverName={winningSolver?.solverName || 'Solver 02 (Flash Relay)'}
-            bondAmountUsd={winningSolver?.collateralOfferedUsd || 500}
-            escrowAmountUsd={currentIntent?.sourceAmount || 500}
-            onReset={handleReset}
-          />
-        )}
-
-        {/* Modules 9 & 10: Solver Risk/Network Health & Live Activity Log */}
-        <NetworkHealthAndActivityLog logs={activityLogs} />
       </main>
 
-      {/* Module 3: Sensitive Decision Modal */}
+      {/* Sensitive Decision Modal */}
       {currentIntent && (
         <SensitiveDecisionModal
           isOpen={isSensitiveModalOpen}

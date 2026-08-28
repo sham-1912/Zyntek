@@ -1,103 +1,85 @@
 @import "tailwindcss";
 
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   line-height: 1.5;
   font-weight: 400;
   color-scheme: dark;
-  color: #FFFFFF;
-  background-color: #070F1E;
+  color: #F3F6FF;
+  background-color: #101C2C;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  /* Custom Requested Theme:
-     - Dark Navy Blue for Background
-     - White for Text
-     - Neon for Heavy Text / Accents
-     - Low Shade of Blue for Boxes */
-  --color-bg-dark-navy: #070F1E; /* Dark Navy Blue Base */
-  --color-box-blue: #0E1E38;     /* Low Shade of Blue (Cards) */
-  --color-box-inner: #142848;    /* Inner Box Shade */
-  --color-box-elevated: #1A335C; /* Elevated/Active Box Shade */
-  --color-primary-blue: #2F6690; /* Harbor Blue */
-  --color-ice-blue: #8DC2FF;     /* Ice Blue Accent */
-  --color-neon: #CEF26D;         /* High-Contrast Neon Accent */
-  --color-neon-cyan: #00F5D4;    /* Neon Cyan */
-  --color-text-white: #FFFFFF;   /* Pure White Text */
-  --color-text-muted: #CBD5E1;   /* Soft Light Slate for Secondary */
-  --color-alert: #FF7032;        /* Alert Orange */
+  /* Color System */
+  --color-bg-main: #101C2C;       /* Midnight Harbor */
+  --color-glass-surface: rgba(22, 42, 70, 0.55);
+  --color-glass-sub: rgba(14, 30, 56, 0.65);
+  --color-primary-blue: #2F6690;  /* Harbor Blue */
+  --color-ice-blue: #8DC2FF;      /* Ice Blue */
+  --color-sunny-herb: #CEF26D;    /* Sunny Herb / Verified */
+  --color-moon-tint: #F3F6FF;     /* Moon Tint */
+  --color-amber: #E9B872;         /* Protocol Amber */
+  --color-signal-red: #D96C75;    /* Muted Signal */
+  --color-deep-slate: #243244;    /* Deep Slate */
 }
 
 body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  background: #070F1E;
-  color: #FFFFFF;
+  background: #101C2C;
+  background-image: 
+    radial-gradient(at 15% 15%, rgba(47, 102, 144, 0.12) 0px, transparent 50%),
+    radial-gradient(at 85% 25%, rgba(22, 42, 70, 0.18) 0px, transparent 50%),
+    radial-gradient(at 50% 85%, rgba(47, 102, 144, 0.08) 0px, transparent 50%);
+  background-attachment: fixed;
+  color: #F3F6FF;
 }
 
-/* Custom Surface Card Styling */
-.surface-card {
-  background: #0E1E38;
-  border: 1px solid rgba(141, 194, 255, 0.15);
+/* Subtle Glassmorphism Card System */
+.glass-card {
+  background: rgba(22, 42, 70, 0.55);
+  backdrop-filter: blur(12px) saturate(130%);
+  -webkit-backdrop-filter: blur(12px) saturate(130%);
+  border: 1px solid rgba(141, 194, 255, 0.12);
   border-radius: 1rem;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
 }
 
-.surface-elevated {
-  background: #142848;
-  border: 1px solid rgba(141, 194, 255, 0.3);
+.glass-card-elevated {
+  background: rgba(26, 49, 82, 0.7);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  border: 1px solid rgba(141, 194, 255, 0.22);
   border-radius: 1rem;
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.35);
 }
 
-.glass-panel {
-  background: #0E1E38;
-  border: 1px solid rgba(141, 194, 255, 0.18);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.45);
-  border-radius: 1rem;
+.glass-sub-box {
+  background: rgba(14, 30, 56, 0.65);
+  border: 1px solid rgba(141, 194, 255, 0.08);
+  border-radius: 0.75rem;
 }
 
-.glass-panel-glow {
-  background: #142848;
-  border: 1px solid rgba(141, 194, 255, 0.35);
-  box-shadow: 0 0 25px rgba(47, 102, 144, 0.35);
-  border-radius: 1rem;
+.glass-sub-box-hover:hover {
+  background: rgba(22, 42, 70, 0.75);
+  border-color: rgba(141, 194, 255, 0.18);
 }
 
-/* Heavy Text Neon Classes */
-.text-neon {
-  color: #CEF26D;
-  text-shadow: 0 0 12px rgba(206, 242, 109, 0.4);
-}
+/* Monospace & Text Accent Helpers */
+.text-sunny { color: #CEF26D; }
+.text-ice { color: #8DC2FF; }
+.text-moon { color: #F3F6FF; }
+.text-amber-proto { color: #E9B872; }
+.text-signal { color: #D96C75; }
 
-.text-neon-cyan {
-  color: #00F5D4;
-  text-shadow: 0 0 12px rgba(0, 245, 212, 0.4);
-}
-
-/* Semantic Brand Colors */
-.text-cost { color: #CEF26D; }
-.bg-cost { background-color: #CEF26D; }
-.border-cost { border-color: #CEF26D; }
-
-.text-speed { color: #8DC2FF; }
-.bg-speed { background-color: #8DC2FF; }
-.border-speed { border-color: #8DC2FF; }
-
-.text-safety { color: #2F6690; }
-.bg-safety { background-color: #2F6690; }
-.border-safety { border-color: #2F6690; }
-
-.text-alert { color: #FF7032; }
-.bg-alert { background-color: #FF7032; }
-.border-alert { border-color: #FF7032; }
-
-/* Custom Sliders */
+/* Custom Sliders with Glass styling */
 input[type="range"] {
   -webkit-appearance: none;
   appearance: none;
-  background: #070F1E;
+  background: rgba(14, 30, 56, 0.8);
   border-radius: 9999px;
   height: 6px;
 }
@@ -109,25 +91,25 @@ input[type="range"]::-webkit-slider-thumb {
   height: 16px;
   border-radius: 50%;
   cursor: pointer;
-  box-shadow: 0 0 8px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.5);
   transition: transform 0.15s ease;
 }
 
 input[type="range"]::-webkit-slider-thumb:hover {
-  transform: scale(1.2);
+  transform: scale(1.18);
 }
 
 .slider-cost::-webkit-slider-thumb {
   background: #CEF26D;
-  box-shadow: 0 0 12px rgba(206, 242, 109, 0.7);
+  box-shadow: 0 0 10px rgba(206, 242, 109, 0.5);
 }
 
 .slider-speed::-webkit-slider-thumb {
   background: #8DC2FF;
-  box-shadow: 0 0 12px rgba(141, 194, 255, 0.7);
+  box-shadow: 0 0 10px rgba(141, 194, 255, 0.5);
 }
 
 .slider-safety::-webkit-slider-thumb {
   background: #2F6690;
-  box-shadow: 0 0 12px rgba(47, 102, 144, 0.9);
+  box-shadow: 0 0 10px rgba(47, 102, 144, 0.7);
 }
