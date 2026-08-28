@@ -162,20 +162,24 @@ export const SolversMarketplace: React.FC<SolversMarketplaceProps> = ({
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {bids.map((bid, index) => {
+            {/* Sort bids dynamically so FLIP position swap triggers when score ranking changes */}
+            {[...bids].sort((a, b) => b.finalScore - a.finalScore).map((bid, index) => {
               const isSelected = selectedBidId === bid.solverId || (index === 0 && !selectedBidId);
               const isTopRanked = index === 0;
 
               return (
                 <div
                   key={bid.solverId}
-                  className={`ix-card p-5 space-y-4 transition-all relative flex flex-col justify-between ${
+                  className={`ix-card p-5 space-y-4 ix-flip-item ix-card-hover relative flex flex-col justify-between ${
                     isSelected ? 'border-[#C69214] ring-2 ring-[#C69214]/20 shadow-md' : 'hover:border-[#D8D2C4]'
                   }`}
+                  style={{
+                    animationDelay: `${(index + 1) * 220}ms`,
+                  }}
                 >
-                  {/* Top Badge */}
+                  {/* Leading Bid Badge */}
                   {isTopRanked && (
-                    <div className="absolute -top-2.5 left-4 px-2.5 py-0.5 rounded-full bg-[#C69214] text-white text-[10px] font-mono font-bold tracking-wider uppercase shadow-xs">
+                    <div className="absolute -top-2.5 left-4 px-2.5 py-0.5 rounded-full bg-[#C69214] text-white text-[10px] font-mono font-bold tracking-wider uppercase shadow-xs transition-all duration-300">
                       LEADING BID
                     </div>
                   )}
@@ -192,6 +196,14 @@ export const SolversMarketplace: React.FC<SolversMarketplaceProps> = ({
                         </div>
                         <div className="text-[10px] font-mono text-[#7A7568]">Rep: {bid.reputationScore}%</div>
                       </div>
+                    </div>
+
+                    {/* Score Bar Animation */}
+                    <div className="w-full h-1.5 bg-[#E8E4DA] rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-[#C69214] rounded-full transition-all duration-800 ease-out"
+                        style={{ width: `${Math.min(100, bid.finalScore * 100)}%` }}
+                      />
                     </div>
 
                     {/* Bid Values */}
@@ -224,7 +236,7 @@ export const SolversMarketplace: React.FC<SolversMarketplaceProps> = ({
                   <button
                     type="button"
                     onClick={() => onSelectBid(bid)}
-                    className={`w-full py-2.5 px-4 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                    className={`w-full py-2.5 px-4 rounded-lg text-xs font-bold transition-all ix-btn-active flex items-center justify-center gap-1.5 ${
                       isSelected
                         ? 'ix-btn-gold shadow-xs'
                         : 'ix-btn-outline hover:border-[#C69214]'

@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import type { SettlementResult } from '../services/types';
 import { ProofModal } from './ProofModal';
-import { CheckCircle2, ShieldAlert, ExternalLink } from 'lucide-react';
+import { useAnimatedNumber } from '../hooks/useAnimatedNumber';
+import { ShieldAlert, ExternalLink } from 'lucide-react';
 
 interface SettlementSummaryCardProps {
   result: SettlementResult;
@@ -12,11 +13,15 @@ export const SettlementSummaryCard: React.FC<SettlementSummaryCardProps> = ({ re
   const [showProofModal, setShowProofModal] = useState<boolean>(false);
   const comparison = result.balanceComparison;
 
+  const targetRefund = result.userRefundedUsd ?? 1000;
+  const targetBondSlashed = result.solverBondSlashedUsd ?? 50;
+  const targetNetOutcome = comparison?.afterDestinationAmount ?? 998.25;
+
+  const animatedRefund = useAnimatedNumber(result.success ? 0 : targetRefund, { duration: 1000, decimals: 2 });
+  const animatedNetOutcome = useAnimatedNumber(result.success ? targetNetOutcome : 0, { duration: 1000, decimals: 2 });
+
   // Failure & Slashing State (Matching Image 8)
   if (!result.success) {
-    const userRefund = result.userRefundedUsd ?? 1000;
-    const bondSlashed = result.solverBondSlashedUsd ?? 50;
-
     return (
       <div className="max-w-4xl mx-auto space-y-6 animate-in fade-in zoom-in-95 duration-200">
         
@@ -34,7 +39,7 @@ export const SettlementSummaryCard: React.FC<SettlementSummaryCardProps> = ({ re
           
           <div className="flex items-center justify-between border-b border-[#F5B7B1] pb-3">
             <div className="flex items-center gap-2">
-              <ShieldAlert className="w-5 h-5 text-[#922B21]" />
+              <ShieldAlert className="w-5 h-5 text-[#922B21] animate-pulse" />
               <span className="font-bold text-sm text-[#922B21] font-sans">Solver Collateral Slashing Receipt</span>
             </div>
             <span className="text-xs font-mono font-bold text-[#922B21] px-2.5 py-0.5 rounded bg-[#FDEDEC] border border-[#F5B7B1]">
@@ -46,16 +51,27 @@ export const SettlementSummaryCard: React.FC<SettlementSummaryCardProps> = ({ re
             Per IntentX protocol rules, the solver&apos;s collateral bond was partially slashed to cover full user compensation, protocol treasury fee, and the decentralized insurance reserve.
           </p>
 
+          {/* Draining Collateral Bar Animation */}
+          <div className="space-y-1 font-mono text-xs">
+            <div className="flex justify-between text-[#7A7568]">
+              <span>Collateral Stake Status:</span>
+              <span className="text-[#922B21] font-bold">DRAINED (0.00 USDC)</span>
+            </div>
+            <div className="w-full h-2.5 bg-[#FADBD8] rounded-full overflow-hidden border border-[#F5B7B1]">
+              <div className="h-full bg-[#922B21] rounded-full w-0 transition-all duration-1200 ease-out" />
+            </div>
+          </div>
+
           {/* Partial Slashing Math & Protocol Fee Breakdown */}
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 font-mono text-xs">
             <div className="ix-card-subtle p-3 space-y-1 border-[#F5B7B1] bg-white">
               <span className="text-[10px] text-[#7A7568] uppercase block">Full User Refund</span>
-              <span className="text-base font-bold text-[#1B5E20]">${userRefund.toFixed(2)} USDC</span>
+              <span className="text-base font-bold text-[#1B5E20]">${animatedRefund.toFixed(2)} USDC</span>
             </div>
 
             <div className="ix-card-subtle p-3 space-y-1 border-[#F5B7B1] bg-white">
               <span className="text-[10px] text-[#7A7568] uppercase block">Total Bond Slashed</span>
-              <span className="text-base font-bold text-[#922B21]">${bondSlashed.toFixed(2)} USDC</span>
+              <span className="text-base font-bold text-[#922B21]">${targetBondSlashed.toFixed(2)} USDC</span>
             </div>
 
             <div className="ix-card-subtle p-3 space-y-1 border-[#F5B7B1] bg-white">
@@ -74,7 +90,7 @@ export const SettlementSummaryCard: React.FC<SettlementSummaryCardProps> = ({ re
             <button
               type="button"
               onClick={() => setShowProofModal(true)}
-              className="text-[#922B21] hover:underline font-semibold flex items-center gap-1"
+              className="text-[#922B21] hover:underline font-semibold flex items-center gap-1 ix-btn-active"
             >
               <span>Inspect Slashing Proof Payload</span>
               <ExternalLink className="w-3.5 h-3.5" />
@@ -84,7 +100,7 @@ export const SettlementSummaryCard: React.FC<SettlementSummaryCardProps> = ({ re
               <button
                 type="button"
                 onClick={onResetToSwap}
-                className="ix-btn-gold px-4 py-2 text-xs"
+                className="ix-btn-gold ix-btn-active px-4 py-2 text-xs"
               >
                 Create New Intent
               </button>
@@ -125,14 +141,16 @@ export const SettlementSummaryCard: React.FC<SettlementSummaryCardProps> = ({ re
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         
         {/* Card 1: Verification Status */}
-        <div className="ix-card p-6 space-y-4">
+        <div className="ix-card p-6 space-y-4 ix-card-hover">
           <span className="text-[11px] font-mono font-medium text-[#7A7568] uppercase tracking-wider block">
             Verification Status
           </span>
 
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-[#EAF6ED] border border-[#A8E0B7] flex items-center justify-center text-[#1B5E20]">
-              <CheckCircle2 className="w-6 h-6" />
+            <div className="w-10 h-10 rounded-full bg-[#EAF6ED] border border-[#A8E0B7] flex items-center justify-center text-[#1B5E20] shadow-xs">
+              <svg className="w-6 h-6 stroke-current fill-none stroke-[2.5]" viewBox="0 0 24 24">
+                <path className="animate-stroke-draw" strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
             </div>
             <div>
               <div className="text-xl font-extrabold text-[#1B5E20] font-mono">VERIFIED</div>
@@ -157,7 +175,7 @@ export const SettlementSummaryCard: React.FC<SettlementSummaryCardProps> = ({ re
         </div>
 
         {/* Card 2: Settlement Details / Payout Breakdown */}
-        <div className="ix-card p-6 space-y-4">
+        <div className="ix-card p-6 space-y-4 ix-card-hover">
           <span className="text-[11px] font-mono font-medium text-[#7A7568] uppercase tracking-wider block">
             Settlement Details
           </span>
@@ -180,7 +198,7 @@ export const SettlementSummaryCard: React.FC<SettlementSummaryCardProps> = ({ re
 
             <div className="flex justify-between border-t border-[#E8E4DA] pt-2 font-bold text-sm text-[#1B5E20]">
               <span>Net User Outcome Delivered:</span>
-              <span>${(comparison?.afterDestinationAmount || 998.25).toFixed(2)} USDC</span>
+              <span className="transition-all duration-300">${animatedNetOutcome.toFixed(2)} USDC</span>
             </div>
           </div>
         </div>

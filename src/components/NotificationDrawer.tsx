@@ -107,6 +107,12 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({
                   <p className="text-[11px] text-[#6B6659] leading-relaxed font-sans pl-6">
                     {item.desc}
                   </p>
+
+                  {!item.read && (
+                    <div className="w-full h-0.5 bg-[#FAF5E8] rounded-full overflow-hidden mt-2.5">
+                      <div className="h-full bg-[#C69214] animate-toast-timer" />
+                    </div>
+                  )}
                 </div>
               );
             })

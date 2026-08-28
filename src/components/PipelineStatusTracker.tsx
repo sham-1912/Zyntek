@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import type { PipelineStage, VerificationType, SettlementResult } from '../services/types';
 import { ProofModal } from './ProofModal';
-import { CheckCircle2, ExternalLink, Check } from 'lucide-react';
+import { ExternalLink, Check } from 'lucide-react';
 
 interface PipelineStatusTrackerProps {
   stage: PipelineStage;
@@ -135,6 +135,7 @@ export const PipelineStatusTracker: React.FC<PipelineStatusTrackerProps> = ({
           {timelineSteps.map((step, idx) => {
             const isDone = idx < activeStepIdx || stage === 'settled';
             const isCurrent = idx === activeStepIdx && stage !== 'settled';
+            const isFailed = stage === 'slashed_refunded' && idx === activeStepIdx;
 
             return (
               <div key={idx} className="relative flex items-start gap-4">
@@ -142,7 +143,7 @@ export const PipelineStatusTracker: React.FC<PipelineStatusTrackerProps> = ({
                 {/* Connecting Vertical Line */}
                 {idx < timelineSteps.length - 1 && (
                   <div
-                    className={`absolute left-[15px] top-8 bottom-0 w-[2px] -mb-6 ${
+                    className={`absolute left-[15px] top-8 bottom-0 w-[2px] -mb-6 transition-colors duration-500 ${
                       isDone ? 'bg-[#C69214]' : 'bg-[#E8E4DA]'
                     }`}
                   />
@@ -150,16 +151,25 @@ export const PipelineStatusTracker: React.FC<PipelineStatusTrackerProps> = ({
 
                 {/* Circle Icon Indicator */}
                 <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 z-10 ${
-                    isDone
-                      ? 'bg-[#C69214] text-white'
+                  className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 z-10 transition-all duration-300 ${
+                    isFailed
+                      ? 'bg-[#FDEDEC] border-2 border-[#922B21] text-[#922B21] animate-red-pulse-fail'
+                      : isDone
+                      ? 'bg-[#C69214] text-white shadow-xs'
                       : isCurrent
-                      ? 'bg-white border-2 border-[#C69214] text-[#C69214]'
+                      ? 'bg-white border-2 border-[#C69214] text-[#C69214] ring-4 ring-[#C69214]/15'
                       : 'bg-white border-2 border-[#E8E4DA] text-[#C5BEB0]'
                   }`}
                 >
                   {isDone ? (
-                    <CheckCircle2 className="w-5 h-5" />
+                    <svg className="w-5 h-5 stroke-current fill-none stroke-[2.5]" viewBox="0 0 24 24">
+                      <path
+                        className="animate-stroke-draw"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
                   ) : (
                     <span className="w-2.5 h-2.5 rounded-full bg-current" />
                   )}
@@ -168,7 +178,9 @@ export const PipelineStatusTracker: React.FC<PipelineStatusTrackerProps> = ({
                 {/* Content Details */}
                 <div className="space-y-2 pt-0.5 flex-1">
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    <h3 className={`text-base font-bold font-sans ${isCurrent || isDone ? 'text-[#1A1915]' : 'text-[#7A7568]'}`}>
+                    <h3 className={`text-base font-bold font-sans transition-colors duration-200 ${
+                      isFailed ? 'text-[#922B21]' : isCurrent || isDone ? 'text-[#1A1915]' : 'text-[#7A7568]'
+                    }`}>
                       {step.title}
                     </h3>
                     <span className="text-[10px] font-mono text-[#7A7568]">
@@ -180,25 +192,37 @@ export const PipelineStatusTracker: React.FC<PipelineStatusTrackerProps> = ({
                     {step.desc}
                   </p>
 
-                  {/* Active Step Highlight Box (Source Tx & Est Completion) */}
+                  {/* Active Step Highlight Box (Source Tx & Est Completion & Animated Transit Path Dot) */}
                   {isCurrent && idx === 2 && (
-                    <div className="ix-card-subtle p-3 mt-2 flex flex-wrap items-center justify-between gap-4 font-mono text-xs max-w-lg border-[#D8D2C4]">
-                      <div>
-                        <span className="text-[10px] text-[#7A7568] uppercase block">Source Tx</span>
-                        <a
-                          href={`#tx-${step.sourceTx}`}
-                          className="font-bold text-[#1A1915] hover:text-[#C69214] flex items-center gap-1"
-                        >
-                          <span>{step.sourceTx}</span>
-                          <ExternalLink className="w-3 h-3" />
-                        </a>
+                    <div className="ix-card-subtle p-3 mt-2 space-y-2 font-mono text-xs max-w-lg border-[#D8D2C4] relative overflow-hidden">
+                      <div className="flex flex-wrap items-center justify-between gap-4">
+                        <div>
+                          <span className="text-[10px] text-[#7A7568] uppercase block">Source Tx</span>
+                          <a
+                            href={`#tx-${step.sourceTx}`}
+                            className="font-bold text-[#1A1915] hover:text-[#C69214] flex items-center gap-1"
+                          >
+                            <span>{step.sourceTx}</span>
+                            <ExternalLink className="w-3 h-3" />
+                          </a>
+                        </div>
+
+                        <div className="text-right">
+                          <span className="text-[10px] text-[#7A7568] uppercase block">Est. Completion</span>
+                          <span className="font-bold text-[#1A1915]">{step.estCompletion}</span>
+                        </div>
                       </div>
 
-                      <div className="text-right">
-                        <span className="text-[10px] text-[#7A7568] uppercase block">Est. Completion</span>
-                        <span className="font-bold text-[#1A1915]">{step.estCompletion}</span>
+                      {/* Animated Transit Path Line */}
+                      <div className="relative w-full h-1 bg-[#E8E4DA] rounded-full overflow-hidden">
+                        <div className="w-3 h-3 rounded-full bg-[#C69214] animate-transit-dot" />
                       </div>
                     </div>
+                  )}
+
+                  {/* Indeterminate Shimmer Progress Bar during ZK Verification */}
+                  {isCurrent && idx === 3 && (verificationType === 'zk_oracle' || isHighValue) && (
+                    <div className="w-full h-2 rounded-full overflow-hidden animate-shimmer-indeterminate mt-2 border border-[#E5D19E]" />
                   )}
                 </div>
 
@@ -211,7 +235,7 @@ export const PipelineStatusTracker: React.FC<PipelineStatusTrackerProps> = ({
         <div className="pt-4 border-t border-[#E8E4DA] flex items-center justify-between text-xs font-mono">
           <div className="flex items-center gap-2">
             <span className="text-[#7A7568]">VERIFICATION TIER:</span>
-            <span className="px-2 py-0.5 rounded bg-[#FAF5E8] border border-[#E5D19E] text-[#8C6407] font-bold uppercase">
+            <span className="px-2 py-0.5 rounded bg-[#FAF5E8] border border-[#E5D19E] text-[#8C6407] font-bold uppercase transition-all duration-300">
               {verificationType === 'zk_oracle' || isHighValue
                 ? 'ZK-Oracle Path (High-Value Tier ≥ $1,000)'
                 : `Optimistic Path (Challenge Window: 00:${challengeCountdownSec < 10 ? '0' : ''}${challengeCountdownSec})`}
@@ -221,7 +245,7 @@ export const PipelineStatusTracker: React.FC<PipelineStatusTrackerProps> = ({
           <button
             type="button"
             onClick={() => setShowProofModal(true)}
-            className="text-[#C69214] hover:underline font-semibold flex items-center gap-1"
+            className="text-[#C69214] hover:underline font-semibold flex items-center gap-1 ix-btn-active"
           >
             <span>View Proof / Inspect Payload</span>
             <ExternalLink className="w-3.5 h-3.5" />

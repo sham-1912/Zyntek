@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import type { UserIntent, ChainId, PrioritySliders as SlidersType } from '../services/types';
-import { ArrowRight, ChevronDown, Search } from 'lucide-react';
+import { ArrowRight, ChevronDown, Search, Loader2, CheckCircle2 } from 'lucide-react';
 
 interface IntentFormProps {
   onPreCommitTrigger: (intent: UserIntent) => void;
@@ -14,6 +14,10 @@ export const IntentForm: React.FC<IntentFormProps> = ({ onPreCommitTrigger, disa
 
   const [destinationChain, setDestinationChain] = useState<ChainId>('solana');
   const [destinationAsset] = useState<string>('USDC');
+
+  // Submit button morphing state
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [submitSuccess, setSubmitSuccess] = useState<boolean>(false);
 
   // Sliders with auto-rebalancing to sum to 100%
   const [sliders, setSliders] = useState<SlidersType>({
@@ -57,9 +61,15 @@ export const IntentForm: React.FC<IntentFormProps> = ({ onPreCommitTrigger, disa
 
   const estimatedMinOutput = Number((sourceAmount * 0.99).toFixed(2));
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (disabled || sourceAmount <= 0) return;
+    if (disabled || isSubmitting || sourceAmount <= 0) return;
+
+    setIsSubmitting(true);
+    await new Promise((r) => setTimeout(r, 400)); // Morphing loading state
+    setIsSubmitting(false);
+    setSubmitSuccess(true);
+    await new Promise((r) => setTimeout(r, 350)); // Checkmark pulse
 
     const newIntent: UserIntent = {
       intentId: `int_${Math.random().toString(36).substr(2, 8)}`,
@@ -74,8 +84,11 @@ export const IntentForm: React.FC<IntentFormProps> = ({ onPreCommitTrigger, disa
       timestamp: Date.now(),
     };
 
+    setSubmitSuccess(false);
     onPreCommitTrigger(newIntent);
   };
+
+  const sliderTotal = sliders.cost + sliders.speed + sliders.safety;
 
   return (
     <div className="max-w-3xl mx-auto space-y-8 animate-in fade-in zoom-in-95 duration-200">
@@ -93,7 +106,7 @@ export const IntentForm: React.FC<IntentFormProps> = ({ onPreCommitTrigger, disa
       <form onSubmit={handleSubmit} className="space-y-6">
         
         {/* Card 1: Networks & Amount (Matching Image 1) */}
-        <div className="ix-card p-6 space-y-6">
+        <div className="ix-card p-6 space-y-6 ix-card-hover">
           
           {/* Source & Destination Network Selection */}
           <div className="relative grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
@@ -188,7 +201,7 @@ export const IntentForm: React.FC<IntentFormProps> = ({ onPreCommitTrigger, disa
                   key={amt}
                   type="button"
                   onClick={() => setSourceAmount(amt)}
-                  className={`px-2.5 py-1 rounded text-xs font-mono transition-all ${
+                  className={`px-2.5 py-1 rounded text-xs font-mono transition-all ix-btn-active ${
                     sourceAmount === amt
                       ? 'bg-[#C69214] text-white font-bold'
                       : 'bg-white border border-[#E8E4DA] text-[#6B6659] hover:border-[#C69214]'
@@ -203,13 +216,13 @@ export const IntentForm: React.FC<IntentFormProps> = ({ onPreCommitTrigger, disa
         </div>
 
         {/* Card 2: Solver Priorities Sliders (Matching Image 1) */}
-        <div className="ix-card p-6 space-y-6">
+        <div className="ix-card p-6 space-y-6 ix-card-hover">
           <div className="flex items-center justify-between border-b border-[#E8E4DA] pb-3">
             <span className="text-[11px] font-mono font-medium text-[#7A7568] uppercase tracking-wider">
               Solver Priorities
             </span>
-            <span className="text-xs font-mono text-[#C69214] font-semibold">
-              Auto-Balanced (Total: 100%)
+            <span className="text-xs font-mono text-[#C69214] font-semibold transition-all duration-200">
+              Auto-Balanced (Total: {sliderTotal}%)
             </span>
           </div>
 
@@ -221,7 +234,7 @@ export const IntentForm: React.FC<IntentFormProps> = ({ onPreCommitTrigger, disa
                   <span>💳</span>
                   <span>Cost Efficiency</span>
                 </div>
-                <span className="font-mono font-bold text-[#1A1915]">{sliders.cost}%</span>
+                <span className="font-mono font-bold text-[#1A1915] transition-all duration-200">{sliders.cost}%</span>
               </div>
               <input
                 type="range"
@@ -229,7 +242,7 @@ export const IntentForm: React.FC<IntentFormProps> = ({ onPreCommitTrigger, disa
                 max="100"
                 value={sliders.cost}
                 onChange={(e) => handleSliderChange('cost', Number(e.target.value))}
-                className="ix-slider"
+                className="ix-slider transition-all duration-200 ease-out"
               />
             </div>
 
@@ -240,7 +253,7 @@ export const IntentForm: React.FC<IntentFormProps> = ({ onPreCommitTrigger, disa
                   <span>⚡</span>
                   <span>Execution Speed</span>
                 </div>
-                <span className="font-mono font-bold text-[#1A1915]">{sliders.speed}%</span>
+                <span className="font-mono font-bold text-[#1A1915] transition-all duration-200">{sliders.speed}%</span>
               </div>
               <input
                 type="range"
@@ -248,7 +261,7 @@ export const IntentForm: React.FC<IntentFormProps> = ({ onPreCommitTrigger, disa
                 max="100"
                 value={sliders.speed}
                 onChange={(e) => handleSliderChange('speed', Number(e.target.value))}
-                className="ix-slider"
+                className="ix-slider transition-all duration-200 ease-out"
               />
             </div>
 
@@ -259,7 +272,7 @@ export const IntentForm: React.FC<IntentFormProps> = ({ onPreCommitTrigger, disa
                   <span>🛡️</span>
                   <span>Security Margin</span>
                 </div>
-                <span className="font-mono font-bold text-[#1A1915]">{sliders.safety}%</span>
+                <span className="font-mono font-bold text-[#1A1915] transition-all duration-200">{sliders.safety}%</span>
               </div>
               <input
                 type="range"
@@ -267,25 +280,41 @@ export const IntentForm: React.FC<IntentFormProps> = ({ onPreCommitTrigger, disa
                 max="100"
                 value={sliders.safety}
                 onChange={(e) => handleSliderChange('safety', Number(e.target.value))}
-                className="ix-slider"
+                className="ix-slider transition-all duration-200 ease-out"
               />
             </div>
           </div>
 
           {/* Live Strategy Preview Line */}
-          <div className="pt-2 border-t border-[#E8E4DA] text-xs text-[#6B6659] italic flex items-center gap-2 font-sans">
+          <div className="pt-2 border-t border-[#E8E4DA] text-xs text-[#6B6659] italic flex items-center gap-2 font-sans transition-all duration-300">
             <span>{getStrategyPreviewText()}</span>
           </div>
         </div>
 
-        {/* Submit Action Button (Matching Image 1: FIND SOLVERS 🔍) */}
+        {/* Morphing Submit Button */}
         <button
           type="submit"
-          disabled={disabled}
-          className="w-full py-4 px-6 ix-btn-gold text-base uppercase font-bold tracking-wider flex items-center justify-center gap-2 shadow-md hover:shadow-lg disabled:opacity-50 transition-all cursor-pointer"
+          disabled={disabled || isSubmitting || submitSuccess}
+          className={`w-full py-4 px-6 ix-btn-gold ix-btn-active text-base uppercase font-bold tracking-wider flex items-center justify-center gap-2 shadow-md hover:shadow-lg disabled:opacity-50 transition-all cursor-pointer ${
+            submitSuccess ? 'bg-emerald-600 hover:bg-emerald-700' : ''
+          }`}
         >
-          <span>FIND SOLVERS</span>
-          <Search className="w-4 h-4 stroke-[2.5]" />
+          {isSubmitting ? (
+            <>
+              <Loader2 className="w-5 h-5 animate-spin" />
+              <span>FINDING OPTIMAL SOLVERS...</span>
+            </>
+          ) : submitSuccess ? (
+            <>
+              <CheckCircle2 className="w-5 h-5 text-white animate-stroke-draw" />
+              <span>SOLVERS FOUND!</span>
+            </>
+          ) : (
+            <>
+              <span>FIND SOLVERS</span>
+              <Search className="w-4 h-4 stroke-[2.5]" />
+            </>
+          )}
         </button>
 
       </form>

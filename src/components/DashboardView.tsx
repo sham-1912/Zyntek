@@ -1,4 +1,5 @@
 import React from 'react';
+import { useAnimatedNumber } from '../hooks/useAnimatedNumber';
 import { Cpu, Layers, ShieldCheck, ArrowRight, Activity } from 'lucide-react';
 
 interface DashboardViewProps {
@@ -7,6 +8,11 @@ interface DashboardViewProps {
 }
 
 export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate, intentsCount = 1204 }) => {
+  const tvl = useAnimatedNumber(284.5, { duration: 1200, decimals: 1 });
+  const activeNodes = useAnimatedNumber(142, { duration: 1000, decimals: 0 });
+  const animIntents = useAnimatedNumber(intentsCount, { duration: 1000, decimals: 0 });
+  const reserve = useAnimatedNumber(520400, { duration: 1200, decimals: 0 });
+
   return (
     <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in zoom-in-95 duration-200">
       
@@ -23,39 +29,39 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate, intent
       {/* 4 Overview Stat Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 font-mono">
         
-        <div className="ix-card p-5 space-y-2">
+        <div className="ix-card p-5 space-y-2 ix-card-hover">
           <div className="flex items-center justify-between text-[#7A7568]">
             <span className="text-[10px] uppercase tracking-wider">TOTAL VALUE LOCKED</span>
             <Layers className="w-4 h-4 text-[#C69214]" />
           </div>
-          <div className="text-2xl font-extrabold text-[#1A1915]">$284.5M</div>
+          <div className="text-2xl font-extrabold text-[#1A1915]">${tvl.toFixed(1)}M</div>
           <div className="text-[11px] text-[#C69214] font-sans">+12.4% vs last week</div>
         </div>
 
-        <div className="ix-card p-5 space-y-2">
+        <div className="ix-card p-5 space-y-2 ix-card-hover">
           <div className="flex items-center justify-between text-[#7A7568]">
             <span className="text-[10px] uppercase tracking-wider">ACTIVE SOLVERS</span>
             <Cpu className="w-4 h-4 text-[#C69214]" />
           </div>
-          <div className="text-2xl font-extrabold text-[#1A1915]">142 Nodes</div>
+          <div className="text-2xl font-extrabold text-[#1A1915]">{activeNodes} Nodes</div>
           <div className="text-[11px] text-[#1B5E20] font-sans">100% Operational Status</div>
         </div>
 
-        <div className="ix-card p-5 space-y-2">
+        <div className="ix-card p-5 space-y-2 ix-card-hover">
           <div className="flex items-center justify-between text-[#7A7568]">
             <span className="text-[10px] uppercase tracking-wider">INTENTS PROCESSED</span>
             <Activity className="w-4 h-4 text-[#C69214]" />
           </div>
-          <div className="text-2xl font-extrabold text-[#1A1915]">{intentsCount.toLocaleString()}</div>
+          <div className="text-2xl font-extrabold text-[#1A1915]">{animIntents.toLocaleString()}</div>
           <div className="text-[11px] text-[#1B5E20] font-sans">99.4% Avg Success Rate</div>
         </div>
 
-        <div className="ix-card p-5 space-y-2">
+        <div className="ix-card p-5 space-y-2 ix-card-hover">
           <div className="flex items-center justify-between text-[#7A7568]">
             <span className="text-[10px] uppercase tracking-wider">PROTOCOL RESERVE</span>
             <ShieldCheck className="w-4 h-4 text-[#C69214]" />
           </div>
-          <div className="text-2xl font-extrabold text-[#1A1915]">$520,400</div>
+          <div className="text-2xl font-extrabold text-[#1A1915]">${reserve.toLocaleString()}</div>
           <div className="text-[11px] text-[#7A7568] font-sans">Insurance Vault Collateral</div>
         </div>
 
