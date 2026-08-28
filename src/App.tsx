@@ -269,7 +269,7 @@ export default function App() {
         onToggleViewMode={setViewMode}
       />
 
-      <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      <main className="flex-1 max-w-4xl mx-auto w-full px-4 sm:px-6 py-8 space-y-8">
         
         {/* Render View Mode: Solver Dashboard vs. User View */}
         {viewMode === 'solver' ? (
@@ -315,27 +315,24 @@ export default function App() {
               </div>
             </div>
 
-            {/* Stage 1: Intent Form & Status Tracker Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-              <div className="lg:col-span-6">
-                <IntentForm onPreCommitTrigger={handlePreCommitTrigger} disabled={stage !== 'idle' && stage !== 'bidding_window'} />
-              </div>
+            {/* Section 1: Intent Creation Form + Sliders */}
+            <IntentForm onPreCommitTrigger={handlePreCommitTrigger} disabled={stage !== 'idle' && stage !== 'bidding_window'} />
 
-              <div className="lg:col-span-6 space-y-6">
-                <PipelineStatusTracker
-                  stage={stage}
-                  verificationType={verificationType}
-                  challengeCountdownSec={challengeCountdownSec}
-                  subStatusText={subStatusText}
-                  settlementResult={settlementResult}
-                  intentId={currentIntent?.intentId}
-                  solverBondUsd={selectedBid?.collateralOfferedUsd}
-                  intentAmountUsd={currentIntent?.sourceAmount}
-                />
-              </div>
-            </div>
+            {/* Section 2: Pipeline Status Tracker (Full-Width 5-Stage Stepper) */}
+            {stage !== 'idle' && (
+              <PipelineStatusTracker
+                stage={stage}
+                verificationType={verificationType}
+                challengeCountdownSec={challengeCountdownSec}
+                subStatusText={subStatusText}
+                settlementResult={settlementResult}
+                intentId={currentIntent?.intentId}
+                solverBondUsd={selectedBid?.collateralOfferedUsd}
+                intentAmountUsd={currentIntent?.sourceAmount}
+              />
+            )}
 
-            {/* Stage 3 & 4: Solver Bids Table Section */}
+            {/* Section 3: Solver Bids Table (Ranked Vertical Stack) */}
             {(bids.length > 0 || isBroadcasting) && currentIntent && (
               <SolverBidTable
                 bids={bids}
