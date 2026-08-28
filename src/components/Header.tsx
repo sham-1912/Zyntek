@@ -8,6 +8,8 @@ interface HeaderProps {
   onSelectTab: (tab: 'swap' | 'dashboard' | 'intents' | 'solvers' | 'result') => void;
   viewMode: 'user' | 'solver';
   onToggleViewMode: (mode: 'user' | 'solver') => void;
+  unreadNotificationsCount?: number;
+  onOpenNotifications?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -15,6 +17,8 @@ export const Header: React.FC<HeaderProps> = ({
   onSelectTab,
   viewMode,
   onToggleViewMode,
+  unreadNotificationsCount = 0,
+  onOpenNotifications,
 }) => {
   const [wallet, setWallet] = useState<WalletState>(web3Provider.getWalletState());
   const [isSwitching, setIsSwitching] = useState<boolean>(false);
@@ -27,8 +31,14 @@ export const Header: React.FC<HeaderProps> = ({
     return unsubscribe;
   }, []);
 
-  const handleToggleWallet = async () => {
+  const handleConnectWallet = async () => {
     const updated = await web3Provider.connectWallet();
+    setWallet(updated);
+    setShowWalletMenu(false);
+  };
+
+  const handleDisconnectWallet = async () => {
+    const updated = await web3Provider.disconnectWallet();
     setWallet(updated);
     setShowWalletMenu(false);
   };
@@ -140,53 +150,71 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Notifications Icon Button */}
           <button 
             type="button"
+            onClick={onOpenNotifications}
             className="w-9 h-9 rounded-lg flex items-center justify-center text-[#6B6659] hover:text-[#1A1915] hover:bg-[#F5F2EA] transition-colors relative"
             aria-label="Notifications"
           >
             <Bell className="w-4 h-4" />
-            <span className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-[#C69214]" />
+            {unreadNotificationsCount > 0 && (
+              <span className="absolute top-1.5 right-1.5 min-w-[14px] h-[14px] px-1 rounded-full bg-[#C69214] text-white text-[9px] font-mono font-bold flex items-center justify-center">
+                {unreadNotificationsCount}
+              </span>
+            )}
           </button>
 
           {/* Wallet Address Chip (Matching Reference Monospace Pill `• 0x71...A92F`) */}
           <div className="relative">
-            <button
-              type="button"
-              onClick={() => setShowWalletMenu(!showWalletMenu)}
-              className="px-3 py-1.5 rounded-lg bg-[#EFECE6] hover:bg-[#E8E4DA] border border-[#DFD9CD] text-xs font-mono text-[#38352F] flex items-center gap-2 transition-all"
-            >
-              <span className={`w-2 h-2 rounded-full ${
-                wallet.isConnected 
-                  ? (isGanache ? 'bg-[#C69214]' : 'bg-emerald-500') 
-                  : 'bg-amber-500 animate-pulse'
-              }`} />
-              <span>{truncateAddress(wallet.address)}</span>
-            </button>
+            {wallet.isConnected ? (
+              <button
+                type="button"
+                onClick={() => setShowWalletMenu(!showWalletMenu)}
+                className="px-3 py-1.5 rounded-lg bg-[#EFECE6] hover:bg-[#E8E4DA] border border-[#DFD9CD] text-xs font-mono text-[#38352F] flex items-center gap-2 transition-all"
+              >
+                <span className={`w-2 h-2 rounded-full ${
+                  isGanache ? 'bg-[#C69214]' : 'bg-emerald-500'
+                }`} />
+                <span>{truncateAddress(wallet.address)}</span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={handleConnectWallet}
+                className="ix-btn-gold px-3.5 py-1.5 text-xs font-mono font-bold flex items-center gap-1.5"
+              >
+                <span>Connect Wallet</span>
+              </button>
+            )}
 
-            {/* Wallet Quick Menu */}
-            {showWalletMenu && (
+            {/* Wallet Quick Dropdown Menu */}
+            {showWalletMenu && wallet.isConnected && (
               <div className="absolute right-0 mt-2 w-64 bg-white border border-[#E8E4DA] rounded-xl shadow-lg p-3 z-50 animate-in fade-in zoom-in duration-150">
-                <div className="text-[11px] font-mono text-[#7A7568] uppercase mb-1">Connected Network</div>
-                <div className="text-xs font-mono font-semibold text-[#1A1915] mb-2">{wallet.networkName}</div>
+                <div className="text-[11px] font-mono text-[#7A7568] uppercase mb-1">Connected Account</div>
+                <div className="text-xs font-mono font-bold text-[#1A1915] truncate mb-2">{wallet.address}</div>
 
-                <div className="text-[11px] font-mono text-[#7A7568] uppercase mb-1">Balance</div>
-                <div className="text-xs font-mono font-bold text-[#C69214] mb-3">{wallet.balanceEth} ETH</div>
+                <div className="text-[11px] font-mono text-[#7A7568] uppercase mb-1">Network & Balance</div>
+                <div className="flex justify-between text-xs font-mono font-bold text-[#C69214] mb-3">
+                  <span>{wallet.networkName}</span>
+                  <span>{wallet.balanceEth} ETH</span>
+                </div>
 
                 <div className="pt-2 border-t border-[#E8E4DA] flex flex-col gap-1.5">
                   <button
                     type="button"
-                    onClick={handleToggleWallet}
-                    className="w-full px-3 py-1.5 rounded bg-[#F5F2EA] hover:bg-[#E8E4DA] text-xs font-mono text-[#1A1915] text-left transition-colors"
+                    onClick={handleDisconnectWallet}
+                    className="w-full px-3 py-1.5 rounded bg-[#FDEDEC] hover:bg-[#FADBD8] text-xs font-mono font-bold text-[#922B21] text-left transition-colors flex items-center justify-between"
                   >
-                    {wallet.isConnected ? 'Disconnect Wallet' : 'Connect Wallet'}
+                    <span>Disconnect Wallet</span>
+                    <span>✕</span>
                   </button>
 
                   {!isGanache && (
                     <button
                       type="button"
                       onClick={handleSwitchNetwork}
-                      className="w-full px-3 py-1.5 rounded bg-[#FAF5E8] hover:bg-[#F3E7C4] text-xs font-mono text-[#8C6407] text-left transition-colors"
+                      disabled={isSwitching}
+                      className="w-full px-3 py-1.5 rounded bg-[#FAF5E8] hover:bg-[#F3E7C4] text-xs font-mono font-bold text-[#8C6407] text-left transition-colors"
                     >
-                      Switch to Ganache (1337)
+                      {isSwitching ? 'Switching...' : 'Switch to Ganache 1337'}
                     </button>
                   )}
                 </div>

@@ -18,6 +18,8 @@ import { PreCommitModal } from './components/PreCommitModal';
 import { SensitiveDecisionModal } from './components/SensitiveDecisionModal';
 import { JudgeToolsPanel } from './components/JudgeToolsPanel';
 import { SolverDashboard } from './components/SolverDashboard';
+import { NotificationDrawer } from './components/NotificationDrawer';
+import type { NotificationItem } from './components/NotificationDrawer';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<'swap' | 'dashboard' | 'intents' | 'solvers' | 'result'>('swap');
@@ -26,6 +28,37 @@ export default function App() {
   const [currentIntent, setCurrentIntent] = useState<UserIntent | null>(null);
   const [draftIntent, setDraftIntent] = useState<UserIntent | null>(null);
   const [isPreCommitOpen, setIsPreCommitOpen] = useState<boolean>(false);
+
+  // Notification state
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState<boolean>(false);
+  const [notifications, setNotifications] = useState<NotificationItem[]>([
+    {
+      id: 'notif-1',
+      title: 'Ledger Contract Active',
+      desc: 'ZyntekIntentLedger smart contract deployed on Ganache (Chain #1337 / #5777).',
+      time: 'Just now',
+      type: 'info',
+      read: false,
+    },
+    {
+      id: 'notif-2',
+      title: 'Solver Network Operational',
+      desc: '142 solver nodes active with $284.5M TVL ready to execute cross-chain intents.',
+      time: '5m ago',
+      type: 'info',
+      read: false,
+    },
+  ]);
+
+  const addNotification = (item: Omit<NotificationItem, 'id' | 'time' | 'read'>) => {
+    const newItem: NotificationItem = {
+      ...item,
+      id: `notif-${Date.now()}`,
+      time: 'Just now',
+      read: false,
+    };
+    setNotifications((prev) => [newItem, ...prev]);
+  };
 
   const [bids, setBids] = useState<SolverBid[]>([]);
   const [isBroadcasting, setIsBroadcasting] = useState<boolean>(false);
@@ -82,6 +115,12 @@ export default function App() {
     contractSimulator.addOrUpdateHistory(intent, 'escrow_mining');
     updateContractState();
 
+    addNotification({
+      title: 'Escrow Lock Initiated',
+      desc: `EVM Escrow deposit of $${intent.sourceAmount.toLocaleString()} USDC signed and submitted to Ganache.`,
+      type: 'info',
+    });
+
     // Automatically switch to /solvers to view live auction bidding competition!
     setActiveTab('solvers');
 
@@ -108,6 +147,12 @@ export default function App() {
       setTimeout(() => {
         setBids(allBids);
         setSubStatusText('Solver C (Shield) bid received (3/3). Auction complete.');
+
+        addNotification({
+          title: 'Solver Bidding Complete',
+          desc: '3 competitive solver bids received. Highest score: NexusRoute (AlphaNode).',
+          type: 'info',
+        });
 
         const ambCheck = checkAmbiguity(allBids);
         setIsAmbiguous(ambCheck.isAmbiguous);
@@ -184,6 +229,12 @@ export default function App() {
     contractSimulator.addOrUpdateHistory(currentIntent, 'solver_committed', solver);
     updateContractState();
 
+    addNotification({
+      title: 'Solver Assigned & Bond Committed',
+      desc: `${solver.solverName} committed $${solver.collateralOfferedUsd} collateral bond on Ganache.`,
+      type: 'info',
+    });
+
     // Stage 6: Cross-Chain Transit Execution
     setStage('executing_cross_chain');
     setSubStatusText('Substep 1/3: Solver broadcasting cross-chain transaction...');
@@ -218,6 +269,14 @@ export default function App() {
 
     contractSimulator.addOrUpdateHistory(currentIntent, finalStage, solver, result);
     updateContractState();
+
+    addNotification({
+      title: result.success ? 'Settlement Finalized' : 'Solver Stake Slashed',
+      desc: result.success
+        ? `Cross-chain intent settled. Outcome delivered on destination chain.`
+        : 'Solver failed delivery within deadline. User escrow refunded & solver bond slashed.',
+      type: result.success ? 'success' : 'slashed',
+    });
 
     // Switch to /result page view!
     setActiveTab('result');
@@ -263,6 +322,8 @@ export default function App() {
         onSelectTab={setActiveTab}
         viewMode={viewMode}
         onToggleViewMode={setViewMode}
+        unreadNotificationsCount={notifications.filter((n) => !n.read).length}
+        onOpenNotifications={() => setIsNotificationsOpen(true)}
       />
 
       <div className="flex-1 flex w-full">
@@ -274,14 +335,15 @@ export default function App() {
           pendingIntentsCount={history.filter((h) => h.status !== 'settled' && h.status !== 'slashed_refunded').length}
         />
 
-        {/* Main Content Area */}
+        {/* Main Content Area with Smooth Page Transition */}
         <main className="flex-1 p-6 md:p-8 max-w-7xl mx-auto w-full overflow-x-hidden">
-          
-          {/* Solver Operator View Mode */}
-          {viewMode === 'solver' ? (
-            <SolverDashboard history={history} />
-          ) : (
-            <>
+          <div key={activeTab} className="animate-in fade-in slide-in-from-bottom-2 duration-300 ease-out">
+            
+            {/* Solver Operator View Mode */}
+            {viewMode === 'solver' ? (
+              <SolverDashboard history={history} />
+            ) : (
+              <>
               {/* Route 1: /dashboard */}
               {activeTab === 'dashboard' && (
                 <DashboardView
@@ -405,9 +467,18 @@ export default function App() {
               )}
             </>
           )}
-
+          </div>
         </main>
       </div>
+
+      {/* Real-time Notifications Drawer */}
+      <NotificationDrawer
+        isOpen={isNotificationsOpen}
+        onClose={() => setIsNotificationsOpen(false)}
+        notifications={notifications}
+        onMarkAllAsRead={() => setNotifications((prev) => prev.map((n) => ({ ...n, read: true })))}
+        onClearAll={() => setNotifications([])}
+      />
 
       {/* Pre-Commit EIP-712 Signature Modal */}
       {draftIntent && (

@@ -219,6 +219,19 @@ class Web3ProviderService {
     return { ...this.walletState };
   }
 
+  public async disconnectWallet(): Promise<WalletState> {
+    this.walletState = {
+      isConnected: false,
+      address: '',
+      chainId: GANACHE_CHAIN_ID,
+      networkName: 'Disconnected',
+      balanceEth: '0.00',
+      isGanache: true,
+    };
+    this.notifyListeners();
+    return { ...this.walletState };
+  }
+
   public async signEip712TypedData(intent: UserIntent): Promise<string> {
     const typedData = getEip712TypedData(intent, this.walletState.chainId);
 
