@@ -24,6 +24,7 @@ import { SensitiveDecisionModal } from './components/SensitiveDecisionModal';
 import { PreCommitModal } from './components/PreCommitModal';
 import { IntentHistoryDrawer } from './components/IntentHistoryDrawer';
 import { GanacheBlockLedgerDrawer } from './components/GanacheBlockLedgerDrawer';
+import { SolverDashboard } from './components/SolverDashboard';
 import { AlertTriangle, ArrowRight } from 'lucide-react';
 
 export default function App() {
@@ -401,155 +402,160 @@ export default function App() {
         onToggleViewMode={setViewMode}
       />
 
-      <main className="flex-1 max-w-[1440px] mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-        
-        {/* =========================================================================
-            ROW 1 — DEMO SCENARIOS (Full Width: 12 Columns)
-           ========================================================================= */}
-        <div className="w-full">
-          <DemoScenarioBar
-            activeScenario={activeScenario}
-            onSelectScenario={handleSelectScenario}
-          />
-        </div>
+      {viewMode === 'user' ? (
+        <main className="flex-1 max-w-[1440px] mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+          {/* =========================================================================
+              ROW 1 — DEMO SCENARIOS (Full Width: 12 Columns)
+             ========================================================================= */}
+          <div className="w-full">
+            <DemoScenarioBar
+              activeScenario={activeScenario}
+              onSelectScenario={handleSelectScenario}
+            />
+          </div>
 
-        {/* In-Dashboard Sensitive Decision Alert Banner (Directive 7) */}
-        {isAmbiguous && !winningBidId && isAuctionClosed && (
-          <div className="w-full bg-[#F7E7B5] border-2 border-[#D4A017] p-4 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-3 shadow-md animate-in fade-in duration-200">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-[#D4A017] text-[#2B2B2B] flex items-center justify-center font-bold">
-                <AlertTriangle className="w-5 h-5" />
+          {/* In-Dashboard Sensitive Decision Alert Banner (Directive 7) */}
+          {isAmbiguous && !winningBidId && isAuctionClosed && (
+            <div className="w-full bg-[#F7E7B5] border-2 border-[#D4A017] p-4 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-3 shadow-md animate-in fade-in duration-200">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-[#D4A017] text-[#2B2B2B] flex items-center justify-center font-bold">
+                  <AlertTriangle className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold text-[#2B2B2B] font-headline uppercase">
+                    ⚠ SENSITIVE DECISION REQUIRED — TIE DETECTED
+                  </h4>
+                  <p className="text-xs text-[#5A5A5A]">
+                    Two executions are effectively tied (0.6% difference). Automation paused until manual sign-off.
+                  </p>
+                </div>
               </div>
-              <div>
-                <h4 className="text-sm font-bold text-[#2B2B2B] font-headline uppercase">
-                  ⚠ SENSITIVE DECISION REQUIRED — TIE DETECTED
-                </h4>
-                <p className="text-xs text-[#5A5A5A]">
-                  Two executions are effectively tied (0.6% difference). Automation paused until manual sign-off.
-                </p>
-              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsSensitiveModalOpen(true)}
+                className="px-4 py-2 rounded-xl bg-[#D4A017] hover:bg-[#E0AB1E] text-[#2B2B2B] font-mono text-xs font-bold shrink-0 shadow-xs cursor-pointer flex items-center gap-1.5 uppercase"
+              >
+                <span>Review Bids & Choose →</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
+          )}
+
+          {/* =========================================================================
+              ROW 2 — ① WHAT IS HAPPENING: ACTIVE INTENT HERO (8 Cols) + NETWORK/TRUST (4 Cols)
+             ========================================================================= */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+            <div className="lg:col-span-8 flex flex-col">
+              <IntentForm
+                onPreCommitTrigger={handlePreCommitTrigger}
+                disabled={stage !== 'idle' && stage !== 'settlement' && !isFailed}
+                sliders={sliders}
+                onSlidersChange={handleSlidersChange}
+                sourceAmount={sourceAmount}
+                onAmountChange={setSourceAmount}
+              />
             </div>
 
-            <button
-              type="button"
-              onClick={() => setIsSensitiveModalOpen(true)}
-              className="px-4 py-2 rounded-xl bg-[#D4A017] hover:bg-[#E0AB1E] text-[#2B2B2B] font-mono text-xs font-bold shrink-0 shadow-xs cursor-pointer flex items-center gap-1.5 uppercase"
-            >
-              <span>Review Bids & Choose →</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
-          </div>
-        )}
-
-        {/* =========================================================================
-            ROW 2 — ① WHAT IS HAPPENING: ACTIVE INTENT HERO (8 Cols) + NETWORK/TRUST (4 Cols)
-           ========================================================================= */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-          <div className="lg:col-span-8 flex flex-col">
-            <IntentForm
-              onPreCommitTrigger={handlePreCommitTrigger}
-              disabled={stage !== 'idle' && stage !== 'settlement' && !isFailed}
-              sliders={sliders}
-              onSlidersChange={handleSlidersChange}
-              sourceAmount={sourceAmount}
-              onAmountChange={setSourceAmount}
-            />
-          </div>
-
-          <div className="lg:col-span-4 flex flex-col">
-            <NetworkStatusOverview
-              contractState={contractState}
-              activeSolversCount={visibleBids.length > 0 ? visibleBids.length : 5}
-            />
-          </div>
-        </div>
-
-        {/* =========================================================================
-            ROW 3 — ② EXECUTION LIFECYCLE CENTERPIECE (Full Width: 12 Columns)
-           ========================================================================= */}
-        <div className="w-full">
-          <TransactionLifecycleTracker
-            currentStepId={lifecycleStep}
-            isFailed={isFailed}
-            failureReason={failureReason}
-            selectedSolverName={winningSolver?.solverName}
-            bondAmountUsd={winningSolver?.collateralOfferedUsd || 500}
-            intent={currentIntent}
-            selectedBid={winningSolver || defaultTopBid || null}
-            stage={stage}
-          />
-        </div>
-
-        {/* =========================================================================
-            ROW 4 — ③ WHO IS COMPETING & WHY SOLVER WON (8 Cols + 4 Cols)
-           ========================================================================= */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-          <div className="lg:col-span-8 flex flex-col">
-            <SolverBidTable
-              bids={visibleBids}
-              sliders={sliders}
-              isBroadcasting={isBroadcasting}
-              biddingCountdownSec={biddingCountdownSec}
-              arrivalMessage={arrivalMessage}
-              isAuctionClosed={isAuctionClosed}
-              winningBidId={winningBidId}
-              onSelectBid={(b) => proceedWithSelectedSolver(b, activeScenario === 'solver_failure')}
-            />
-          </div>
-
-          <div className="lg:col-span-4 flex flex-col">
-            <WhySolverWonCard
-              winningBid={winningSolver}
-              topBid={defaultTopBid}
-              sliders={sliders}
-            />
-          </div>
-        </div>
-
-        {/* =========================================================================
-            ROW 5 — ④ IS IT SAFE & LIVE PROTOCOL STREAM (7 Cols + 5 Cols)
-           ========================================================================= */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-          <div className="lg:col-span-7 flex flex-col">
-            {isFailed ? (
-              <FailureSlashingPanel
-                solverName={winningSolver?.solverName || 'Solver 02 (Flash Relay)'}
-                bondAmountUsd={winningSolver?.collateralOfferedUsd || 500}
-                escrowAmountUsd={currentIntent?.sourceAmount || 500}
-                onReset={handleReset}
+            <div className="lg:col-span-4 flex flex-col">
+              <NetworkStatusOverview
+                contractState={contractState}
+                activeSolversCount={visibleBids.length > 0 ? visibleBids.length : 5}
               />
-            ) : (
-              <HybridVerificationPanel
-                verificationType={verificationType}
-                countdownSec={verificationCountdownSec}
-                isConfirmedByUser={isConfirmedByUser}
-                onConfirmSettlement={() => {
-                  setIsConfirmedByUser(true);
-                  if (winningSolver) finalizeSettlement(winningSolver);
-                }}
-                status={stage === 'settlement' ? 'settled' : 'verifying'}
-              />
-            )}
+            </div>
           </div>
 
-          <div className="lg:col-span-5 flex flex-col">
-            <ProtocolActivityFeed logs={activityLogs} />
-          </div>
-        </div>
-
-        {/* =========================================================================
-            ROW 6 — ⑤ VISUAL CLIMAX: ✓ INTENT SUCCESSFULLY SETTLED (12 Cols)
-           ========================================================================= */}
-        {stage === 'settlement' && currentIntent && winningSolver && settlementResult && (
+          {/* =========================================================================
+              ROW 3 — ② EXECUTION LIFECYCLE CENTERPIECE (Full Width: 12 Columns)
+             ========================================================================= */}
           <div className="w-full">
-            <FinalSettlementRecordCard
+            <TransactionLifecycleTracker
+              currentStepId={lifecycleStep}
+              isFailed={isFailed}
+              failureReason={failureReason}
+              selectedSolverName={winningSolver?.solverName}
+              bondAmountUsd={winningSolver?.collateralOfferedUsd || 500}
               intent={currentIntent}
-              winningBid={winningSolver}
-              settlementResult={settlementResult}
+              selectedBid={winningSolver || defaultTopBid || null}
+              stage={stage}
             />
           </div>
-        )}
-      </main>
+
+          {/* =========================================================================
+              ROW 4 — ③ WHO IS COMPETING & WHY SOLVER WON (8 Cols + 4 Cols)
+             ========================================================================= */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+            <div className="lg:col-span-8 flex flex-col">
+              <SolverBidTable
+                bids={visibleBids}
+                sliders={sliders}
+                isBroadcasting={isBroadcasting}
+                biddingCountdownSec={biddingCountdownSec}
+                arrivalMessage={arrivalMessage}
+                isAuctionClosed={isAuctionClosed}
+                winningBidId={winningBidId}
+                onSelectBid={(b) => proceedWithSelectedSolver(b, activeScenario === 'solver_failure')}
+              />
+            </div>
+
+            <div className="lg:col-span-4 flex flex-col">
+              <WhySolverWonCard
+                winningBid={winningSolver}
+                topBid={defaultTopBid}
+                sliders={sliders}
+              />
+            </div>
+          </div>
+
+          {/* =========================================================================
+              ROW 5 — ④ IS IT SAFE & LIVE PROTOCOL STREAM (7 Cols + 5 Cols)
+             ========================================================================= */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+            <div className="lg:col-span-7 flex flex-col">
+              {isFailed ? (
+                <FailureSlashingPanel
+                  solverName={winningSolver?.solverName || 'Solver 02 (Flash Relay)'}
+                  bondAmountUsd={winningSolver?.collateralOfferedUsd || 500}
+                  escrowAmountUsd={currentIntent?.sourceAmount || 500}
+                  onReset={handleReset}
+                />
+              ) : (
+                <HybridVerificationPanel
+                  verificationType={verificationType}
+                  countdownSec={verificationCountdownSec}
+                  isConfirmedByUser={isConfirmedByUser}
+                  onConfirmSettlement={() => {
+                    setIsConfirmedByUser(true);
+                    if (winningSolver) finalizeSettlement(winningSolver);
+                  }}
+                  status={stage === 'settlement' ? 'settled' : 'verifying'}
+                />
+              )}
+            </div>
+
+            <div className="lg:col-span-5 flex flex-col">
+              <ProtocolActivityFeed logs={activityLogs} />
+            </div>
+          </div>
+
+          {/* =========================================================================
+              ROW 6 — ⑤ VISUAL CLIMAX: ✓ INTENT SUCCESSFULLY SETTLED (12 Cols)
+             ========================================================================= */}
+          {stage === 'settlement' && currentIntent && winningSolver && settlementResult && (
+            <div className="w-full">
+              <FinalSettlementRecordCard
+                intent={currentIntent}
+                winningBid={winningSolver}
+                settlementResult={settlementResult}
+              />
+            </div>
+          )}
+        </main>
+      ) : (
+        <main className="flex-1 max-w-[1440px] mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+          <SolverDashboard history={history} />
+        </main>
+      )}
 
       {/* Sensitive Decision Modal */}
       {currentIntent && (
