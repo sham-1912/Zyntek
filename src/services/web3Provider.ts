@@ -4,7 +4,8 @@ import { getEip712TypedData } from './eip712Service';
 import type { UserIntent } from './types';
 
 export const GANACHE_RPC_URL = 'http://127.0.0.1:7545';
-export const GANACHE_CHAIN_ID = 5777; // 0x1691 in hex
+export const GANACHE_CHAIN_ID = 1337; // 0x539 in hex (returned by your Ganache server)
+export const GANACHE_CHAIN_ID_ALT = 5777; // 0x1691 in hex
 
 export interface WalletState {
   isConnected: boolean;
@@ -20,7 +21,7 @@ class Web3ProviderService {
     isConnected: false,
     address: '0x90F79bf6EB2c4f870365E785982E1f101E93b906',
     chainId: GANACHE_CHAIN_ID,
-    networkName: 'Ganache Localnet (5777)',
+    networkName: 'Ganache Localnet (1337)',
     balanceEth: '100.00',
     isGanache: true,
   };
@@ -55,12 +56,13 @@ class Web3ProviderService {
         if (accounts && accounts.length > 0) {
           const provider = new BrowserProvider(ethereum);
           let chainId = GANACHE_CHAIN_ID;
-          let netName = 'Ganache Localnet (5777)';
+          let netName = 'Ganache Localnet (1337)';
 
           try {
             const network = await provider.getNetwork();
             chainId = Number(network.chainId);
-            netName = chainId === GANACHE_CHAIN_ID ? 'Ganache Localnet (5777)' : network.name === 'unknown' ? 'Sepolia Testnet' : network.name;
+            const isGan = chainId === GANACHE_CHAIN_ID || chainId === GANACHE_CHAIN_ID_ALT;
+            netName = isGan ? `Ganache Localnet (${chainId})` : network.name === 'unknown' ? 'Sepolia Testnet' : network.name;
           } catch (e) {
             console.warn('Network getNetwork timeout, defaulting to Ganache', e);
           }
@@ -73,13 +75,15 @@ class Web3ProviderService {
             console.warn('Balance check fallback', e);
           }
 
+          const isGan = chainId === GANACHE_CHAIN_ID || chainId === GANACHE_CHAIN_ID_ALT;
+
           this.walletState = {
             isConnected: true,
             address: accounts[0],
             chainId,
             networkName: netName,
             balanceEth: bal,
-            isGanache: chainId === GANACHE_CHAIN_ID,
+            isGanache: isGan,
           };
           this.notifyListeners();
         }
@@ -107,9 +111,10 @@ class Web3ProviderService {
 
         ethereum.on('chainChanged', (chainIdHex: unknown) => {
           const chainId = parseInt(chainIdHex as string, 16);
+          const isGan = chainId === GANACHE_CHAIN_ID || chainId === GANACHE_CHAIN_ID_ALT;
           this.walletState.chainId = chainId;
-          this.walletState.isGanache = chainId === GANACHE_CHAIN_ID;
-          this.walletState.networkName = chainId === GANACHE_CHAIN_ID ? 'Ganache Localnet (5777)' : 'Sepolia Testnet';
+          this.walletState.isGanache = isGan;
+          this.walletState.networkName = isGan ? `Ganache Localnet (${chainId})` : 'Sepolia Testnet';
           this.notifyListeners();
         });
       }
@@ -133,7 +138,7 @@ class Web3ProviderService {
       try {
         await ethereum.request({
           method: 'wallet_switchEthereumChain',
-          params: [{ chainId: '0x1691' }], // 5777 in hex
+          params: [{ chainId: '0x539' }], // 1337 in hex
         });
         return true;
       } catch (switchError: unknown) {
@@ -144,8 +149,8 @@ class Web3ProviderService {
               method: 'wallet_addEthereumChain',
               params: [
                 {
-                  chainId: '0x1691',
-                  chainName: 'Ganache Localnet',
+                  chainId: '0x539',
+                  chainName: 'Ganache Localnet (1337)',
                   rpcUrls: [GANACHE_RPC_URL, 'http://localhost:7545'],
                   nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
                 },
@@ -170,12 +175,13 @@ class Web3ProviderService {
 
         if (accounts && accounts.length > 0) {
           let chainId = GANACHE_CHAIN_ID;
-          let netName = 'Ganache Localnet (5777)';
+          let netName = 'Ganache Localnet (1337)';
 
           try {
             const network = await provider.getNetwork();
             chainId = Number(network.chainId);
-            netName = chainId === GANACHE_CHAIN_ID ? 'Ganache Localnet (5777)' : network.name === 'unknown' ? 'Sepolia Testnet' : network.name;
+            const isGan = chainId === GANACHE_CHAIN_ID || chainId === GANACHE_CHAIN_ID_ALT;
+            netName = isGan ? `Ganache Localnet (${chainId})` : network.name === 'unknown' ? 'Sepolia Testnet' : network.name;
           } catch (e) {
             console.warn('Network timeout fallback', e);
           }
@@ -188,18 +194,20 @@ class Web3ProviderService {
             console.warn('Balance fetch fallback', e);
           }
 
+          const isGan = chainId === GANACHE_CHAIN_ID || chainId === GANACHE_CHAIN_ID_ALT;
+
           this.walletState = {
             isConnected: true,
             address: accounts[0],
             chainId,
             networkName: netName,
             balanceEth: bal,
-            isGanache: chainId === GANACHE_CHAIN_ID,
+            isGanache: isGan,
           };
           this.notifyListeners();
         }
       } catch (e) {
-        console.warn('Browser wallet connection declined, using Ganache 5777 account.', e);
+        console.warn('Browser wallet connection declined, using Ganache 1337 account.', e);
         this.walletState.isConnected = true;
         this.notifyListeners();
       }
