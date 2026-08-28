@@ -231,6 +231,21 @@ export default function App() {
     }
   };
 
+  const handleReset = () => {
+    setCurrentIntent(null);
+    setDraftIntent(null);
+    setBids([]);
+    setStage('idle');
+    setSelectedBid(null);
+    setSettlementResult(undefined);
+    setIsSensitiveModalOpen(false);
+    setIsPreCommitOpen(false);
+    setAutoProceedCountdownSec(null);
+    setBiddingCountdownSec(5);
+    setSubStatusText('');
+    setActiveTab('swap');
+  };
+
   const handleSelectHistoricalIntent = (item: (typeof history)[0]) => {
     setCurrentIntent(item.intent);
     if (item.winningBid) setSelectedBid(item.winningBid);
@@ -275,12 +290,54 @@ export default function App() {
                 />
               )}
 
-              {/* Route 2: /swap (Create Intent Form) */}
+              {/* Route 2: /swap (Create Intent Form & Live Interactive Workflow) */}
               {activeTab === 'swap' && (
-                <IntentForm
-                  onPreCommitTrigger={handlePreCommitTrigger}
-                  disabled={stage !== 'idle' && stage !== 'settled' && stage !== 'slashed_refunded'}
-                />
+                <div className="space-y-8">
+                  <IntentForm
+                    onPreCommitTrigger={handlePreCommitTrigger}
+                    disabled={stage !== 'idle' && stage !== 'settled' && stage !== 'slashed_refunded'}
+                  />
+
+                  {/* Live Bids Auction Section on /swap */}
+                  {(bids.length > 0 || isBroadcasting) && currentIntent && (
+                    <SolversMarketplace
+                      bids={bids}
+                      intent={currentIntent}
+                      isBroadcasting={isBroadcasting}
+                      biddingCountdownSec={biddingCountdownSec}
+                      autoProceedCountdownSec={autoProceedCountdownSec}
+                      onSelectBid={(bid) => executePipeline(bid, false)}
+                      selectedBidId={selectedBid?.solverId}
+                      isAmbiguous={isAmbiguous}
+                      scoreGap={scoreGap}
+                      isHighValue={isHighValue}
+                      onCancelAutoProceed={() => setAutoProceedCountdownSec(null)}
+                    />
+                  )}
+
+                  {/* Live Execution Telemetry Pipeline Tracker on /swap */}
+                  {stage !== 'idle' && (
+                    <PipelineStatusTracker
+                      stage={stage}
+                      verificationType={verificationType}
+                      challengeCountdownSec={challengeCountdownSec}
+                      subStatusText={subStatusText}
+                      settlementResult={settlementResult}
+                      intentId={currentIntent?.intentId}
+                      solverBondUsd={selectedBid?.collateralOfferedUsd}
+                      intentAmountUsd={currentIntent?.sourceAmount}
+                      solverName={selectedBid?.solverName}
+                    />
+                  )}
+
+                  {/* Final Settlement Result Breakdown Card on /swap */}
+                  {settlementResult && (
+                    <SettlementSummaryCard
+                      result={settlementResult}
+                      onResetToSwap={handleReset}
+                    />
+                  )}
+                </div>
               )}
 
               {/* Route 3: /solvers (Marketplace Directory & Live Auction Bidding) */}
