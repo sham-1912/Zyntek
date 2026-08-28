@@ -5,59 +5,78 @@
   line-height: 1.5;
   font-weight: 400;
   color-scheme: dark;
-  color: #F3F6FF;
-  background-color: #101C2C;
+  color: #FFFFFF;
+  background-color: #070F1E;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  /* Midnight Harbor Palette */
-  --color-midnight: #101C2C; /* Midnight Harbor (Background) */
-  --color-deep-navy: #162A46; /* Deep Navy (Surface Cards) */
-  --color-harbor-blue: #2F6690; /* Harbor Blue (Primary) */
-  --color-ice-blue: #8DC2FF; /* Ice Blue (Secondary / Soft Blue) */
-  --color-sunny-herb: #CEF26D; /* Sunny Herb (Accent / Success / Cost) */
-  --color-moon-tint: #F3F6FF; /* Moon Tint (Text / Highlight) */
-  --color-alert: #FF7032; /* Alert Orange */
+  /* Custom Requested Theme:
+     - Dark Navy Blue for Background
+     - White for Text
+     - Neon for Heavy Text / Accents
+     - Low Shade of Blue for Boxes */
+  --color-bg-dark-navy: #070F1E; /* Dark Navy Blue Base */
+  --color-box-blue: #0E1E38;     /* Low Shade of Blue (Cards) */
+  --color-box-inner: #142848;    /* Inner Box Shade */
+  --color-box-elevated: #1A335C; /* Elevated/Active Box Shade */
+  --color-primary-blue: #2F6690; /* Harbor Blue */
+  --color-ice-blue: #8DC2FF;     /* Ice Blue Accent */
+  --color-neon: #CEF26D;         /* High-Contrast Neon Accent */
+  --color-neon-cyan: #00F5D4;    /* Neon Cyan */
+  --color-text-white: #FFFFFF;   /* Pure White Text */
+  --color-text-muted: #CBD5E1;   /* Soft Light Slate for Secondary */
+  --color-alert: #FF7032;        /* Alert Orange */
 }
 
 body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  background: #101C2C;
-  color: #F3F6FF;
+  background: #070F1E;
+  color: #FFFFFF;
 }
 
 /* Custom Surface Card Styling */
 .surface-card {
-  background: #162A46;
-  border: 1px solid rgba(141, 194, 255, 0.12);
+  background: #0E1E38;
+  border: 1px solid rgba(141, 194, 255, 0.15);
   border-radius: 1rem;
 }
 
 .surface-elevated {
-  background: #1A3152;
-  border: 1px solid rgba(141, 194, 255, 0.25);
+  background: #142848;
+  border: 1px solid rgba(141, 194, 255, 0.3);
   border-radius: 1rem;
 }
 
 .glass-panel {
-  background: #162A46;
-  border: 1px solid rgba(141, 194, 255, 0.12);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.35);
+  background: #0E1E38;
+  border: 1px solid rgba(141, 194, 255, 0.18);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.45);
   border-radius: 1rem;
 }
 
 .glass-panel-glow {
-  background: #1A3152;
+  background: #142848;
   border: 1px solid rgba(141, 194, 255, 0.35);
-  box-shadow: 0 0 25px rgba(47, 102, 144, 0.25);
+  box-shadow: 0 0 25px rgba(47, 102, 144, 0.35);
   border-radius: 1rem;
 }
 
-/* Semantic Brand Colors mapped to Palette */
+/* Heavy Text Neon Classes */
+.text-neon {
+  color: #CEF26D;
+  text-shadow: 0 0 12px rgba(206, 242, 109, 0.4);
+}
+
+.text-neon-cyan {
+  color: #00F5D4;
+  text-shadow: 0 0 12px rgba(0, 245, 212, 0.4);
+}
+
+/* Semantic Brand Colors */
 .text-cost { color: #CEF26D; }
 .bg-cost { background-color: #CEF26D; }
 .border-cost { border-color: #CEF26D; }
@@ -74,18 +93,11 @@ body {
 .bg-alert { background-color: #FF7032; }
 .border-alert { border-color: #FF7032; }
 
-.text-lavender { color: #8DC2FF; }
-.bg-lavender { background-color: #8DC2FF; }
-.border-lavender { border-color: #8DC2FF; }
-
-.text-moon { color: #F3F6FF; }
-.text-muted { color: #8DC2FF; opacity: 0.75; }
-
-/* Custom Sliders with Palette Colors */
+/* Custom Sliders */
 input[type="range"] {
   -webkit-appearance: none;
   appearance: none;
-  background: #101C2C;
+  background: #070F1E;
   border-radius: 9999px;
   height: 6px;
 }
@@ -107,15 +119,15 @@ input[type="range"]::-webkit-slider-thumb:hover {
 
 .slider-cost::-webkit-slider-thumb {
   background: #CEF26D;
-  box-shadow: 0 0 10px rgba(206, 242, 109, 0.6);
+  box-shadow: 0 0 12px rgba(206, 242, 109, 0.7);
 }
 
 .slider-speed::-webkit-slider-thumb {
   background: #8DC2FF;
-  box-shadow: 0 0 10px rgba(141, 194, 255, 0.6);
+  box-shadow: 0 0 12px rgba(141, 194, 255, 0.7);
 }
 
 .slider-safety::-webkit-slider-thumb {
   background: #2F6690;
-  box-shadow: 0 0 10px rgba(47, 102, 144, 0.8);
+  box-shadow: 0 0 12px rgba(47, 102, 144, 0.9);
 }

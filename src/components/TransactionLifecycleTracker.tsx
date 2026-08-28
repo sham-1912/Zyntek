@@ -50,7 +50,7 @@ export const TransactionLifecycleTracker: React.FC<TransactionLifecycleTrackerPr
   const currentIdx = LIFECYCLE_STEPS.findIndex((s) => s.id === currentStepId);
 
   return (
-    <div className="bg-[#162A46] border border-[#8DC2FF]/20 rounded-2xl p-6 space-y-6 shadow-xl">
+    <div className="bg-[#0E1E38] border border-[#8DC2FF]/20 rounded-2xl p-6 space-y-6 shadow-xl">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-4">
         <div>
@@ -59,20 +59,20 @@ export const TransactionLifecycleTracker: React.FC<TransactionLifecycleTrackerPr
               Transaction Lifecycle Tracker
             </span>
             {selectedSolverName && (
-              <span className="text-[10px] px-2 py-0.5 rounded bg-[#1A3152] text-[#CEF26D] border border-[#CEF26D]/30 font-mono font-bold">
+              <span className="text-[10px] px-2 py-0.5 rounded bg-[#142848] text-[#CEF26D] border border-[#CEF26D]/30 font-mono font-bold">
                 Solver: {selectedSolverName}
               </span>
             )}
           </div>
-          <h3 className="text-lg font-bold text-[#F3F6FF] font-mono mt-0.5">
+          <h3 className="text-lg font-bold text-white font-mono mt-0.5">
             Cross-Chain Intent Execution Lifecycle
           </h3>
-          <p className="text-xs text-[#8DC2FF]/80 mt-1 font-sans">
+          <p className="text-xs text-[#CBD5E1] mt-1 font-sans">
             End-to-end verifiable state transitions from EVM deposit to Solana settlement.
           </p>
         </div>
 
-        <div className="flex items-center gap-2 font-mono text-xs text-[#8DC2FF] bg-[#1A3152] px-3 py-1.5 rounded-lg border border-[#8DC2FF]/20 shrink-0 self-start sm:self-auto">
+        <div className="flex items-center gap-2 font-mono text-xs text-[#8DC2FF] bg-[#142848] px-3 py-1.5 rounded-lg border border-[#8DC2FF]/20 shrink-0 self-start sm:self-auto">
           <span>Bond: ${bondAmountUsd} USDC</span>
         </div>
       </div>
@@ -95,12 +95,12 @@ export const TransactionLifecycleTracker: React.FC<TransactionLifecycleTrackerPr
               key={step.id}
               className={`p-3 rounded-xl border flex flex-col justify-between transition-all duration-300 relative ${
                 state === 'completed'
-                  ? 'bg-[#162A46] border-[#CEF26D]/60 text-[#F3F6FF]'
+                  ? 'bg-[#142848] border-[#CEF26D]/60 text-white'
                   : state === 'active'
-                  ? 'bg-[#1A3152] border-[#2F6690] text-[#F3F6FF] shadow-lg shadow-[#2F6690]/30 ring-1 ring-[#8DC2FF]'
+                  ? 'bg-[#1A335C] border-[#2F6690] text-white shadow-lg shadow-[#2F6690]/30 ring-1 ring-[#8DC2FF]'
                   : state === 'failed'
-                  ? 'bg-[#FF7032]/15 border-[#FF7032] text-[#FF7032] shadow-lg shadow-[#FF7032]/20'
-                  : 'bg-[#101C2C] border-white/5 text-[#8DC2FF]/70 opacity-60'
+                  ? 'bg-[#FF7032]/20 border-[#FF7032] text-[#FF7032] shadow-lg shadow-[#FF7032]/20'
+                  : 'bg-[#070F1E] border-white/5 text-[#CBD5E1] opacity-60'
               }`}
             >
               {/* Top Status Icon */}
@@ -140,21 +140,21 @@ export const TransactionLifecycleTracker: React.FC<TransactionLifecycleTrackerPr
                     state === 'completed'
                       ? 'text-[#CEF26D]'
                       : state === 'active'
-                      ? 'text-[#F3F6FF]'
+                      ? 'text-white'
                       : state === 'failed'
                       ? 'text-[#FF7032]'
-                      : 'text-[#8DC2FF]/70'
+                      : 'text-[#CBD5E1]'
                   }`}
                 >
                   {step.label}
                 </h4>
-                <p className="text-[9px] text-[#8DC2FF]/60 font-mono mt-0.5">{step.subtext}</p>
+                <p className="text-[9px] text-[#CBD5E1] font-mono mt-0.5">{step.subtext}</p>
 
                 <div className="mt-1.5 font-mono text-[9px] font-bold">
                   {state === 'completed' && <span className="text-[#CEF26D]">✓ Completed</span>}
                   {state === 'active' && <span className="text-[#8DC2FF] flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-[#8DC2FF]" />◉ Active</span>}
                   {state === 'failed' && <span className="text-[#FF7032]">❌ FAILED</span>}
-                  {state === 'pending' && <span className="text-[#8DC2FF]/60">○ Pending</span>}
+                  {state === 'pending' && <span className="text-[#CBD5E1]/60">○ Pending</span>}
                 </div>
               </div>
             </div>
@@ -164,13 +164,13 @@ export const TransactionLifecycleTracker: React.FC<TransactionLifecycleTrackerPr
 
       {/* Failure Alert Banner */}
       {isFailed && (
-        <div className="bg-[#FF7032]/15 border-2 border-[#FF7032] rounded-xl p-4 flex items-start gap-3 text-xs text-[#F3F6FF] font-mono animate-in fade-in duration-200">
+        <div className="bg-[#FF7032]/20 border-2 border-[#FF7032] rounded-xl p-4 flex items-start gap-3 text-xs text-white font-mono animate-in fade-in duration-200">
           <AlertCircle className="w-5 h-5 text-[#FF7032] shrink-0 mt-0.5" />
           <div className="space-y-1">
             <span className="font-bold text-[#FF7032] uppercase tracking-wider block">
               Execution Failure Detected at Step {currentIdx + 1}
             </span>
-            <p className="text-[#8DC2FF]/80 text-xs font-sans">
+            <p className="text-[#CBD5E1] text-xs font-sans">
               {failureReason || 'Solver failed to confirm destination delivery before the deadline.'}
             </p>
           </div>

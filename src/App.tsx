@@ -372,7 +372,7 @@ export default function App() {
   const winningSolver = visibleBids.find((b) => b.solverId === winningBidId);
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#101C2C] text-[#F3F6FF] relative font-sans">
+    <div className="min-h-screen flex flex-col bg-[#070F1E] text-white relative font-sans">
       <Header
         contractState={contractState}
         onOpenHistory={() => setIsHistoryDrawerOpen(true)}
