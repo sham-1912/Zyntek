@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import type { SolverBid, PrioritySliders } from '../services/types';
-import { Award, Clock, ChevronDown, ChevronUp, Activity, CheckCircle2 } from 'lucide-react';
+import { Award, Clock, ChevronDown, ChevronUp, Activity, CheckCircle2, ShieldCheck, Zap } from 'lucide-react';
 
 interface SolverBidTableProps {
   bids: SolverBid[];
@@ -58,7 +58,7 @@ export const SolverBidTable: React.FC<SolverBidTableProps> = ({
   }
 
   return (
-    <div className="glass-card p-6 space-y-4 shadow-md h-full flex flex-col justify-between border border-[rgba(43,43,43,0.12)] bg-[#FFFDF5]">
+    <div className="glass-card p-5 sm:p-6 space-y-4 shadow-md h-full flex flex-col justify-between border border-[rgba(43,43,43,0.12)] bg-[#FFFDF5]">
       {/* Header & Auction Countdown */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[rgba(43,43,43,0.08)] pb-3">
         <div>
@@ -78,9 +78,9 @@ export const SolverBidTable: React.FC<SolverBidTableProps> = ({
         {/* Live Auction Countdown Pill */}
         <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#F7E7B5] border border-[#D4A017]/40 font-mono text-xs text-[#2B2B2B] shrink-0 self-start sm:self-auto shadow-xs">
           <Clock className="w-3.5 h-3.5 text-[#D4A017] animate-spin" />
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             <span className="text-[10px] text-[#5A5A5A] uppercase font-semibold">
-              {isAuctionClosed ? 'Status:' : 'Window:'}
+              {isAuctionClosed ? 'STATUS:' : 'WINDOW:'}
             </span>
             <span className={`font-bold font-mono ${isAuctionClosed ? 'text-[#607A3A]' : 'text-[#B84A39]'}`}>
               {isAuctionClosed
@@ -99,7 +99,7 @@ export const SolverBidTable: React.FC<SolverBidTableProps> = ({
         </div>
       )}
 
-      {/* Ranked Economic Solver Cards (Directive 5) */}
+      {/* Ranked Economic Solver Cards (Clean, collision-free layout) */}
       <div className="space-y-3">
         {bids.map((bid, index) => {
           const isRank1 = index === 0;
@@ -117,20 +117,20 @@ export const SolverBidTable: React.FC<SolverBidTableProps> = ({
                 stiffness: 350,
                 damping: 30,
               }}
-              className={`rounded-xl border transition-all overflow-hidden ${
+              className={`rounded-2xl border transition-all overflow-hidden p-4 space-y-3 ${
                 isWinner
-                  ? 'bg-[#F7E7B5] border-[#D4A017] shadow-md ring-2 ring-[#D4A017]/40'
+                  ? 'bg-[#F7E7B5] border-2 border-[#D4A017] shadow-md ring-2 ring-[#D4A017]/30'
                   : isRank1
-                  ? 'bg-[#F7E7B5]/70 border-[#F0C94C] shadow-xs'
+                  ? 'bg-[#F7E7B5]/60 border-[#F0C94C] shadow-xs'
                   : 'bg-[#FFFDF5] hover:bg-[#F7E7B5]/30 border-[rgba(43,43,43,0.12)]'
               }`}
             >
-              {/* Card Main Header & Attributes */}
-              <div className="p-3.5 flex flex-col lg:flex-row lg:items-center justify-between gap-3">
-                {/* Left: Rank, Name, Badges */}
+              {/* TOP ROW: Identity + Final Score + Action Buttons */}
+              <div className="flex items-center justify-between gap-3 flex-wrap">
+                {/* Left: Rank badge + Name + Selected Pill */}
                 <div className="flex items-center gap-3">
                   <div
-                    className={`w-9 h-9 rounded-lg flex items-center justify-center text-xs font-mono font-bold shrink-0 ${
+                    className={`w-9 h-9 rounded-xl flex items-center justify-center text-xs font-mono font-bold shrink-0 shadow-xs ${
                       isWinner
                         ? 'bg-[#D4A017] text-[#2B2B2B]'
                         : isRank1
@@ -158,56 +158,21 @@ export const SolverBidTable: React.FC<SolverBidTableProps> = ({
                       ) : null}
                     </div>
 
-                    <p className="text-[11px] text-[#5A5A5A] font-mono">
+                    <p className="text-[11px] text-[#5A5A5A] font-sans">
                       {bid.routeDescription || 'EVM ⇄ Solana SVM decentralized route'}
                     </p>
                   </div>
                 </div>
 
-                {/* Middle: Rich Economic Attributes Grid (Directive 5) */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 font-mono text-xs flex-1 max-w-xl">
-                  {/* Output */}
-                  <div className="bg-[#FFFDF5] px-2.5 py-1 rounded-md border border-[rgba(43,43,43,0.1)] shadow-xs">
-                    <span className="text-[9px] text-[#5A5A5A] block uppercase">Output</span>
-                    <span className="font-bold text-[#D4A017] text-xs">
-                      ${bid.expectedOutput.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                    </span>
-                  </div>
-
-                  {/* Fee & Slippage */}
-                  <div className="bg-[#FFFDF5] px-2.5 py-1 rounded-md border border-[rgba(43,43,43,0.1)] shadow-xs">
-                    <span className="text-[9px] text-[#5A5A5A] block uppercase">Fee / Slip</span>
-                    <span className="font-bold text-[#2B2B2B] text-xs">
-                      ${bid.feeUsd.toFixed(2)} · {slippagePct}%
-                    </span>
-                  </div>
-
-                  {/* Execution ETA */}
-                  <div className="bg-[#FFFDF5] px-2.5 py-1 rounded-md border border-[rgba(43,43,43,0.1)] shadow-xs">
-                    <span className="text-[9px] text-[#5A5A5A] block uppercase">Execution</span>
-                    <span className="font-bold text-[#2B2B2B] text-xs">
-                      {bid.etaSec}s ETA
-                    </span>
-                  </div>
-
-                  {/* Bond & Reputation */}
-                  <div className="bg-[#FFFDF5] px-2.5 py-1 rounded-md border border-[rgba(43,43,43,0.1)] shadow-xs">
-                    <span className="text-[9px] text-[#5A5A5A] block uppercase">Bond / Rep</span>
-                    <span className="font-bold text-[#2B2B2B] text-xs">
-                      ${bid.collateralOfferedUsd} · {repScore}pt
-                    </span>
-                  </div>
-                </div>
-
-                {/* Right: Final Score & Controls */}
-                <div className="flex items-center justify-between lg:justify-end gap-2.5 shrink-0">
+                {/* Right: Score + Expand Button */}
+                <div className="flex items-center gap-3 font-mono shrink-0 ml-auto">
                   <div className="text-right">
-                    <span className="text-[9px] text-[#5A5A5A] uppercase font-mono block font-semibold">
+                    <span className="text-[9px] text-[#5A5A5A] uppercase font-bold block">
                       FINAL SCORE
                     </span>
                     <span
-                      className={`text-lg font-bold font-mono ${
-                        isWinner ? 'text-[#D4A017]' : isRank1 ? 'text-[#2B2B2B]' : 'text-[#2B2B2B]'
+                      className={`text-lg sm:text-xl font-bold ${
+                        isWinner ? 'text-[#D4A017]' : 'text-[#2B2B2B]'
                       }`}
                     >
                       {bid.finalScore.toFixed(1)}
@@ -217,7 +182,7 @@ export const SolverBidTable: React.FC<SolverBidTableProps> = ({
                   <button
                     type="button"
                     onClick={() => toggleExpand(bid.solverId)}
-                    className="px-2.5 py-1 rounded-md bg-[#FFFDF5] hover:bg-[#F7E7B5] border border-[rgba(43,43,43,0.12)] text-xs font-mono text-[#2B2B2B] flex items-center gap-0.5 transition-all cursor-pointer shadow-xs"
+                    className="px-2.5 py-1.5 rounded-lg bg-[#FFFDF5] hover:bg-[#F7E7B5] border border-[rgba(43,43,43,0.12)] text-xs font-mono text-[#2B2B2B] flex items-center gap-1 transition-all cursor-pointer shadow-xs font-bold"
                   >
                     <span>{isExpanded ? 'Hide' : 'Info'}</span>
                     {isExpanded ? (
@@ -231,7 +196,7 @@ export const SolverBidTable: React.FC<SolverBidTableProps> = ({
                     <button
                       type="button"
                       onClick={() => onSelectBid(bid)}
-                      className="px-3.5 py-1 rounded-md bg-[#D4A017] hover:bg-[#E0AB1E] font-mono text-xs font-bold text-[#2B2B2B] transition-all cursor-pointer shadow-xs uppercase"
+                      className="px-3.5 py-1.5 rounded-lg bg-[#D4A017] hover:bg-[#E0AB1E] font-mono text-xs font-bold text-[#2B2B2B] transition-all cursor-pointer shadow-xs uppercase"
                     >
                       Select
                     </button>
@@ -239,20 +204,59 @@ export const SolverBidTable: React.FC<SolverBidTableProps> = ({
                 </div>
               </div>
 
+              {/* BOTTOM ROW: 4 Clean, Non-overlapping Attribute Tiles */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 font-mono text-xs pt-1 border-t border-[rgba(43,43,43,0.06)]">
+                {/* 1. Expected Output */}
+                <div className="bg-[#FFFDF5] p-2 rounded-xl border border-[rgba(43,43,43,0.08)] shadow-xs">
+                  <span className="text-[9px] text-[#5A5A5A] block uppercase font-bold">Delivered Output</span>
+                  <span className="font-bold text-[#D4A017] text-xs sm:text-sm block">
+                    ${bid.expectedOutput.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                  </span>
+                </div>
+
+                {/* 2. Fee & Slippage */}
+                <div className="bg-[#FFFDF5] p-2 rounded-xl border border-[rgba(43,43,43,0.08)] shadow-xs">
+                  <span className="text-[9px] text-[#5A5A5A] block uppercase font-bold">Fee / Slippage</span>
+                  <span className="font-bold text-[#2B2B2B] text-xs sm:text-sm block">
+                    ${bid.feeUsd.toFixed(2)} · {slippagePct}%
+                  </span>
+                </div>
+
+                {/* 3. Execution Speed */}
+                <div className="bg-[#FFFDF5] p-2 rounded-xl border border-[rgba(43,43,43,0.08)] shadow-xs">
+                  <span className="text-[9px] text-[#5A5A5A] block uppercase font-bold flex items-center gap-1">
+                    <Zap className="w-2.5 h-2.5 text-[#D4A017]" /> Speed ETA
+                  </span>
+                  <span className="font-bold text-[#2B2B2B] text-xs sm:text-sm block">
+                    {bid.etaSec}s
+                  </span>
+                </div>
+
+                {/* 4. Bond Collateral & Rep */}
+                <div className="bg-[#FFFDF5] p-2 rounded-xl border border-[rgba(43,43,43,0.08)] shadow-xs">
+                  <span className="text-[9px] text-[#5A5A5A] block uppercase font-bold flex items-center gap-1">
+                    <ShieldCheck className="w-2.5 h-2.5 text-[#607A3A]" /> Bond / Rep
+                  </span>
+                  <span className="font-bold text-[#2B2B2B] text-xs sm:text-sm block">
+                    ${bid.collateralOfferedUsd} · {repScore} REP
+                  </span>
+                </div>
+              </div>
+
               {/* Expandable Technical Details */}
               {isExpanded && (
-                <div className="bg-[#FFFDF5] border-t border-[rgba(43,43,43,0.08)] p-3 space-y-2 font-mono text-xs animate-in fade-in duration-200">
-                  <div className="flex items-center justify-between border-b border-[rgba(43,43,43,0.08)] pb-1">
+                <div className="bg-[#FFFDF5] border border-[rgba(43,43,43,0.08)] rounded-xl p-3 space-y-2 font-mono text-xs animate-in fade-in duration-200 shadow-inner">
+                  <div className="flex items-center justify-between border-b border-[rgba(43,43,43,0.08)] pb-1.5">
                     <span className="font-bold text-[#2B2B2B] text-[10px] uppercase">
-                      Formula Breakdown:
+                      Preference Formula Breakdown:
                     </span>
                     <span className="text-[#5A5A5A] text-[11px]">
                       Cost ({(bid.subScores.costScore * (sliders.cost / 100)).toFixed(1)}) + Speed ({(bid.subScores.speedScore * (sliders.speed / 100)).toFixed(1)}) + Safety ({(bid.subScores.safetyScore * (sliders.safety / 100)).toFixed(1)})
                     </span>
                   </div>
                   <div className="flex justify-between text-[10px] text-[#5A5A5A]">
-                    <span>Solver Liquidity Pool: ${(bid.liquidityUsd / 1000).toFixed(0)}K Available</span>
-                    <span>Execution Risk Level: Low</span>
+                    <span>Solver Liquidity Pool: ${(bid.liquidityUsd / 1000).toFixed(0)}K Committed</span>
+                    <span>Execution Risk Level: Minimal (Full $500 Bond Staked)</span>
                   </div>
                 </div>
               )}
