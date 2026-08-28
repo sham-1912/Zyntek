@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { UserIntent, PrioritySliders as SlidersType } from '../services/types';
+import type { UserIntent, PrioritySliders as SlidersType } from '../services/types';
 import { PrioritySliders } from './PrioritySliders';
-import { ArrowRightLeft, Send, Sparkles } from 'lucide-react';
+import { Send, Sparkles } from 'lucide-react';
 
 interface IntentFormProps {
   onSubmit: (intent: UserIntent) => void;

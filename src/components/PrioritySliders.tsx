@@ -1,5 +1,5 @@
 import React from 'react';
-import { PrioritySliders as SlidersType } from '../services/types';
+import type { PrioritySliders as SlidersType } from '../services/types';
 import { DollarSign, Zap, Shield, CheckCircle2, AlertCircle } from 'lucide-react';
 
 interface PrioritySlidersProps {

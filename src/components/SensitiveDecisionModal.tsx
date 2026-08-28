@@ -1,5 +1,5 @@
 import React from 'react';
-import { SolverBid, UserIntent } from '../services/types';
+import type { SolverBid, UserIntent } from '../services/types';
 import { ShieldAlert, AlertTriangle, CheckCircle, Lock, ArrowRight } from 'lucide-react';
 
 interface SensitiveDecisionModalProps {

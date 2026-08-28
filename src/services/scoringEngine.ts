@@ -1,13 +1,11 @@
-import { UserIntent, SolverBid, SubScores } from './types';
+import type { UserIntent, SolverBid, SubScores } from './types';
 
 // Helper for min-max normalization with fallback when min === max
-function normalize(value: number, min: number, max: number, invert = false): number {
-  const target = invert ? (value === 0 ? 0 : 1 / value) : value;
-  
+function normalize(value: number, min: number, max: number): number {
   // If min === max, treat normalized score as 1.0 to avoid divide-by-zero
   if (min === max) return 1.0;
 
-  const norm = (target - min) / (max - min);
+  const norm = (value - min) / (max - min);
   // Clamp between 0.0 and 1.0
   return Math.max(0.0, Math.min(1.0, norm));
 }

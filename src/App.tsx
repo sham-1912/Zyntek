@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import confetti from 'canvas-confetti';
-import { UserIntent, SolverBid, PipelineStage, VerificationType, SettlementResult } from './services/types';
+import type { UserIntent, SolverBid, PipelineStage, VerificationType, SettlementResult } from './services/types';
 import { generateSolverBids } from './services/solverSimulator';
 import { checkAmbiguity, isHighValueIntent } from './services/scoringEngine';
 import { contractSimulator } from './services/contractSimulator';
@@ -12,9 +12,9 @@ import { SensitiveDecisionModal } from './components/SensitiveDecisionModal';
 import { PipelineStatusTracker } from './components/PipelineStatusTracker';
 import { FailureSlashingPanel } from './components/FailureSlashingPanel';
 
-import { Sparkles, Layers, ShieldCheck, RefreshCw, ChevronRight } from 'lucide-react';
+import { Sparkles, RefreshCw } from 'lucide-react';
 
-export function App() {
+export default function App() {
   const [currentIntent, setCurrentIntent] = useState<UserIntent | null>(null);
   const [bids, setBids] = useState<SolverBid[]>([]);
   const [isBroadcasting, setIsBroadcasting] = useState<boolean>(false);

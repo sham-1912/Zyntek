@@ -1,5 +1,5 @@
 import React from 'react';
-import { PipelineStage, VerificationType, SettlementResult } from '../services/types';
+import type { PipelineStage, VerificationType, SettlementResult } from '../services/types';
 import { CheckCircle2, Loader2, ShieldCheck, ShieldAlert, Lock, Cpu, ArrowRight } from 'lucide-react';
 
 interface PipelineStatusTrackerProps {

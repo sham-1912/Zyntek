@@ -1,4 +1,4 @@
-import { UserIntent, SolverBid } from './types';
+import type { UserIntent, SolverBid } from './types';
 import { calculateBidScores } from './scoringEngine';
 
 export function generateSolverBids(intent: UserIntent): SolverBid[] {

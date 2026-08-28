@@ -1,4 +1,4 @@
-import { UserIntent, SolverBid, SettlementResult, VerificationType } from './types';
+import type { UserIntent, SolverBid, SettlementResult, VerificationType } from './types';
 
 // Simulated state storage for active intents & contract balances
 interface ContractState {
@@ -27,7 +27,7 @@ class ContractSimulatorService {
     return { txHash, status: 'LOCKED' };
   }
 
-  public async commitSolverBond(intent: UserIntent, solver: SolverBid): Promise<{ txHash: string; status: 'COMMITTED' }> {
+  public async commitSolverBond(_intent: UserIntent, solver: SolverBid): Promise<{ txHash: string; status: 'COMMITTED' }> {
     await new Promise((resolve) => setTimeout(resolve, 700));
     this.state.solverBondLockedUsd += solver.collateralOfferedUsd;
     const txHash = `0x${Math.random().toString(16).substring(2, 10)}${Date.now().toString(16)}`;

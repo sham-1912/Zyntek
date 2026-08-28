@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShieldAlert, AlertCircle, RefreshCw } from 'lucide-react';
+import { ShieldAlert, AlertCircle } from 'lucide-react';
 
 interface FailureSlashingPanelProps {
   onTriggerFailure: () => void;

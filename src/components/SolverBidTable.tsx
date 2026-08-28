@@ -1,6 +1,6 @@
 import React from 'react';
-import { SolverBid, UserIntent } from '../services/types';
-import { Award, Zap, Shield, DollarSign, ChevronRight, Activity, Clock, ShieldAlert } from 'lucide-react';
+import type { SolverBid, UserIntent } from '../services/types';
+import { Award, Zap, Shield, DollarSign, ChevronRight, Activity, ShieldAlert } from 'lucide-react';
 
 interface SolverBidTableProps {
   bids: SolverBid[];
