@@ -8,6 +8,7 @@ import { GanacheChainWidget } from './GanacheChainWidget';
 interface HeaderProps {
   contractState: ContractSimulationState;
   onOpenHistory: () => void;
+  onOpenLedger: () => void;
   historyCount: number;
   viewMode: 'user' | 'solver';
   onToggleViewMode: (mode: 'user' | 'solver') => void;
@@ -16,6 +17,7 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({
   contractState,
   onOpenHistory,
+  onOpenLedger,
   historyCount,
   viewMode,
   onToggleViewMode,
@@ -67,7 +69,7 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       )}
 
-      {/* Main Navbar: Background #2B2B2B, Text #FFFDF5, Active Indicator #D4A017 */}
+      {/* Main Navbar */}
       <header className="bg-[#2B2B2B] text-[#FFFDF5] border-b border-[#2B2B2B]/60">
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex items-center justify-between gap-4 flex-wrap">
           
@@ -87,7 +89,7 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
           </div>
 
-          {/* User View vs. Solver Dashboard Mode Switcher with Mustard Active Underline */}
+          {/* User View vs. Solver Dashboard Mode Switcher */}
           <div className="flex items-center gap-1 bg-[#FFFDF5]/10 p-1 rounded-xl font-mono text-xs shrink-0 border border-white/10">
             <button
               type="button"
@@ -132,7 +134,7 @@ export const Header: React.FC<HeaderProps> = ({
 
           {/* Chain Telemetry & Action Buttons */}
           <div className="flex items-center gap-2.5 font-mono shrink-0">
-            <GanacheChainWidget />
+            <GanacheChainWidget onOpenLedger={onOpenLedger} />
 
             <button
               type="button"

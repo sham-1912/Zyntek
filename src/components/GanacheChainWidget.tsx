@@ -1,38 +1,40 @@
 import React, { useEffect, useState } from 'react';
-import { testGanacheConnection } from '../services/ganacheRpc';
-import { Cpu, CheckCircle2, Copy, Activity } from 'lucide-react';
+import { ganacheLedger } from '../services/ganacheLedger';
+import type { LedgerBlock } from '../services/ganacheLedger';
+import { Cpu, CheckCircle2, Copy, Activity, BookOpen } from 'lucide-react';
 
 interface GanacheChainWidgetProps {
   lastTxHash?: string;
-  lastBlockNumber?: number;
+  onOpenLedger?: () => void;
 }
 
-export const GanacheChainWidget: React.FC<GanacheChainWidgetProps> = ({ lastTxHash, lastBlockNumber }) => {
-  const [currentBlock, setCurrentBlock] = useState<number>(lastBlockNumber || 12);
+export const GanacheChainWidget: React.FC<GanacheChainWidgetProps> = ({ lastTxHash: propHash, onOpenLedger }) => {
+  const [latestBlock, setLatestBlock] = useState<LedgerBlock>(ganacheLedger.getLatestBlock());
   const [copied, setCopied] = useState<boolean>(false);
 
   useEffect(() => {
-    if (lastBlockNumber) {
-      setCurrentBlock(lastBlockNumber);
-    }
-  }, [lastBlockNumber]);
-
-  useEffect(() => {
-    const interval = setInterval(async () => {
-      await testGanacheConnection();
-    }, 10000);
-    return () => clearInterval(interval);
+    const unsubscribe = ganacheLedger.subscribe((_blocks, latest) => {
+      setLatestBlock(latest);
+    });
+    return unsubscribe;
   }, []);
 
-  const handleCopyHash = () => {
-    if (!lastTxHash) return;
-    navigator.clipboard.writeText(lastTxHash);
+  const displayHash = propHash || latestBlock?.transactions[0]?.hash || latestBlock?.hash;
+
+  const handleCopyHash = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!displayHash) return;
+    navigator.clipboard.writeText(displayHash);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
   return (
-    <div className="flex items-center gap-2.5 bg-[#FFFDF5]/10 border border-white/10 rounded-xl px-3 py-1.5 backdrop-blur-md shadow-md shrink-0 whitespace-nowrap text-[#FFFDF5]">
+    <div
+      onClick={onOpenLedger}
+      className="flex items-center gap-2.5 bg-[#FFFDF5]/10 hover:bg-[#FFFDF5]/15 border border-white/10 hover:border-[#D4A017]/40 rounded-xl px-3 py-1.5 backdrop-blur-md shadow-md shrink-0 whitespace-nowrap text-[#FFFDF5] cursor-pointer transition-all group"
+      title="Click to open full Ganache On-Chain Block Ledger & Explorer"
+    >
       {/* Network Status Badge */}
       <div className="flex items-center gap-2 border-r border-white/15 pr-2.5 shrink-0">
         <div className="relative flex items-center justify-center">
@@ -50,33 +52,34 @@ export const GanacheChainWidget: React.FC<GanacheChainWidgetProps> = ({ lastTxHa
         </div>
       </div>
 
-      {/* Block Counter */}
+      {/* Real-Time Live Incrementing Block Counter */}
       <div className="flex items-center gap-1.5 border-r border-white/15 pr-2.5 font-mono text-xs shrink-0 whitespace-nowrap">
-        <Activity className="w-3.5 h-3.5 text-[#F0C94C]" />
+        <Activity className="w-3.5 h-3.5 text-[#F0C94C] animate-pulse" />
         <span className="text-[#FFFDF5]/70">Block:</span>
-        <span className="font-bold text-[#F0C94C] bg-white/10 px-1.5 py-0.5 rounded border border-white/10">
-          #{currentBlock}
+        <span className="font-bold text-[#2B2B2B] bg-[#F0C94C] px-1.5 py-0.5 rounded shadow-xs">
+          #{latestBlock?.number || 14}
         </span>
       </div>
 
-      {/* Last Transaction Hash or Mining Status */}
-      {lastTxHash ? (
-        <div className="flex items-center gap-1.5 font-mono text-xs text-[#FFFDF5] shrink-0 whitespace-nowrap">
-          <span className="text-[#FFFDF5]/70 text-[11px]">TX:</span>
-          <span className="text-[#D4A017] bg-white/10 px-1.5 py-0.5 rounded border border-white/10 font-bold">
-            {lastTxHash.slice(0, 6)}...{lastTxHash.slice(-4)}
-          </span>
-          <button
-            onClick={handleCopyHash}
-            className="p-0.5 rounded hover:bg-white/10 text-[#D4A017] hover:text-[#FFFDF5] transition-colors cursor-pointer"
-            title="Copy TX Hash"
-          >
-            {copied ? <CheckCircle2 className="w-3.5 h-3.5 text-[#607A3A]" /> : <Copy className="w-3.5 h-3.5" />}
-          </button>
-        </div>
-      ) : (
-        <span className="text-[11px] font-mono text-[#FFFDF5]/70 whitespace-nowrap">Auto-Mining</span>
-      )}
+      {/* Ledger Button & Last Hash */}
+      <div className="flex items-center gap-2 font-mono text-xs text-[#FFFDF5] shrink-0 whitespace-nowrap">
+        <span className="text-[#FFFDF5]/70 text-[11px] hidden sm:inline">TX:</span>
+        <span className="text-[#D4A017] bg-white/10 px-1.5 py-0.5 rounded border border-white/10 font-bold max-w-[90px] sm:max-w-[120px] truncate">
+          {displayHash ? `${displayHash.slice(0, 6)}...${displayHash.slice(-4)}` : 'Mining...'}
+        </span>
+        <button
+          onClick={handleCopyHash}
+          className="p-0.5 rounded hover:bg-white/10 text-[#D4A017] hover:text-[#FFFDF5] transition-colors cursor-pointer"
+          title="Copy TX Hash"
+        >
+          {copied ? <CheckCircle2 className="w-3.5 h-3.5 text-[#607A3A]" /> : <Copy className="w-3.5 h-3.5" />}
+        </button>
+
+        <span className="px-2 py-0.5 rounded bg-[#D4A017] text-[#2B2B2B] text-[10px] font-bold flex items-center gap-1 group-hover:bg-[#E0AB1E] shadow-xs">
+          <BookOpen className="w-3 h-3" />
+          <span>Ledger</span>
+        </span>
+      </div>
     </div>
   );
 };

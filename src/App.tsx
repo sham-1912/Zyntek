@@ -4,6 +4,7 @@ import type { UserIntent, SolverBid, PipelineStage, PrioritySliders as SlidersTy
 import { getInitialSolverDefinitions } from './services/solverSimulator';
 import { recalculateAllScores } from './services/scoringEngine';
 import { contractSimulator } from './services/contractSimulator';
+import { ganacheLedger } from './services/ganacheLedger';
 
 import { Header } from './components/Header';
 import { DemoScenarioBar } from './components/DemoScenarioBar';
@@ -22,6 +23,7 @@ import { FinalSettlementRecordCard } from './components/FinalSettlementRecordCar
 import { SensitiveDecisionModal } from './components/SensitiveDecisionModal';
 import { PreCommitModal } from './components/PreCommitModal';
 import { IntentHistoryDrawer } from './components/IntentHistoryDrawer';
+import { GanacheBlockLedgerDrawer } from './components/GanacheBlockLedgerDrawer';
 
 export default function App() {
   const [currentIntent, setCurrentIntent] = useState<UserIntent | null>(null);
@@ -60,9 +62,10 @@ export default function App() {
   const [isHighValue, setIsHighValue] = useState<boolean>(false);
   const [settlementResult, setSettlementResult] = useState<SettlementResult | null>(null);
 
-  // Activity Logs & Contract state
+  // Activity Logs, Contract state & Drawers
   const [activityLogs, setActivityLogs] = useState<ActivityLogEntry[]>([]);
   const [isHistoryDrawerOpen, setIsHistoryDrawerOpen] = useState<boolean>(false);
+  const [isLedgerDrawerOpen, setIsLedgerDrawerOpen] = useState<boolean>(false);
   const [history, setHistory] = useState(contractSimulator.getHistory());
   const [contractState, setContractState] = useState(contractSimulator.getContractState());
 
@@ -150,7 +153,8 @@ export default function App() {
     addTimeout(() => {
       setStage('escrow');
       setLifecycleStep('funds_locked');
-      addLog(`[EVM EscrowVault.sol] Locked $${intent.sourceAmount} USDC deposit on Ethereum`, 'success');
+      const b = ganacheLedger.pushIntentTransaction('lockEscrow', intent.intentId, intent.sourceAmount);
+      addLog(`[EVM EscrowVault.sol] Locked $${intent.sourceAmount} USDC deposit in Block #${b.number}`, 'success');
     }, 1200);
 
     // 3. Stage: SOLVER AUCTION (t = 2.4s)
@@ -241,7 +245,8 @@ export default function App() {
     addTimeout(() => {
       setStage('commitment');
       setLifecycleStep('bond_posted');
-      addLog(`[SolverBonding.sol] Solver locked $${winner.collateralOfferedUsd} collateral bond`, 'success');
+      const b = ganacheLedger.pushIntentTransaction('commitBond', currentIntent ? currentIntent.intentId : '0x0', winner.collateralOfferedUsd);
+      addLog(`[SolverBonding.sol] Solver locked $${winner.collateralOfferedUsd} collateral bond in Block #${b.number}`, 'success');
     }, 1500);
 
     // 5. Cross-Chain Execution on Solana (t = +3.0s)
@@ -257,8 +262,9 @@ export default function App() {
         setIsFailed(true);
         setFailureReason('Solver missed destination execution deadline (Timeout on Solana SVM leg).');
         setStage('slashed_refunded');
+        const b = ganacheLedger.pushIntentTransaction('slashBond', currentIntent ? currentIntent.intentId : '0x0', 500);
         addLog('❌ EXECUTION FAILED: Solver timeout error detected on Solana SVM', 'error');
-        addLog('⚡ Full $500 Solver Collateral Bond Slashed via SolverBonding.sol', 'error');
+        addLog(`⚡ Full $500 Solver Collateral Bond Slashed in Block #${b.number}`, 'error');
         addLog('✓ User Escrow 100% Refunded & Protected', 'success');
       }, 5000);
       return;
@@ -300,7 +306,8 @@ export default function App() {
   const finalizeSettlement = (winner: SolverBid) => {
     setStage('settlement');
     setLifecycleStep('settlement_complete');
-    addLog(`✓ Settlement Finalized: Released $${winner.expectedOutput} USDC to recipient on Solana`, 'success');
+    const b = ganacheLedger.pushIntentTransaction('settleIntent', currentIntent ? currentIntent.intentId : '0x0', winner.expectedOutput);
+    addLog(`✓ Settlement Finalized: Released $${winner.expectedOutput} USDC to recipient in Block #${b.number}`, 'success');
 
     confetti({
       particleCount: 80,
@@ -313,7 +320,7 @@ export default function App() {
       winningSolverId: winner.solverId,
       escrowReleasedUsd: winner.expectedOutput,
       verificationType: verificationType,
-      txHash: '0x8f2a18b...77e9',
+      txHash: b.transactions[0]?.hash || '0x8f2a18b...77e9',
       success: true,
       executionTimeMs: 12500,
       receipts: [],
@@ -384,6 +391,7 @@ export default function App() {
       <Header
         contractState={contractState}
         onOpenHistory={() => setIsHistoryDrawerOpen(true)}
+        onOpenLedger={() => setIsLedgerDrawerOpen(true)}
         historyCount={history.length}
         viewMode="user"
         onToggleViewMode={() => {}}
@@ -546,6 +554,12 @@ export default function App() {
         isOpen={isHistoryDrawerOpen}
         history={history}
         onClose={() => setIsHistoryDrawerOpen(false)}
+      />
+
+      {/* Live Ganache On-Chain Block Ledger Drawer */}
+      <GanacheBlockLedgerDrawer
+        isOpen={isLedgerDrawerOpen}
+        onClose={() => setIsLedgerDrawerOpen(false)}
       />
     </div>
   );
