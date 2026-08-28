@@ -35,7 +35,7 @@ class GanacheLedgerService {
   private currentBlockNumber = 7;
   private autoMiningInterval = 4000; // 4 seconds
   private timer: NodeJS.Timeout | null = null;
-  private isAutoMining = true;
+  private isAutoMining = false;
   private isMiningInProgress = false;
   private listeners: ((blocks: LedgerBlock[], latestBlock: LedgerBlock) => void)[] = [];
   private rpcProvider: JsonRpcProvider | null = null;
@@ -43,7 +43,6 @@ class GanacheLedgerService {
   constructor() {
     this.initRpc();
     this.syncInitialGanacheState();
-    this.startAutoMining();
   }
 
   private initRpc() {

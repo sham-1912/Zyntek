@@ -69,11 +69,11 @@ export const FinalSettlementRecordCard: React.FC<FinalSettlementRecordCardProps>
       </div>
 
       {/* Outcome Flow Diagram: Ethereum -> ZYNTEK -> Solana */}
-      <div className="p-4 sm:p-5 bg-[#F7E7B5]/60 rounded-2xl border border-[rgba(43,43,43,0.1)] flex flex-col md:flex-row items-center justify-between gap-4 font-mono text-center">
+      <div className="p-4 bg-[#F7E7B5]/60 rounded-2xl border border-[rgba(43,43,43,0.1)] flex flex-col md:flex-row items-center justify-between gap-4 font-mono text-center">
         {/* Source */}
-        <div className="flex-1 bg-[#FFFDF5] p-4 rounded-xl border border-[rgba(43,43,43,0.08)] shadow-xs w-full">
-          <span className="text-[10px] text-[#5A5A5A] uppercase block font-semibold">Deposited (Escrow)</span>
-          <span className="text-xl sm:text-2xl font-bold text-[#2B2B2B] block mt-0.5">${intent.sourceAmount} USDC</span>
+        <div className="flex-1 bg-[#FFFDF5] p-3.5 rounded-xl border border-[rgba(43,43,43,0.08)] shadow-xs w-full">
+          <span className="text-[10px] text-[#5A5A5A] uppercase block font-semibold">Deposited</span>
+          <span className="text-lg sm:text-xl font-bold text-[#2B2B2B] block">${intent.sourceAmount} USDC</span>
           <span className="text-[11px] text-[#5A5A5A]">Ethereum EscrowVault.sol</span>
         </div>
 
@@ -86,15 +86,13 @@ export const FinalSettlementRecordCard: React.FC<FinalSettlementRecordCardProps>
             <div className="h-0.5 w-8 sm:w-16 bg-[#D4A017]" />
             <ArrowRight className="w-4 h-4 text-[#D4A017]" />
           </div>
-          <span className="text-xs sm:text-sm text-[#607A3A] font-bold">
-            Solver {winningBid.solverName.split('—')[0]} Fulfilled
-          </span>
+          <span className="text-[10px] text-[#607A3A] font-bold">Solver {winningBid.solverName.split('—')[0]} Fulfilled</span>
         </div>
 
         {/* Destination */}
-        <div className="flex-1 bg-[#FFFDF5] p-4 rounded-xl border border-[rgba(43,43,43,0.08)] shadow-xs w-full">
-          <span className="text-[10px] text-[#5A5A5A] uppercase block font-semibold">Delivered Payout</span>
-          <span className="text-xl sm:text-2xl font-bold text-[#D4A017] block mt-0.5">${winningBid.expectedOutput} USDC</span>
+        <div className="flex-1 bg-[#FFFDF5] p-3.5 rounded-xl border border-[rgba(43,43,43,0.08)] shadow-xs w-full">
+          <span className="text-[10px] text-[#5A5A5A] uppercase block font-semibold">Delivered Output</span>
+          <span className="text-lg sm:text-xl font-bold text-[#D4A017] block">${winningBid.expectedOutput} USDC</span>
           <span className="text-[11px] text-[#5A5A5A]">Solana Destination Wallet</span>
         </div>
       </div>
