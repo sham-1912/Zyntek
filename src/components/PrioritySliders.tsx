@@ -1,6 +1,6 @@
 import React from 'react';
 import type { PrioritySliders as SlidersType } from '../services/types';
-import { DollarSign, Zap, Shield, CheckCircle2, AlertCircle } from 'lucide-react';
+import { DollarSign, Zap, Shield, CheckCircle2, Info } from 'lucide-react';
 
 interface PrioritySlidersProps {
   sliders: SlidersType;
@@ -10,9 +10,8 @@ interface PrioritySlidersProps {
 
 export const PrioritySliders: React.FC<PrioritySlidersProps> = ({ sliders, onChange, disabled }) => {
   const sum = sliders.cost + sliders.speed + sliders.safety;
-  const isValid = sum === 100;
 
-  // Proportional rebalancing logic to maintain sum strictly equal to 100%
+  // Proportional auto-rebalancing logic maintaining sum strictly equal to 100%
   const handleSliderChange = (key: keyof SlidersType, newValue: number) => {
     if (disabled) return;
     const clampedVal = Math.max(0, Math.min(100, Math.round(newValue)));
@@ -43,22 +42,21 @@ export const PrioritySliders: React.FC<PrioritySlidersProps> = ({ sliders, onCha
   return (
     <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-5 space-y-4">
       {/* Header & Validation Indicator */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
         <div>
           <h3 className="text-sm font-semibold text-white flex items-center gap-2">
             <span>User Priority Weights</span>
             <span className="text-xs text-slate-400 font-normal">(Dynamic Bid Scoring Drivers)</span>
           </h3>
+          <p className="text-[11px] text-indigo-300/80 mt-0.5">
+            Moving any slider automatically balances the remaining weights to total 100%.
+          </p>
         </div>
         <div
-          className={`flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full font-mono font-medium border ${
-            isValid
-              ? 'bg-emerald-950/60 border-emerald-800 text-emerald-400'
-              : 'bg-amber-950/60 border-amber-800 text-amber-400'
-          }`}
+          className="flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full font-mono font-medium border bg-emerald-950/60 border-emerald-800 text-emerald-400 shrink-0"
         >
-          {isValid ? <CheckCircle2 className="w-3.5 h-3.5" /> : <AlertCircle className="w-3.5 h-3.5" />}
-          <span>Total: {sum}% {isValid ? '(Valid)' : '(Rebalancing)'}</span>
+          <CheckCircle2 className="w-3.5 h-3.5" />
+          <span>Total: {sum}% (Auto-Balanced)</span>
         </div>
       </div>
 
@@ -69,7 +67,7 @@ export const PrioritySliders: React.FC<PrioritySlidersProps> = ({ sliders, onCha
           <div className="flex justify-between text-xs font-medium">
             <span className="text-indigo-300 flex items-center gap-1.5">
               <DollarSign className="w-3.5 h-3.5 text-indigo-400" />
-              Cost Priority (Min Fees & Output)
+              Cost Priority (Min Fees & Max Output)
             </span>
             <span className="font-mono font-bold text-indigo-400">{sliders.cost}%</span>
           </div>
@@ -109,7 +107,7 @@ export const PrioritySliders: React.FC<PrioritySlidersProps> = ({ sliders, onCha
           <div className="flex justify-between text-xs font-medium">
             <span className="text-cyan-300 flex items-center gap-1.5">
               <Shield className="w-3.5 h-3.5 text-cyan-400" />
-              Safety Priority (Reputation & Bond)
+              Safety Priority (Reputation & Collateral Bond)
             </span>
             <span className="font-mono font-bold text-cyan-400">{sliders.safety}%</span>
           </div>
@@ -123,6 +121,14 @@ export const PrioritySliders: React.FC<PrioritySlidersProps> = ({ sliders, onCha
             className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-cyan-500 disabled:opacity-50"
           />
         </div>
+      </div>
+
+      {/* Upfront Expectation Note */}
+      <div className="flex items-center gap-2 bg-slate-950 p-2.5 rounded-lg border border-slate-800 text-[11px] text-slate-400">
+        <Info className="w-4 h-4 text-indigo-400 shrink-0" />
+        <span>
+          <strong>Automated Execution Note:</strong> You&apos;ll be asked to confirm manually only if solver bids are very close (&le;5% gap), or your intent is high-value ($1,000+).
+        </span>
       </div>
     </div>
   );

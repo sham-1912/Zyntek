@@ -1,25 +1,33 @@
 import React from 'react';
 import type { SolverBid, UserIntent } from '../services/types';
-import { Award, Zap, Shield, DollarSign, ChevronRight, Activity, ShieldAlert } from 'lucide-react';
+import { Award, Zap, Shield, DollarSign, ChevronRight, Activity, ShieldAlert, CheckCircle2, Clock, Info } from 'lucide-react';
 
 interface SolverBidTableProps {
   bids: SolverBid[];
   intent: UserIntent;
   isBroadcasting: boolean;
+  biddingCountdownSec: number;
+  autoProceedCountdownSec?: number | null;
   onSelectBid: (bid: SolverBid) => void;
   selectedBidId?: string;
   isAmbiguous?: boolean;
   scoreGap?: number;
+  isHighValue?: boolean;
+  onCancelAutoProceed?: () => void;
 }
 
 export const SolverBidTable: React.FC<SolverBidTableProps> = ({
   bids,
   intent,
   isBroadcasting,
+  biddingCountdownSec,
+  autoProceedCountdownSec,
   onSelectBid,
   selectedBidId,
   isAmbiguous,
   scoreGap,
+  isHighValue,
+  onCancelAutoProceed,
 }) => {
   if (isBroadcasting) {
     return (
@@ -28,7 +36,7 @@ export const SolverBidTable: React.FC<SolverBidTableProps> = ({
           <Activity className="w-6 h-6 text-indigo-400 animate-spin" />
         </div>
         <div>
-          <h3 className="text-base font-bold text-white font-mono">Broadcasting Intent to Solver Pool...</h3>
+          <h3 className="text-base font-bold text-white font-mono">Broadcasting Intent to Solver Network...</h3>
           <p className="text-xs text-slate-400 mt-1">
             Receiving competitive bids from Alpha, Flash & Shield solver agents...
           </p>
@@ -39,15 +47,18 @@ export const SolverBidTable: React.FC<SolverBidTableProps> = ({
 
   if (bids.length === 0) return null;
 
+  const topBid = bids[0];
+  const isClearWinner = !isAmbiguous && !isHighValue;
+
   return (
     <div className="glass-panel p-6 space-y-6">
-      {/* Table Header */}
+      {/* Table Header & Bidding Countdown */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-4">
         <div>
           <div className="flex items-center gap-2">
-            <h2 className="text-lg font-bold text-white font-mono">Solver Bids & Dynamic Scoring</h2>
+            <h2 className="text-lg font-bold text-white font-mono">Solver Bids Marketplace</h2>
             <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-950 border border-emerald-800 text-emerald-400 font-semibold">
-              3 Bids Received
+              {bids.length} Solver Bids Received
             </span>
           </div>
           <p className="text-xs text-slate-400 mt-1">
@@ -55,14 +66,66 @@ export const SolverBidTable: React.FC<SolverBidTableProps> = ({
           </p>
         </div>
 
-        {/* Ambiguity Alert Banner if top 2 bids are within 5% */}
-        {isAmbiguous && (
-          <div className="flex items-center gap-2 bg-amber-950/80 border border-amber-700/80 px-3 py-1.5 rounded-lg text-amber-300 text-xs font-semibold">
-            <ShieldAlert className="w-4 h-4 text-amber-400 shrink-0" />
-            <span>Ambiguous Winner! Gap: {(scoreGap! * 100).toFixed(1)}% &le; 5%</span>
+        {/* Live Bidding Window Countdown Pill */}
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-indigo-950/80 border border-indigo-800 font-mono text-xs text-indigo-300 shrink-0">
+          <Clock className="w-4 h-4 text-indigo-400 animate-spin" />
+          <span>
+            {biddingCountdownSec > 0
+              ? `Bidding window closes in ${biddingCountdownSec}s`
+              : 'Auction Bidding Closed'}
+          </span>
+        </div>
+      </div>
+
+      {/* Auto-Selected vs Manual Input Required Status Banner */}
+      <div className="p-4 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 font-mono text-xs">
+        {isClearWinner ? (
+          <div className="flex items-center gap-3 text-emerald-300">
+            <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
+            <div>
+              <span className="font-bold text-sm block">Auto-Selected — Proceeding automatically</span>
+              <p className="text-slate-400 text-[11px] font-sans">
+                Top bid clearly wins with a {((scoreGap || 0.2) * 100).toFixed(1)}% score advantage (&gt;5%). Execution starting in {autoProceedCountdownSec ?? 3}s...
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div className="flex items-center gap-3 text-amber-300">
+            <ShieldAlert className="w-5 h-5 text-amber-400 shrink-0" />
+            <div>
+              <span className="font-bold text-sm block">User Action Required — Sensitive Decision Checkpoint</span>
+              <p className="text-slate-400 text-[11px] font-sans">
+                {isAmbiguous
+                  ? `Top 2 bids are scored very close (${(scoreGap! * 100).toFixed(1)}% gap \u2264 5%). Please manually confirm.`
+                  : `High-value intent ($${intent.sourceAmount} \u2265 $1,000). Manual ZK/Oracle verification sign-off required.`}
+              </p>
+            </div>
           </div>
         )}
+
+        {isClearWinner && onCancelAutoProceed && (
+          <button
+            type="button"
+            onClick={onCancelAutoProceed}
+            className="px-3 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] font-semibold shrink-0"
+          >
+            Pause Auto-Proceed
+          </button>
+        )}
       </div>
+
+      {/* Plain Language Rationale Banner for Rank #1 */}
+      {topBid.synthesisRationale && (
+        <div className="bg-slate-900/90 border border-indigo-500/50 p-3.5 rounded-xl flex items-start gap-2.5 text-xs text-indigo-200">
+          <Info className="w-4 h-4 text-indigo-400 shrink-0 mt-0.5" />
+          <div>
+            <span className="font-bold text-white font-mono uppercase text-[10px] tracking-wider block mb-0.5">
+              Protocol Scoring Synthesis:
+            </span>
+            <p>{topBid.synthesisRationale}</p>
+          </div>
+        </div>
+      )}
 
       {/* Solver Bid Cards */}
       <div className="space-y-4">
@@ -97,7 +160,7 @@ export const SolverBidTable: React.FC<SolverBidTableProps> = ({
                       <h4 className="text-sm font-bold text-white">{bid.solverName}</h4>
                       {isWinner && (
                         <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-indigo-950 text-indigo-300 border border-indigo-800">
-                          Auto Rank #1
+                          Rank #1 Winner
                         </span>
                       )}
                     </div>
@@ -115,7 +178,7 @@ export const SolverBidTable: React.FC<SolverBidTableProps> = ({
                 </div>
               </div>
 
-              {/* Sub-Score Breakdown Section (MANDATORY REQUIREMENT) */}
+              {/* Sub-Score Breakdown Section */}
               <div className="pt-4 grid grid-cols-1 md:grid-cols-3 gap-3">
                 {/* Cost Sub-Score */}
                 <div className="bg-slate-950/60 p-3 rounded-lg border border-slate-800/80">

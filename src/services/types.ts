@@ -44,12 +44,17 @@ export interface SolverBid {
   subScores: SubScores;
   finalScore: number; // 0.0 - 1.0
   routeDescription: string;
+  synthesisRationale?: string; // Plain language "why"
 }
 
 export type PipelineStage = 
   | 'idle'
+  | 'pre_commit_confirm'
   | 'intent_submitted'
-  | 'bidding'
+  | 'escrow_mining'
+  | 'broadcasting_solvers'
+  | 'bidding_window'
+  | 'scoring_bids'
   | 'sensitive_gate'
   | 'escrow_locked'
   | 'solver_committed'
@@ -59,6 +64,16 @@ export type PipelineStage =
   | 'slashed_refunded';
 
 export type VerificationType = 'optimistic' | 'zk_oracle';
+
+export interface BlockReceipt {
+  stepName: string;
+  txHash: string;
+  blockNumber: number;
+  gasUsed: number;
+  timestamp: number;
+  explorerUrl: string;
+  proofData?: string;
+}
 
 export interface SettlementResult {
   intentId: string;
@@ -71,4 +86,13 @@ export interface SettlementResult {
   success: boolean;
   failureReason?: string;
   executionTimeMs: number;
+  receipts: BlockReceipt[];
+}
+
+export interface IntentHistoryItem {
+  intent: UserIntent;
+  status: PipelineStage;
+  winningBid?: SolverBid;
+  result?: SettlementResult;
+  createdAt: number;
 }

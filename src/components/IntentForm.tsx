@@ -1,17 +1,18 @@
 import React, { useState } from 'react';
 import type { UserIntent, PrioritySliders as SlidersType } from '../services/types';
 import { PrioritySliders } from './PrioritySliders';
-import { Send, Sparkles } from 'lucide-react';
+import { Send, Sparkles, HelpCircle, Clock } from 'lucide-react';
 
 interface IntentFormProps {
-  onSubmit: (intent: UserIntent) => void;
+  onPreCommitTrigger: (intent: UserIntent) => void;
   disabled?: boolean;
 }
 
-export const IntentForm: React.FC<IntentFormProps> = ({ onSubmit, disabled }) => {
+export const IntentForm: React.FC<IntentFormProps> = ({ onPreCommitTrigger, disabled }) => {
   const [sourceAmount, setSourceAmount] = useState<number>(500);
   const [sliders, setSliders] = useState<SlidersType>({ cost: 60, speed: 20, safety: 20 });
   const [deadlineMinutes, setDeadlineMinutes] = useState<number>(10);
+  const [showHighValueTooltip, setShowHighValueTooltip] = useState<boolean>(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,7 +28,7 @@ export const IntentForm: React.FC<IntentFormProps> = ({ onSubmit, disabled }) =>
       sliders,
       timestamp: Date.now(),
     };
-    onSubmit(newIntent);
+    onPreCommitTrigger(newIntent);
   };
 
   return (
@@ -75,23 +76,44 @@ export const IntentForm: React.FC<IntentFormProps> = ({ onSubmit, disabled }) =>
             />
           </div>
 
-          {/* Quick preset buttons for demo */}
-          <div className="flex items-center gap-2 pt-1">
-            <span className="text-[10px] text-slate-500">Presets:</span>
+          {/* Presets with High-Value Tooltip */}
+          <div className="flex items-center justify-between pt-1 relative">
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] text-slate-500">Presets:</span>
+              <button
+                type="button"
+                onClick={() => setSourceAmount(250)}
+                className="text-[10px] px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 font-mono"
+              >
+                $250 (Standard)
+              </button>
+              <button
+                type="button"
+                onClick={() => setSourceAmount(1500)}
+                className="text-[10px] px-2 py-0.5 rounded bg-amber-950/80 text-amber-300 border border-amber-800/50 font-mono flex items-center gap-1"
+              >
+                <span>$1,500 (High-Value Gate)</span>
+              </button>
+            </div>
+
             <button
               type="button"
-              onClick={() => setSourceAmount(250)}
-              className="text-[10px] px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 font-mono"
+              onClick={() => setShowHighValueTooltip(!showHighValueTooltip)}
+              className="text-slate-400 hover:text-amber-300 transition-colors"
+              title="What is High-Value Gate?"
             >
-              $250 (Standard)
+              <HelpCircle className="w-3.5 h-3.5" />
             </button>
-            <button
-              type="button"
-              onClick={() => setSourceAmount(1500)}
-              className="text-[10px] px-2 py-0.5 rounded bg-amber-950/80 text-amber-300 border border-amber-800/50 font-mono"
-            >
-              $1,500 (High-Value Gate)
-            </button>
+
+            {/* High-Value Gate Tooltip Card */}
+            {showHighValueTooltip && (
+              <div className="absolute right-0 top-7 z-30 w-72 p-3 rounded-xl bg-slate-950 border border-amber-500/60 shadow-xl text-[11px] text-slate-300 space-y-1 font-sans">
+                <span className="font-bold text-amber-400 block">High-Value Intent Gate ($1,000+)</span>
+                <p>
+                  Above $1,000, delivery is verified with a stronger cryptographic ZK/oracle proof before funds release — slightly slower (~15s), but maximum settlement safety.
+                </p>
+              </div>
+            )}
           </div>
         </div>
 
@@ -133,15 +155,22 @@ export const IntentForm: React.FC<IntentFormProps> = ({ onSubmit, disabled }) =>
       {/* Priority Sliders Component */}
       <PrioritySliders sliders={sliders} onChange={setSliders} disabled={disabled} />
 
-      {/* Submit Button */}
-      <button
-        type="submit"
-        disabled={disabled}
-        className="w-full py-3.5 px-6 rounded-xl gradient-bg hover:opacity-90 transition-all font-semibold text-white text-sm flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/30 disabled:opacity-50"
-      >
-        <Send className="w-4 h-4" />
-        <span>Broadcast Intent to Solvers Marketplace</span>
-      </button>
+      {/* Submit Button & Expectation Note */}
+      <div className="space-y-2">
+        <button
+          type="submit"
+          disabled={disabled}
+          className="w-full py-3.5 px-6 rounded-xl gradient-bg hover:opacity-90 transition-all font-semibold text-white text-sm flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/30 disabled:opacity-50"
+        >
+          <Send className="w-4 h-4" />
+          <span>Review & Broadcast Intent</span>
+        </button>
+
+        <p className="text-center text-[11px] text-slate-400 font-mono flex items-center justify-center gap-1.5">
+          <Clock className="w-3.5 h-3.5 text-indigo-400" />
+          <span>Solvers typically respond with competitive bids within ~10–15 seconds.</span>
+        </p>
+      </div>
     </form>
   );
 };

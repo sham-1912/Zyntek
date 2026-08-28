@@ -1,6 +1,5 @@
-import type { UserIntent, SolverBid, SettlementResult, VerificationType } from './types';
+import type { UserIntent, SolverBid, SettlementResult, VerificationType, BlockReceipt, IntentHistoryItem, PipelineStage } from './types';
 
-// Simulated state storage for active intents & contract balances
 interface ContractState {
   escrowLockedUsd: number;
   solverBondLockedUsd: number;
@@ -16,22 +15,65 @@ class ContractSimulatorService {
     settledTotalUsd: 0,
   };
 
+  private history: IntentHistoryItem[] = [];
+
   public getContractState(): ContractState {
     return { ...this.state };
   }
 
-  public async lockUserEscrow(intent: UserIntent): Promise<{ txHash: string; status: 'LOCKED' }> {
-    await new Promise((resolve) => setTimeout(resolve, 800));
-    this.state.escrowLockedUsd += intent.sourceAmount;
-    const txHash = `0x${Math.random().toString(16).substring(2, 10)}${Date.now().toString(16)}`;
-    return { txHash, status: 'LOCKED' };
+  public getHistory(): IntentHistoryItem[] {
+    return [...this.history];
   }
 
-  public async commitSolverBond(_intent: UserIntent, solver: SolverBid): Promise<{ txHash: string; status: 'COMMITTED' }> {
+  public addOrUpdateHistory(intent: UserIntent, stage: PipelineStage, winningBid?: SolverBid, result?: SettlementResult) {
+    const existingIndex = this.history.findIndex((h) => h.intent.intentId === intent.intentId);
+    const item: IntentHistoryItem = {
+      intent,
+      status: stage,
+      winningBid,
+      result,
+      createdAt: Date.now(),
+    };
+
+    if (existingIndex >= 0) {
+      this.history[existingIndex] = item;
+    } else {
+      this.history.unshift(item);
+    }
+  }
+
+  public async lockUserEscrow(intent: UserIntent): Promise<{ receipt: BlockReceipt; status: 'LOCKED' }> {
+    await new Promise((resolve) => setTimeout(resolve, 800));
+    this.state.escrowLockedUsd += intent.sourceAmount;
+
+    const receipt: BlockReceipt = {
+      stepName: 'Intent Escrow Deposit',
+      txHash: `0x8f2a${Math.random().toString(16).substring(2, 8)}c91d`,
+      blockNumber: 19845210 + Math.floor(Math.random() * 50),
+      gasUsed: 65420,
+      timestamp: Date.now(),
+      explorerUrl: `https://sepolia.etherscan.io/tx/0x8f2a...c91d`,
+      proofData: `LockToken(USDC, ${intent.sourceAmount}, intentId=${intent.intentId})`,
+    };
+
+    return { receipt, status: 'LOCKED' };
+  }
+
+  public async commitSolverBond(_intent: UserIntent, solver: SolverBid): Promise<{ receipt: BlockReceipt; status: 'COMMITTED' }> {
     await new Promise((resolve) => setTimeout(resolve, 700));
     this.state.solverBondLockedUsd += solver.collateralOfferedUsd;
-    const txHash = `0x${Math.random().toString(16).substring(2, 10)}${Date.now().toString(16)}`;
-    return { txHash, status: 'COMMITTED' };
+
+    const receipt: BlockReceipt = {
+      stepName: 'Solver Bond Collateral Commitment',
+      txHash: `0x3c7b${Math.random().toString(16).substring(2, 8)}e4f1`,
+      blockNumber: 19845211 + Math.floor(Math.random() * 50),
+      gasUsed: 84210,
+      timestamp: Date.now(),
+      explorerUrl: `https://sepolia.etherscan.io/tx/0x3c7b...e4f1`,
+      proofData: `CommitCollateral(${solver.solverName}, ${solver.collateralOfferedUsd} USDC)`,
+    };
+
+    return { receipt, status: 'COMMITTED' };
   }
 
   public async executeVerificationAndSettlement(
@@ -44,13 +86,41 @@ class ContractSimulatorService {
     const isHighValue = intent.sourceAmount >= 1000;
     const verificationType: VerificationType = isHighValue ? 'zk_oracle' : 'optimistic';
 
-    // Simulate verification delay
     await new Promise((resolve) => setTimeout(resolve, 1200));
 
-    const txHash = `0x${Math.random().toString(16).substring(2, 10)}${Date.now().toString(16)}`;
+    const mainTxHash = `0x9e1f${Math.random().toString(16).substring(2, 8)}7a2b`;
+
+    const receipts: BlockReceipt[] = [
+      {
+        stepName: 'EVM Escrow Lock',
+        txHash: `0x8f2a${Math.random().toString(16).substring(2, 8)}c91d`,
+        blockNumber: 19845210,
+        gasUsed: 65420,
+        timestamp: startTime - 4000,
+        explorerUrl: `https://sepolia.etherscan.io/tx/0x8f2a...c91d`,
+        proofData: `LockToken(USDC, ${intent.sourceAmount})`,
+      },
+      {
+        stepName: 'Solver Collateral Commitment',
+        txHash: `0x3c7b${Math.random().toString(16).substring(2, 8)}e4f1`,
+        blockNumber: 19845211,
+        gasUsed: 84210,
+        timestamp: startTime - 2000,
+        explorerUrl: `https://sepolia.etherscan.io/tx/0x3c7b...e4f1`,
+        proofData: `CommitCollateral(${solver.solverName}, $${solver.collateralOfferedUsd})`,
+      },
+      {
+        stepName: `Hybrid Verifier (${verificationType.toUpperCase()})`,
+        txHash: mainTxHash,
+        blockNumber: 19845214,
+        gasUsed: 112040,
+        timestamp: Date.now(),
+        explorerUrl: `https://sepolia.etherscan.io/tx/${mainTxHash}`,
+        proofData: verificationType === 'zk_oracle' ? 'ZK-SNARK Attestation Proof #0x77f9a2' : 'Optimistic Challenge Window Timelock Passed',
+      },
+    ];
 
     if (forceFailure) {
-      // Slashing path
       const bondSlashed = solver.collateralOfferedUsd;
       const userRefund = intent.sourceAmount;
 
@@ -65,13 +135,13 @@ class ContractSimulatorService {
         solverBondSlashedUsd: bondSlashed,
         userRefundedUsd: userRefund,
         verificationType,
-        txHash,
+        txHash: mainTxHash,
         success: false,
         failureReason,
         executionTimeMs: Date.now() - startTime,
+        receipts,
       };
     } else {
-      // Success path
       const escrowReleased = intent.sourceAmount;
       this.state.escrowLockedUsd = Math.max(0, this.state.escrowLockedUsd - intent.sourceAmount);
       this.state.solverBondLockedUsd = Math.max(0, this.state.solverBondLockedUsd - solver.collateralOfferedUsd);
@@ -82,9 +152,10 @@ class ContractSimulatorService {
         winningSolverId: solver.solverId,
         escrowReleasedUsd: escrowReleased,
         verificationType,
-        txHash,
+        txHash: mainTxHash,
         success: true,
         executionTimeMs: Date.now() - startTime,
+        receipts,
       };
     }
   }

@@ -1,12 +1,8 @@
 import type { UserIntent, SolverBid, SubScores } from './types';
 
-// Helper for min-max normalization with fallback when min === max
 function normalize(value: number, min: number, max: number): number {
-  // If min === max, treat normalized score as 1.0 to avoid divide-by-zero
   if (min === max) return 1.0;
-
   const norm = (value - min) / (max - min);
-  // Clamp between 0.0 and 1.0
   return Math.max(0.0, Math.min(1.0, norm));
 }
 
@@ -16,11 +12,26 @@ function getMinMax(values: number[]) {
   return { min, max };
 }
 
-export function calculateBidScores(intent: UserIntent, rawBids: Omit<SolverBid, 'subScores' | 'finalScore'>[]): SolverBid[] {
+export function generateSynthesisRationale(bid: SolverBid, rankIndex: number): string {
+  if (rankIndex === 0) {
+    if (bid.solverProfile === 'alpha') {
+      return `Ranked #1: Lowest fee ($${bid.feeUsd}) and highest output ($${bid.proposedOutput}), strongly matching your Cost priority.`;
+    } else if (bid.solverProfile === 'flash') {
+      return `Ranked #1: Ultra-fast execution (${bid.estimatedExecutionTimeSec}s) and tight slippage (${bid.estimatedSlippagePct}%), matching your Speed priority.`;
+    } else {
+      return `Ranked #1: Maximum collateral bond ($${bid.collateralOfferedUsd}) and 99/100 reputation, matching your Safety priority.`;
+    }
+  } else if (rankIndex === 1) {
+    return `Ranked #2: Strong competitive offer, closely competing on output and execution time.`;
+  } else {
+    return `Ranked #3: Higher fee or lower collateral bond compared to top-ranked solvers.`;
+  }
+}
+
+export function calculateBidScores(intent: UserIntent, rawBids: Omit<SolverBid, 'subScores' | 'finalScore' | 'synthesisRationale'>[]): SolverBid[] {
   const count = rawBids.length;
   if (count === 0) return [];
 
-  // Extract raw series for normalization across all bids
   const outputs = rawBids.map((b) => b.proposedOutput);
   const feesInverted = rawBids.map((b) => (b.feeUsd === 0 ? 0 : 1 / b.feeUsd));
   const slippagesInverted = rawBids.map((b) => (b.estimatedSlippagePct === 0 ? 0 : 1 / b.estimatedSlippagePct));
@@ -35,7 +46,6 @@ export function calculateBidScores(intent: UserIntent, rawBids: Omit<SolverBid, 
   const mmReputation = getMinMax(reputations);
   const mmCollateral = getMinMax(collaterals);
 
-  // Convert user sliders (0-100%) to weights summing to 1.0
   const sliderTotal = intent.sliders.cost + intent.sliders.speed + intent.sliders.safety;
   const userCostWeight = sliderTotal > 0 ? intent.sliders.cost / sliderTotal : 0.333;
   const userSpeedWeight = sliderTotal > 0 ? intent.sliders.speed / sliderTotal : 0.333;
@@ -55,17 +65,10 @@ export function calculateBidScores(intent: UserIntent, rawBids: Omit<SolverBid, 
     const reputationNorm = normalize(bid.reputationScore, mmReputation.min, mmReputation.max);
     const collateralNorm = normalize(bid.collateralOfferedUsd, mmCollateral.min, mmCollateral.max);
 
-    // Sub-scores according to PRD formula:
-    // CostScore = avg(outputNorm, feeNorm, slippageNorm)
     const costScore = (outputNorm + feeNorm + slippageNorm) / 3;
-
-    // SpeedScore = executionTimeNorm
     const speedScore = executionTimeNorm;
-
-    // SafetyScore = avg(reputationNorm, collateralNorm)
     const safetyScore = (reputationNorm + collateralNorm) / 2;
 
-    // Weighted Final Score
     const finalScore = userCostWeight * costScore + userSpeedWeight * speedScore + userSafetyWeight * safetyScore;
 
     const subScores: SubScores = {
@@ -87,13 +90,14 @@ export function calculateBidScores(intent: UserIntent, rawBids: Omit<SolverBid, 
     };
   });
 
-  // Sort descending by FinalScore
-  return scoredBids.sort((a, b) => b.finalScore - a.finalScore);
+  const sorted = scoredBids.sort((a, b) => b.finalScore - a.finalScore);
+
+  return sorted.map((bid, idx) => ({
+    ...bid,
+    synthesisRationale: generateSynthesisRationale(bid, idx),
+  }));
 }
 
-/**
- * Checks whether top 2 bids are within the ambiguity threshold (default 5% or 0.05 score gap).
- */
 export function checkAmbiguity(bids: SolverBid[], threshold = 0.05): { isAmbiguous: boolean; scoreGap: number } {
   if (bids.length < 2) return { isAmbiguous: false, scoreGap: 1.0 };
   const gap = Math.abs(bids[0].finalScore - bids[1].finalScore);
@@ -103,9 +107,6 @@ export function checkAmbiguity(bids: SolverBid[], threshold = 0.05): { isAmbiguo
   };
 }
 
-/**
- * Checks whether intent is high-value ($1,000+ USD) requiring ZK/Oracle verification & user sign-off.
- */
 export function isHighValueIntent(intent: UserIntent, threshold = 1000): boolean {
   return intent.sourceAmount >= threshold;
 }

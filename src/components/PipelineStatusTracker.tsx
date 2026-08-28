@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import type { PipelineStage, VerificationType, SettlementResult } from '../services/types';
-import { CheckCircle2, Loader2, ShieldCheck, ShieldAlert, Lock, Cpu, ArrowRight } from 'lucide-react';
+import { CheckCircle2, Loader2, ShieldCheck, ShieldAlert, Lock, Cpu, ArrowRight, ExternalLink, Clock, FileText } from 'lucide-react';
 
 interface PipelineStatusTrackerProps {
   stage: PipelineStage;
   verificationType: VerificationType;
+  challengeCountdownSec: number;
+  subStatusText: string;
   settlementResult?: SettlementResult;
   intentId?: string;
 }
@@ -12,9 +14,13 @@ interface PipelineStatusTrackerProps {
 export const PipelineStatusTracker: React.FC<PipelineStatusTrackerProps> = ({
   stage,
   verificationType,
+  challengeCountdownSec,
+  subStatusText,
   settlementResult,
   intentId,
 }) => {
+  const [showReceiptsModal, setShowReceiptsModal] = useState<boolean>(false);
+
   if (stage === 'idle') return null;
 
   const steps = [
@@ -52,10 +58,11 @@ export const PipelineStatusTracker: React.FC<PipelineStatusTrackerProps> = ({
             <Cpu className="w-5 h-5 text-cyan-400" />
             <span>Cross-Chain Status Pipeline</span>
           </h3>
-          <p className="text-xs text-slate-400">Live protocol state transitions across EVM & Solana mock service</p>
+          <p className="text-xs text-slate-400 mt-0.5">{subStatusText || 'Live protocol state transitions across EVM & Solana'}</p>
         </div>
+
         {intentId && (
-          <span className="text-[11px] font-mono text-indigo-400 px-2.5 py-1 rounded bg-indigo-950 border border-indigo-800">
+          <span className="text-[11px] font-mono text-indigo-400 px-2.5 py-1 rounded bg-indigo-950 border border-indigo-800 shrink-0">
             ID: {intentId}
           </span>
         )}
@@ -98,10 +105,29 @@ export const PipelineStatusTracker: React.FC<PipelineStatusTrackerProps> = ({
         })}
       </div>
 
-      {/* Settlement Result Box */}
+      {/* Visible Challenge Window Countdown Timer */}
+      {stage === 'verifying' && (
+        <div className="bg-indigo-950/60 border border-indigo-800 p-4 rounded-xl flex items-center justify-between gap-3 text-xs font-mono">
+          <div className="flex items-center gap-2 text-indigo-300">
+            <Clock className="w-4 h-4 text-indigo-400 animate-spin shrink-0" />
+            <div>
+              <span className="font-bold block">Optimistic Challenge Window Active</span>
+              <span className="text-[11px] text-slate-400 font-sans">
+                In production, this window is typically 15–30 minutes. Compressed for demo.
+              </span>
+            </div>
+          </div>
+          <div className="text-right shrink-0">
+            <span className="text-lg font-bold text-amber-400">0:{challengeCountdownSec.toString().padStart(2, '0')}</span>
+            <span className="block text-[10px] text-slate-500">Auto-settles if unchallenged</span>
+          </div>
+        </div>
+      )}
+
+      {/* Settlement Result Box & Proof Receipts */}
       {settlementResult && (
         <div
-          className={`p-4 rounded-xl border font-mono text-xs space-y-2 ${
+          className={`p-4 rounded-xl border font-mono text-xs space-y-3 ${
             settlementResult.success
               ? 'bg-emerald-950/60 border-emerald-800 text-emerald-300'
               : 'bg-rose-950/60 border-rose-800 text-rose-300'
@@ -109,7 +135,14 @@ export const PipelineStatusTracker: React.FC<PipelineStatusTrackerProps> = ({
         >
           <div className="flex items-center justify-between font-bold text-sm">
             <span>{settlementResult.success ? '✓ Settlement Confirmed' : '⚠ Execution Failure & Bond Slashed'}</span>
-            <span className="text-[11px] opacity-80">Tx: {settlementResult.txHash}</span>
+            <button
+              type="button"
+              onClick={() => setShowReceiptsModal(!showReceiptsModal)}
+              className="text-[11px] px-2.5 py-1 rounded bg-slate-900 border border-slate-700 hover:border-slate-500 text-white flex items-center gap-1 font-sans"
+            >
+              <FileText className="w-3.5 h-3.5 text-indigo-400" />
+              <span>View Block Proofs ↗</span>
+            </button>
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2 pt-2 border-t border-current/20">
@@ -134,6 +167,34 @@ export const PipelineStatusTracker: React.FC<PipelineStatusTrackerProps> = ({
               </div>
             )}
           </div>
+
+          {/* Expanded Block Receipts List */}
+          {showReceiptsModal && (
+            <div className="mt-3 pt-3 border-t border-current/30 space-y-2">
+              <span className="text-[11px] font-bold uppercase tracking-wider block text-white">
+                Cryptographic & On-Chain Proof Receipts:
+              </span>
+              {settlementResult.receipts.map((receipt, idx) => (
+                <div key={idx} className="bg-slate-950/90 p-2.5 rounded-lg border border-slate-800 text-[11px] space-y-1">
+                  <div className="flex justify-between items-center text-slate-300 font-bold">
+                    <span>{receipt.stepName}</span>
+                    <a
+                      href={receipt.explorerUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-indigo-400 hover:text-indigo-300 flex items-center gap-1"
+                    >
+                      <span>{receipt.txHash.slice(0, 10)}...</span>
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  </div>
+                  <div className="text-[10px] text-slate-400">
+                    Block #{receipt.blockNumber} | Gas: {receipt.gasUsed} | Proof: {receipt.proofData}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </div>
