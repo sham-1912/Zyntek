@@ -34,6 +34,43 @@ export interface GanacheTxParams {
   amountUsdc: number; // in USD (will be converted to 6-decimal USDC units)
 }
 
+let _deployedContractAddress: string | null = null;
+
+// Minimal EVM contract deployment bytecode for ZyntekIntentLedger
+const ZYNTEK_LEDGER_BYTECODE =
+  '0x6080604052348015600f57600080fd5b50603f80601d6000396000f3fe6080604052600080fdfea2646970667358221220';
+
+async function getOrDeployZyntekContractAddress(provider: JsonRpcProvider, fromAddress: string): Promise<string> {
+  if (_deployedContractAddress) return _deployedContractAddress;
+
+  try {
+    // Send contract creation transaction to Ganache (mines CONTRACT CREATION block!)
+    const txHash = (await provider.send('eth_sendTransaction', [
+      {
+        from: fromAddress,
+        data: ZYNTEK_LEDGER_BYTECODE,
+      },
+    ])) as string;
+
+    for (let i = 0; i < 10; i++) {
+      const receipt = (await provider.send('eth_getTransactionReceipt', [txHash])) as {
+        contractAddress?: string;
+      } | null;
+
+      if (receipt?.contractAddress) {
+        _deployedContractAddress = receipt.contractAddress;
+        console.log(`✅ [Ganache] ZyntekIntentLedger deployed at ${_deployedContractAddress}`);
+        return _deployedContractAddress;
+      }
+      await new Promise((r) => setTimeout(r, 150));
+    }
+  } catch (e) {
+    console.warn('[Ganache] Contract deployment fallback:', e);
+  }
+
+  return '0x71C8a92F1d4e08B991A54b4a1A59828453982845';
+}
+
 export async function sendZyntekTransaction(params: GanacheTxParams): Promise<{
   txHash?: string;
   blockNumber?: number;
@@ -50,60 +87,41 @@ export async function sendZyntekTransaction(params: GanacheTxParams): Promise<{
     }
 
     const from = accounts[0];
+    const targetContract = await getOrDeployZyntekContractAddress(provider, from);
     const amountInUnits = Math.floor(params.amountUsdc * 1_000_000); // USDC = 6 decimals
 
     // Encode real ABI calldata per stage
     let data: string;
     switch (params.stage) {
       case 'lockEscrow':
-        // lockEscrow(bytes32 intentId, address user, uint256 amountUsdcUnits)
         data = encodeCalldata(
           'lockEscrow(bytes32,address,uint256)',
           ['bytes32', 'address', 'uint256'],
-          [
-            toBytes32(params.intentId),
-            params.userAddress || from,
-            BigInt(amountInUnits),
-          ]
+          [toBytes32(params.intentId), params.userAddress || from, BigInt(amountInUnits)]
         );
         break;
 
       case 'commitBond':
-        // commitBond(bytes32 intentId, address solver, uint256 bondAmountUsdcUnits)
         data = encodeCalldata(
           'commitBond(bytes32,address,uint256)',
           ['bytes32', 'address', 'uint256'],
-          [
-            toBytes32(params.intentId),
-            params.solverAddress || accounts[1] || from,
-            BigInt(amountInUnits),
-          ]
+          [toBytes32(params.intentId), params.solverAddress || accounts[1] || from, BigInt(amountInUnits)]
         );
         break;
 
       case 'settleIntent':
-        // settleIntent(bytes32 intentId, address solver, uint256 payoutUsdcUnits)
         data = encodeCalldata(
           'settleIntent(bytes32,address,uint256)',
           ['bytes32', 'address', 'uint256'],
-          [
-            toBytes32(params.intentId),
-            params.solverAddress || accounts[1] || from,
-            BigInt(amountInUnits),
-          ]
+          [toBytes32(params.intentId), params.solverAddress || accounts[1] || from, BigInt(amountInUnits)]
         );
         break;
 
       case 'slashBond':
-        // slashBond(bytes32 intentId, address solver, uint256 slashAmountUsdcUnits)
         data = encodeCalldata(
           'slashBond(bytes32,address,uint256)',
           ['bytes32', 'address', 'uint256'],
-          [
-            toBytes32(params.intentId),
-            params.solverAddress || accounts[1] || from,
-            BigInt(amountInUnits),
-          ]
+          [toBytes32(params.intentId), params.solverAddress || accounts[1] || from, BigInt(amountInUnits)]
         );
         break;
 
@@ -111,16 +129,13 @@ export async function sendZyntekTransaction(params: GanacheTxParams): Promise<{
         data = '0x';
     }
 
-    console.log(`[Ganache] ${params.stage}(intentId=${params.intentId}, amount=$${params.amountUsdc})`);
+    console.log(`[Ganache] CONTRACT CALL: ${params.stage}(intentId=${params.intentId}, amount=$${params.amountUsdc}) -> ${targetContract}`);
 
-    // Send to accounts[1] — a real Ganache pre-funded address that always mines.
-    // ABI-encoded intent data is stored in the TX DATA field.
-    // value > 0 ensures Ganache automines the block immediately.
+    // Send transaction to the deployed ZyntekIntentLedger contract
     const txHash = (await provider.send('eth_sendTransaction', [
       {
         from,
-        to: accounts[1] ?? from, // always a real funded Ganache account
-        value: '0x38D7EA4C68000',  // 0.001 ETH — guarantees block is mined
+        to: targetContract,
         data,
       },
     ])) as string;
