@@ -15,10 +15,13 @@ import { PreCommitModal } from './components/PreCommitModal';
 import { IntentHistoryDrawer } from './components/IntentHistoryDrawer';
 import { JudgeToolsPanel } from './components/JudgeToolsPanel';
 import { BlockExplorerModal } from './components/BlockExplorerModal';
+import { SolverDashboard } from './components/SolverDashboard';
 
 import { Sparkles, RefreshCw } from 'lucide-react';
 
 export default function App() {
+  const [viewMode, setViewMode] = useState<'user' | 'solver'>('user');
+
   const [currentIntent, setCurrentIntent] = useState<UserIntent | null>(null);
   const [draftIntent, setDraftIntent] = useState<UserIntent | null>(null);
   const [isPreCommitOpen, setIsPreCommitOpen] = useState<boolean>(false);
@@ -71,7 +74,7 @@ export default function App() {
     setSelectedBid(null);
     setSettlementResult(undefined);
     setStage('escrow_mining');
-    setSubStatusText('Confirming EVM Escrow deposit on Sepolia testnet...');
+    setSubStatusText('Confirming EVM Escrow deposit on Ganache localnet (Chain #5777)...');
 
     const highVal = isHighValueIntent(intent);
     setIsHighValue(highVal);
@@ -84,7 +87,7 @@ export default function App() {
     setTimeout(() => {
       setStage('broadcasting_solvers');
       setIsBroadcasting(true);
-      setSubStatusText('Broadcasting intent to 3 distributed solver agents...');
+      setSubStatusText('Broadcasting intent to 3 distributed Ganache solver accounts...');
 
       const allBids = generateSolverBids(intent);
 
@@ -164,14 +167,14 @@ export default function App() {
 
     // Stage 2: Lock EVM Escrow
     setStage('escrow_locked');
-    setSubStatusText('Confirming EVM Escrow deposit on-chain...');
+    setSubStatusText('Confirming EVM Escrow deposit transaction on Ganache...');
     await contractSimulator.lockUserEscrow(currentIntent);
     contractSimulator.addOrUpdateHistory(currentIntent, 'escrow_locked', solver);
     updateContractState();
 
     // Stage 5: Commit Solver Collateral Bond
     setStage('solver_committed');
-    setSubStatusText(`Winning Solver (${solver.solverName}) staking $${solver.collateralOfferedUsd} bond (${Math.round((solver.collateralOfferedUsd / currentIntent.sourceAmount) * 100)}% collateralized)...`);
+    setSubStatusText(`Winning Solver (${solver.solverName}) transferring $${solver.collateralOfferedUsd} collateral bond to SolverBonding.sol...`);
     await contractSimulator.commitSolverBond(currentIntent, solver);
     contractSimulator.addOrUpdateHistory(currentIntent, 'solver_committed', solver);
     updateContractState();
@@ -206,7 +209,7 @@ export default function App() {
     setSettlementResult(result);
     const finalStage = result.success ? 'settled' : 'slashed_refunded';
     setStage(finalStage);
-    setSubStatusText(result.success ? '✓ Stage 8: Settlement finalized on-chain!' : '⚠ Stage 9: Verification Failed. Bond slashed & user refunded.');
+    setSubStatusText(result.success ? '✓ Stage 8: Settlement finalized on Ganache!' : '⚠ Stage 9: Verification Failed. Bond slashed & user refunded.');
     
     contractSimulator.addOrUpdateHistory(currentIntent, finalStage, solver, result);
     updateContractState();
@@ -239,71 +242,80 @@ export default function App() {
         contractState={contractState}
         onOpenHistory={() => setIsHistoryDrawerOpen(true)}
         historyCount={history.length}
+        viewMode={viewMode}
+        onToggleViewMode={setViewMode}
       />
 
       <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         
-        {/* Stage 0: Landing Bar & Live Stats */}
-        <LandingPrimerBar contractState={contractState} />
+        {/* Render View Mode: Solver Dashboard vs. User View */}
+        {viewMode === 'solver' ? (
+          <SolverDashboard history={history} />
+        ) : (
+          <>
+            {/* Stage 0: Landing Bar & Live Stats */}
+            <LandingPrimerBar contractState={contractState} />
 
-        {/* Banner */}
-        <div className="glass-panel p-6 flex flex-col md:flex-row items-center justify-between gap-4 border-indigo-900/40">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-indigo-400" />
-              <h2 className="text-xl font-bold gradient-text">Decentralized Intent Solver Marketplace</h2>
+            {/* Banner */}
+            <div className="glass-panel p-6 flex flex-col md:flex-row items-center justify-between gap-4 border-indigo-900/40">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="w-5 h-5 text-indigo-400" />
+                  <h2 className="text-xl font-bold gradient-text">Decentralized Intent Solver Marketplace</h2>
+                </div>
+                <p className="text-xs text-slate-300 max-w-2xl">
+                  State desired financial outcomes without manually navigating bridges or routes. Independent solvers compete on cost, speed, and safety, backed by EVM escrow, hybrid verifiers, and full-bond slashing accountability.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleReset}
+                  className="px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs font-mono text-slate-300 flex items-center gap-1.5 transition-all"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" />
+                  <span>Reset State</span>
+                </button>
+              </div>
             </div>
-            <p className="text-xs text-slate-300 max-w-2xl">
-              State desired financial outcomes without manually navigating bridges or routes. Independent solvers compete on cost, speed, and safety, backed by EVM escrow, hybrid verifiers, and full-bond slashing accountability.
-            </p>
-          </div>
 
-          <div className="flex items-center gap-2">
-            <button
-              onClick={handleReset}
-              className="px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs font-mono text-slate-300 flex items-center gap-1.5 transition-all"
-            >
-              <RefreshCw className="w-3.5 h-3.5" />
-              <span>Reset State</span>
-            </button>
-          </div>
-        </div>
+            {/* Stage 1: Intent Form & Status Tracker Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+              <div className="lg:col-span-6">
+                <IntentForm onPreCommitTrigger={handlePreCommitTrigger} disabled={stage !== 'idle' && stage !== 'bidding_window'} />
+              </div>
 
-        {/* Stage 1: Intent Form & Status Tracker Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          <div className="lg:col-span-6">
-            <IntentForm onPreCommitTrigger={handlePreCommitTrigger} disabled={stage !== 'idle' && stage !== 'bidding_window'} />
-          </div>
+              <div className="lg:col-span-6 space-y-6">
+                <PipelineStatusTracker
+                  stage={stage}
+                  verificationType={verificationType}
+                  challengeCountdownSec={challengeCountdownSec}
+                  subStatusText={subStatusText}
+                  settlementResult={settlementResult}
+                  intentId={currentIntent?.intentId}
+                  solverBondUsd={selectedBid?.collateralOfferedUsd}
+                  intentAmountUsd={currentIntent?.sourceAmount}
+                />
+              </div>
+            </div>
 
-          <div className="lg:col-span-6 space-y-6">
-            <PipelineStatusTracker
-              stage={stage}
-              verificationType={verificationType}
-              challengeCountdownSec={challengeCountdownSec}
-              subStatusText={subStatusText}
-              settlementResult={settlementResult}
-              intentId={currentIntent?.intentId}
-              solverBondUsd={selectedBid?.collateralOfferedUsd}
-              intentAmountUsd={currentIntent?.sourceAmount}
-            />
-          </div>
-        </div>
-
-        {/* Stage 3 & 4: Solver Bids Table Section */}
-        {(bids.length > 0 || isBroadcasting) && currentIntent && (
-          <SolverBidTable
-            bids={bids}
-            intent={currentIntent}
-            isBroadcasting={isBroadcasting}
-            biddingCountdownSec={biddingCountdownSec}
-            autoProceedCountdownSec={autoProceedCountdownSec}
-            onSelectBid={(bid) => executePipeline(bid, false)}
-            selectedBidId={selectedBid?.solverId}
-            isAmbiguous={isAmbiguous}
-            scoreGap={scoreGap}
-            isHighValue={isHighValue}
-            onCancelAutoProceed={() => setAutoProceedCountdownSec(null)}
-          />
+            {/* Stage 3 & 4: Solver Bids Table Section */}
+            {(bids.length > 0 || isBroadcasting) && currentIntent && (
+              <SolverBidTable
+                bids={bids}
+                intent={currentIntent}
+                isBroadcasting={isBroadcasting}
+                biddingCountdownSec={biddingCountdownSec}
+                autoProceedCountdownSec={autoProceedCountdownSec}
+                onSelectBid={(bid) => executePipeline(bid, false)}
+                selectedBidId={selectedBid?.solverId}
+                isAmbiguous={isAmbiguous}
+                scoreGap={scoreGap}
+                isHighValue={isHighValue}
+                onCancelAutoProceed={() => setAutoProceedCountdownSec(null)}
+              />
+            )}
+          </>
         )}
       </main>
 

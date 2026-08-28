@@ -1,7 +1,10 @@
-import { BrowserProvider } from 'ethers';
+import { BrowserProvider, JsonRpcProvider } from 'ethers';
 import type { Eip1193Provider } from 'ethers';
 import { getEip712TypedData } from './eip712Service';
 import type { UserIntent } from './types';
+
+export const GANACHE_RPC_URL = 'http://127.0.0.1:7545';
+export const GANACHE_CHAIN_ID = 5777; // 0x1691 in hex
 
 export interface WalletState {
   isConnected: boolean;
@@ -9,22 +12,38 @@ export interface WalletState {
   chainId: number;
   networkName: string;
   balanceEth?: string;
+  isGanache: boolean;
 }
 
 class Web3ProviderService {
   private walletState: WalletState = {
     isConnected: false,
-    address: '0x71C8a92F1d4e08B991A54b4a1A59828453982845',
-    chainId: 11155111,
-    networkName: 'Ethereum Sepolia',
-    balanceEth: '2.45',
+    address: '0x90F79bf6EB2c4f870365E785982E1f101E93b906',
+    chainId: GANACHE_CHAIN_ID,
+    networkName: 'Ganache Localnet (5777)',
+    balanceEth: '100.00',
+    isGanache: true,
   };
 
   private listeners: ((state: WalletState) => void)[] = [];
+  private ganacheProvider?: JsonRpcProvider;
 
   constructor() {
+    this.initGanacheProvider();
     this.initEventListeners();
     this.checkExistingConnection();
+  }
+
+  private initGanacheProvider() {
+    try {
+      this.ganacheProvider = new JsonRpcProvider(GANACHE_RPC_URL);
+    } catch (e) {
+      console.warn('Ganache RPC provider init fallback', e);
+    }
+  }
+
+  public getGanacheProvider() {
+    return this.ganacheProvider;
   }
 
   private async checkExistingConnection() {
@@ -36,7 +55,8 @@ class Web3ProviderService {
         if (accounts && accounts.length > 0) {
           const provider = new BrowserProvider(ethereum);
           const network = await provider.getNetwork();
-          let bal = '2.45';
+          const chainId = Number(network.chainId);
+          let bal = '100.00';
 
           try {
             const rawBal = await provider.getBalance(accounts[0]);
@@ -48,9 +68,10 @@ class Web3ProviderService {
           this.walletState = {
             isConnected: true,
             address: accounts[0],
-            chainId: Number(network.chainId),
-            networkName: network.name === 'unknown' ? 'Sepolia Testnet' : network.name,
+            chainId,
+            networkName: chainId === GANACHE_CHAIN_ID ? 'Ganache Localnet (5777)' : network.name === 'unknown' ? 'Sepolia Testnet' : network.name,
             balanceEth: bal,
+            isGanache: chainId === GANACHE_CHAIN_ID,
           };
           this.notifyListeners();
         }
@@ -79,6 +100,8 @@ class Web3ProviderService {
         ethereum.on('chainChanged', (chainIdHex: unknown) => {
           const chainId = parseInt(chainIdHex as string, 16);
           this.walletState.chainId = chainId;
+          this.walletState.isGanache = chainId === GANACHE_CHAIN_ID;
+          this.walletState.networkName = chainId === GANACHE_CHAIN_ID ? 'Ganache Localnet (5777)' : 'Sepolia Testnet';
           this.notifyListeners();
         });
       }
@@ -96,6 +119,41 @@ class Web3ProviderService {
     this.listeners.forEach((cb) => cb({ ...this.walletState }));
   }
 
+  public async switchToGanacheNetwork(): Promise<boolean> {
+    if (typeof window !== 'undefined' && (window as unknown as { ethereum?: Eip1193Provider }).ethereum) {
+      const ethereum = (window as unknown as { ethereum: Eip1193Provider }).ethereum;
+      try {
+        await ethereum.request({
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId: '0x1691' }], // 5777 in hex
+        });
+        return true;
+      } catch (switchError: unknown) {
+        const err = switchError as { code?: number };
+        // Chain not added error code 4902
+        if (err.code === 4902) {
+          try {
+            await ethereum.request({
+              method: 'wallet_addEthereumChain',
+              params: [
+                {
+                  chainId: '0x1691',
+                  chainName: 'Ganache Localnet',
+                  rpcUrls: [GANACHE_RPC_URL],
+                  nativeCurrency: { name: 'Ganache ETH', symbol: 'ETH', decimals: 18 },
+                },
+              ],
+            });
+            return true;
+          } catch (addError) {
+            console.error('Failed to add Ganache chain', addError);
+          }
+        }
+      }
+    }
+    return false;
+  }
+
   public async connectWallet(): Promise<WalletState> {
     if (typeof window !== 'undefined' && (window as unknown as { ethereum?: Eip1193Provider }).ethereum) {
       try {
@@ -103,9 +161,10 @@ class Web3ProviderService {
         const provider = new BrowserProvider(ethereum);
         const accounts = (await ethereum.request({ method: 'eth_requestAccounts' })) as string[];
         const network = await provider.getNetwork();
+        const chainId = Number(network.chainId);
 
         if (accounts && accounts.length > 0) {
-          let bal = '2.45';
+          let bal = '100.00';
           try {
             const rawBal = await provider.getBalance(accounts[0]);
             bal = (Number(rawBal) / 1e18).toFixed(3);
@@ -116,14 +175,15 @@ class Web3ProviderService {
           this.walletState = {
             isConnected: true,
             address: accounts[0],
-            chainId: Number(network.chainId),
-            networkName: network.name === 'unknown' ? 'Sepolia Testnet' : network.name,
+            chainId,
+            networkName: chainId === GANACHE_CHAIN_ID ? 'Ganache Localnet (5777)' : network.name === 'unknown' ? 'Sepolia Testnet' : network.name,
             balanceEth: bal,
+            isGanache: chainId === GANACHE_CHAIN_ID,
           };
           this.notifyListeners();
         }
       } catch (e) {
-        console.warn('Browser wallet connection declined, using Sepolia simulated account.', e);
+        console.warn('Browser wallet connection declined, using Ganache 5777 account.', e);
         this.walletState.isConnected = true;
         this.notifyListeners();
       }
@@ -146,7 +206,6 @@ class Web3ProviderService {
       try {
         const ethereum = (window as unknown as { ethereum: Eip1193Provider }).ethereum;
         
-        // Trigger real MetaMask EIP-712 Signature Prompt
         const signature = (await ethereum.request({
           method: 'eth_signTypedData_v4',
           params: [this.walletState.address, JSON.stringify(typedData)],
@@ -158,7 +217,6 @@ class Web3ProviderService {
       }
     }
 
-    // Fallback deterministic ECDSA signature
     const hex = (str: string) => Math.abs(str.split('').reduce((a, b) => (a << 5) - a + b.charCodeAt(0), 0)).toString(16);
     const r = hex(intent.intentId + intent.sourceAmount).padStart(64, 'a');
     const s = hex(intent.timestamp.toString()).padStart(64, 'b');
