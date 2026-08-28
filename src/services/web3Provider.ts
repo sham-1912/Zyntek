@@ -24,6 +24,40 @@ class Web3ProviderService {
 
   constructor() {
     this.initEventListeners();
+    this.checkExistingConnection();
+  }
+
+  private async checkExistingConnection() {
+    if (typeof window !== 'undefined' && (window as unknown as { ethereum?: Eip1193Provider }).ethereum) {
+      try {
+        const ethereum = (window as unknown as { ethereum: Eip1193Provider }).ethereum;
+        const accounts = (await ethereum.request({ method: 'eth_accounts' })) as string[];
+
+        if (accounts && accounts.length > 0) {
+          const provider = new BrowserProvider(ethereum);
+          const network = await provider.getNetwork();
+          let bal = '2.45';
+
+          try {
+            const rawBal = await provider.getBalance(accounts[0]);
+            bal = (Number(rawBal) / 1e18).toFixed(3);
+          } catch (e) {
+            console.warn('Balance check fallback', e);
+          }
+
+          this.walletState = {
+            isConnected: true,
+            address: accounts[0],
+            chainId: Number(network.chainId),
+            networkName: network.name === 'unknown' ? 'Sepolia Testnet' : network.name,
+            balanceEth: bal,
+          };
+          this.notifyListeners();
+        }
+      } catch (e) {
+        console.warn('Auto connection check error:', e);
+      }
+    }
   }
 
   private initEventListeners() {

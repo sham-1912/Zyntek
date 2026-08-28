@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import type { UserIntent, ChainId, PrioritySliders as SlidersType } from '../services/types';
 import { PrioritySliders } from './PrioritySliders';
 import { web3Provider } from '../services/web3Provider';
-import { Send, ArrowDownUp, Lock, HelpCircle } from 'lucide-react';
+import type { WalletState } from '../services/web3Provider';
+import { Send, ArrowDownUp, Lock, HelpCircle, Plug } from 'lucide-react';
 
 interface IntentFormProps {
   onPreCommitTrigger: (intent: UserIntent) => void;
@@ -10,7 +11,14 @@ interface IntentFormProps {
 }
 
 export const IntentForm: React.FC<IntentFormProps> = ({ onPreCommitTrigger, disabled }) => {
-  const walletState = web3Provider.getWalletState();
+  const [walletState, setWalletState] = useState<WalletState>(web3Provider.getWalletState());
+
+  useEffect(() => {
+    const unsubscribe = web3Provider.subscribe((updated) => {
+      setWalletState(updated);
+    });
+    return unsubscribe;
+  }, []);
 
   const [sourceChain] = useState<ChainId>('ethereum');
   const [sourceAsset, setSourceAsset] = useState<string>('USDC');
@@ -27,6 +35,11 @@ export const IntentForm: React.FC<IntentFormProps> = ({ onPreCommitTrigger, disa
 
   const estimatedMinOutput = Number((sourceAmount * 0.985).toFixed(2));
   const isHighValue = sourceAmount >= 1000;
+
+  const handleConnectWalletClick = async () => {
+    const updated = await web3Provider.connectWallet();
+    setWalletState(updated);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,15 +80,20 @@ export const IntentForm: React.FC<IntentFormProps> = ({ onPreCommitTrigger, disa
 
         <div className="flex items-center gap-2 font-mono text-xs">
           {walletState.isConnected ? (
-            <span className="px-2.5 py-1 rounded bg-indigo-950/80 border border-indigo-800 text-indigo-300 font-semibold flex items-center gap-1.5">
+            <span className="px-2.5 py-1 rounded bg-indigo-950/80 border border-indigo-800 text-indigo-300 font-semibold flex items-center gap-1.5 shadow-sm">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
               <span>{walletState.address.slice(0, 6)}...{walletState.address.slice(-4)}</span>
               <span className="text-slate-500 font-normal">({walletState.balanceEth} ETH)</span>
             </span>
           ) : (
-            <span className="px-2.5 py-1 rounded bg-slate-900 border border-slate-800 text-slate-400">
-              Wallet Disconnected
-            </span>
+            <button
+              type="button"
+              onClick={handleConnectWalletClick}
+              className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-semibold flex items-center gap-1.5 shadow-md transition-all animate-pulse-glow"
+            >
+              <Plug className="w-3.5 h-3.5" />
+              <span>Connect Wallet</span>
+            </button>
           )}
         </div>
       </div>
