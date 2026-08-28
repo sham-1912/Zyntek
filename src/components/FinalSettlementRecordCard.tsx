@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CheckCircle2, Copy, FileCode, Check, ShieldCheck, ArrowRight, Hash } from 'lucide-react';
+import { CheckCircle2, Copy, FileCode, Check, ShieldCheck, ArrowRight, Hash, GitCommit } from 'lucide-react';
 import type { SettlementResult, UserIntent, SolverBid } from '../services/types';
 
 interface FinalSettlementRecordCardProps {
@@ -22,6 +22,7 @@ export const FinalSettlementRecordCard: React.FC<FinalSettlementRecordCardProps>
   };
 
   const canonicalJson = {
+    protocol: 'ZYNTEX',
     intentId: `INT-${intent.intentId.slice(0, 8)}`,
     status: 'SETTLED',
     solver: winningBid.solverName.split('—')[0].trim(),
@@ -66,7 +67,7 @@ export const FinalSettlementRecordCard: React.FC<FinalSettlementRecordCardProps>
         </div>
       </div>
 
-      {/* Outcome Flow Diagram: Ethereum -> ZYNTIX -> Solana */}
+      {/* Outcome Flow Diagram: Ethereum -> ZYNTEX -> Solana */}
       <div className="p-4 bg-[#F7E7B5]/60 rounded-2xl border border-[rgba(43,43,43,0.1)] flex flex-col md:flex-row items-center justify-between gap-4 font-mono text-center">
         {/* Source */}
         <div className="flex-1 bg-[#FFFDF5] p-3.5 rounded-xl border border-[rgba(43,43,43,0.08)] shadow-xs w-full">
@@ -78,7 +79,7 @@ export const FinalSettlementRecordCard: React.FC<FinalSettlementRecordCardProps>
         {/* Middle Core Protocol Bridge */}
         <div className="flex flex-col items-center justify-center shrink-0 px-4">
           <span className="text-xs font-bold text-[#2B2B2B] uppercase tracking-widest font-headline">
-            ZYNTIX PROTOCOL
+            ZYNTEX PROTOCOL
           </span>
           <div className="flex items-center gap-2 my-1">
             <div className="h-0.5 w-8 sm:w-16 bg-[#D4A017]" />
@@ -92,6 +93,104 @@ export const FinalSettlementRecordCard: React.FC<FinalSettlementRecordCardProps>
           <span className="text-[10px] text-[#5A5A5A] uppercase block font-semibold">Delivered Output</span>
           <span className="text-lg font-bold text-[#D4A017] block">${winningBid.expectedOutput} USDC</span>
           <span className="text-[11px] text-[#5A5A5A]">Solana Destination Wallet</span>
+        </div>
+      </div>
+
+      {/* COMPLETE END-TO-END PROVENANCE CHAIN — "PROOF OF EVERYTHING" (Refinement #5) */}
+      <div className="bg-[#2B2B2B] text-[#FFFDF5] p-5 sm:p-6 rounded-2xl space-y-4 border border-black/20 shadow-inner font-mono text-xs">
+        <div className="flex items-center justify-between border-b border-white/10 pb-3">
+          <div className="flex items-center gap-2">
+            <GitCommit className="w-4 h-4 text-[#F0C94C]" />
+            <span className="text-xs sm:text-sm font-bold text-[#F0C94C] uppercase tracking-wider font-headline">
+              Complete Protocol Provenance Chain
+            </span>
+          </div>
+          <span className="text-[10px] text-[#CEF26D] font-bold bg-white/10 px-2.5 py-0.5 rounded-full">
+            ● End-to-End Cryptographic Audit Trace
+          </span>
+        </div>
+
+        {/* Step-by-Step Vertical Provenance Flow */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-left">
+          {/* Step 1 */}
+          <div className="bg-black/30 p-3 rounded-xl border border-white/5 space-y-1">
+            <div className="flex items-center justify-between text-[10px] text-[#D4A017] font-bold">
+              <span>1. INTENT</span>
+              <span>#INT-{intent.intentId.slice(0, 4)}</span>
+            </div>
+            <p className="text-[11px] text-[#FFFDF5] font-bold">${intent.sourceAmount} USDC</p>
+            <p className="text-[10px] text-[#888]">Ethereum → Solana</p>
+          </div>
+
+          {/* Step 2 */}
+          <div className="bg-black/30 p-3 rounded-xl border border-white/5 space-y-1">
+            <div className="flex items-center justify-between text-[10px] text-[#D4A017] font-bold">
+              <span>2. AUCTION</span>
+              <span>3 Solvers</span>
+            </div>
+            <p className="text-[11px] text-[#FFFDF5] font-bold">Dynamic Scoring</p>
+            <p className="text-[10px] text-[#888]">Cost vs Speed vs Rep</p>
+          </div>
+
+          {/* Step 3 */}
+          <div className="bg-black/30 p-3 rounded-xl border border-white/5 space-y-1">
+            <div className="flex items-center justify-between text-[10px] text-[#D4A017] font-bold">
+              <span>3. SELECTION</span>
+              <span>Score: {winningBid.reputationScore} REP</span>
+            </div>
+            <p className="text-[11px] text-[#CEF26D] font-bold">{winningBid.solverName.split('—')[0]}</p>
+            <p className="text-[10px] text-[#888]">Rank #1 Optimum Fit</p>
+          </div>
+
+          {/* Step 4 */}
+          <div className="bg-black/30 p-3 rounded-xl border border-white/5 space-y-1">
+            <div className="flex items-center justify-between text-[10px] text-[#D4A017] font-bold">
+              <span>4. ACCOUNTABILITY</span>
+              <span>Bond Vault</span>
+            </div>
+            <p className="text-[11px] text-[#FFFDF5] font-bold">$500 Bond at Risk</p>
+            <p className="text-[10px] text-[#888]">SolverBonding.sol</p>
+          </div>
+
+          {/* Step 5 */}
+          <div className="bg-black/30 p-3 rounded-xl border border-white/5 space-y-1">
+            <div className="flex items-center justify-between text-[10px] text-[#D4A017] font-bold">
+              <span>5. EXECUTION</span>
+              <span>{(settlementResult.executionTimeMs / 1000).toFixed(1)}s</span>
+            </div>
+            <p className="text-[11px] text-[#FFFDF5] font-bold">${winningBid.expectedOutput} Delivered</p>
+            <p className="text-[10px] text-[#888]">Solana SVM Slot</p>
+          </div>
+
+          {/* Step 6 */}
+          <div className="bg-black/30 p-3 rounded-xl border border-white/5 space-y-1">
+            <div className="flex items-center justify-between text-[10px] text-[#D4A017] font-bold">
+              <span>6. VERIFICATION</span>
+              <span>Dual-Consensus</span>
+            </div>
+            <p className="text-[11px] text-[#CEF26D] font-bold">✓ Confirmed</p>
+            <p className="text-[10px] text-[#888]">Optimistic + ZK Attest</p>
+          </div>
+
+          {/* Step 7 */}
+          <div className="bg-black/30 p-3 rounded-xl border border-white/5 space-y-1">
+            <div className="flex items-center justify-between text-[10px] text-[#D4A017] font-bold">
+              <span>7. SETTLEMENT</span>
+              <span>Finalized</span>
+            </div>
+            <p className="text-[11px] text-[#CEF26D] font-bold">✓ Payout Unlocked</p>
+            <p className="text-[10px] text-[#888]">Bond Returned + Fee</p>
+          </div>
+
+          {/* Step 8 */}
+          <div className="bg-black/30 p-3 rounded-xl border border-white/5 space-y-1">
+            <div className="flex items-center justify-between text-[10px] text-[#D4A017] font-bold">
+              <span>8. PROOF ROOT</span>
+              <span>On-Chain</span>
+            </div>
+            <p className="text-[11px] text-[#F0C94C] font-bold truncate">{settlementResult.txHash.slice(0, 10)}...</p>
+            <p className="text-[10px] text-[#888]">EIP-712 Leaf Hash</p>
+          </div>
         </div>
       </div>
 

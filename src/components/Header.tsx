@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Layers, Wallet, Plug, History, AlertTriangle, UserCheck } from 'lucide-react';
+import { Layers, Wallet, Plug, History, AlertTriangle, UserCheck, Activity } from 'lucide-react';
 import { web3Provider } from '../services/web3Provider';
 import type { WalletState } from '../services/web3Provider';
-import type { ContractSimulationState } from '../services/types';
+import type { ContractSimulationState, PipelineStage } from '../services/types';
 import { GanacheChainWidget } from './GanacheChainWidget';
 
 interface HeaderProps {
@@ -12,6 +12,7 @@ interface HeaderProps {
   historyCount: number;
   viewMode: 'user' | 'solver';
   onToggleViewMode: (mode: 'user' | 'solver') => void;
+  stage?: PipelineStage;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -21,6 +22,7 @@ export const Header: React.FC<HeaderProps> = ({
   historyCount,
   viewMode,
   onToggleViewMode,
+  stage = 'idle',
 }) => {
   const [wallet, setWallet] = useState<WalletState>(web3Provider.getWalletState());
   const [isSwitching, setIsSwitching] = useState(false);
@@ -47,6 +49,32 @@ export const Header: React.FC<HeaderProps> = ({
   };
 
   const isWrongNetwork = wallet.isConnected && !wallet.isGanache;
+
+  // Protocol State Badge text & color
+  const getProtocolStateDisplay = () => {
+    switch (stage) {
+      case 'intent':
+      case 'escrow':
+        return { label: '● ESCROW LOCKING ($500 USDC)', color: 'bg-[#D4A017] text-[#2B2B2B]' };
+      case 'auction':
+        return { label: '● SOLVER AUCTION OPEN (3 Competing)', color: 'bg-[#F0C94C] text-[#2B2B2B]' };
+      case 'winner':
+      case 'commitment':
+        return { label: '● BOND POSTED ($500 Collateral at Risk)', color: 'bg-[#D4A017] text-[#2B2B2B]' };
+      case 'execution':
+        return { label: '● EXECUTING (Solana SVM Relayer)', color: 'bg-[#D4A017] text-[#2B2B2B]' };
+      case 'verifying':
+        return { label: '● VERIFYING (Dual-Consensus Window)', color: 'bg-[#F0C94C] text-[#2B2B2B]' };
+      case 'settlement':
+        return { label: '✓ INTENT SETTLED (Cryptographically Verified)', color: 'bg-[#607A3A] text-[#FFFDF5]' };
+      case 'slashed_refunded':
+        return { label: '❌ FAILED & SLASHED (100% User Refunded)', color: 'bg-[#B84A39] text-[#FFFDF5]' };
+      default:
+        return { label: '● LIVE (3/3 Solvers · $124.8K Capital)', color: 'bg-[#242424] text-[#CEF26D] border border-white/10' };
+    }
+  };
+
+  const protocolState = getProtocolStateDisplay();
 
   return (
     <div className="sticky top-0 z-50 shadow-md">
@@ -119,17 +147,25 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
 
           {/* TVL Metrics */}
-          <div className="hidden xl:flex items-center gap-2.5 text-xs font-mono shrink-0">
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#FFFDF5]/10 border border-white/10 whitespace-nowrap">
+          <div className="hidden 2xl:flex items-center gap-2 text-xs font-mono shrink-0">
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#FFFDF5]/10 border border-white/10 whitespace-nowrap">
               <span className="w-2 h-2 rounded-full bg-[#D4A017] animate-ping" />
               <span className="text-[#FFFDF5]/70">TVL:</span>
               <span className="text-[#F0C94C] font-bold">${contractState.escrowLockedUsd.toLocaleString()}</span>
             </div>
-
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#FFFDF5]/10 border border-white/10 whitespace-nowrap">
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#FFFDF5]/10 border border-white/10 whitespace-nowrap">
               <span className="text-[#FFFDF5]/70">Bonds:</span>
               <span className="text-[#FFFDF5] font-bold">${contractState.solverBondLockedUsd.toLocaleString()}</span>
             </div>
+          </div>
+
+          {/* Live Reactive Protocol State Pill (Refinement #4) */}
+          <div className="hidden lg:flex items-center gap-1.5 text-xs font-mono shrink-0">
+            <span className="text-[#FFFDF5]/60 text-[10px] uppercase font-bold">STATE:</span>
+            <span className={`px-2.5 py-1 rounded-lg text-xs font-bold font-mono tracking-tight shadow-xs flex items-center gap-1 ${protocolState.color}`}>
+              <Activity className="w-3 h-3 animate-pulse" />
+              {protocolState.label}
+            </span>
           </div>
 
           {/* Chain Telemetry & Distinct Drawer Action Buttons */}

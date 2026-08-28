@@ -408,6 +408,7 @@ export default function App() {
         historyCount={history.length}
         viewMode={viewMode}
         onToggleViewMode={setViewMode}
+        stage={stage}
       />
 
       {/* Persistent Global Scenario Bar */}

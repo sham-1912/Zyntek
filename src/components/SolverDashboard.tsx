@@ -9,6 +9,8 @@ import {
   X,
   PlusCircle,
   Radio,
+  Lock,
+  FileSearch,
 } from 'lucide-react';
 
 interface SolverDashboardProps {
@@ -31,6 +33,12 @@ interface SolverDetail {
   avgSlippagePct: number;
   avgOutputPct: number;
   collateralBond: number;
+  currentBidOutput: number;
+  currentBidFee: number;
+  currentBidEta: number;
+  currentBidSlippage: number;
+  preferenceFitScore: number;
+  isSelectedWinner: boolean;
   riskStatus: 'normal' | 'anomaly';
   riskMessage: string;
   address: string;
@@ -53,6 +61,12 @@ const SOLVERS_DATA: SolverDetail[] = [
     avgSlippagePct: 0.21,
     avgOutputPct: 99.64,
     collateralBond: 500,
+    currentBidOutput: 497.82,
+    currentBidFee: 1.20,
+    currentBidEta: 42.8,
+    currentBidSlippage: 0.24,
+    preferenceFitScore: 91.4,
+    isSelectedWinner: true,
     riskStatus: 'normal',
     riskMessage: 'No anomalies detected across 128 intents',
     address: '0x90F79bf6EB2c4f870365E785982E1f101E93b906',
@@ -73,6 +87,12 @@ const SOLVERS_DATA: SolverDetail[] = [
     avgSlippagePct: 0.18,
     avgOutputPct: 99.82,
     collateralBond: 500,
+    currentBidOutput: 498.90,
+    currentBidFee: 0.80,
+    currentBidEta: 52.1,
+    currentBidSlippage: 0.18,
+    preferenceFitScore: 88.6,
+    isSelectedWinner: false,
     riskStatus: 'normal',
     riskMessage: 'Normal competitive bidding behavior',
     address: '0x70997970C51812dc3A010C7d01b50e0d17dc79C8',
@@ -93,6 +113,12 @@ const SOLVERS_DATA: SolverDetail[] = [
     avgSlippagePct: 0.32,
     avgOutputPct: 99.45,
     collateralBond: 500,
+    currentBidOutput: 495.50,
+    currentBidFee: 2.40,
+    currentBidEta: 28.4,
+    currentBidSlippage: 0.32,
+    preferenceFitScore: 89.2,
+    isSelectedWinner: false,
     riskStatus: 'anomaly',
     riskMessage: '2 unusually similar bids — Review recommended',
     address: '0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC',
@@ -158,7 +184,7 @@ export const SolverDashboard: React.FC<SolverDashboardProps> = () => {
           <div className="bg-[#F7E7B5]/60 p-3.5 rounded-xl border border-[rgba(43,43,43,0.08)] shadow-xs">
             <span className="text-[10px] text-[#5A5A5A] block uppercase font-bold">Active Solvers</span>
             <span className="text-2xl font-bold text-[#2B2B2B] leading-tight mt-0.5 block">3 / 3</span>
-            <span className="text-[10px] text-[#607A3A] font-bold">100% Quorum</span>
+            <span className="text-[10px] text-[#607A3A] font-bold">100% Quorum Active</span>
           </div>
 
           <div className="bg-[#F7E7B5]/60 p-3.5 rounded-xl border border-[rgba(43,43,43,0.08)] shadow-xs">
@@ -179,76 +205,108 @@ export const SolverDashboard: React.FC<SolverDashboardProps> = () => {
             <span className="text-[10px] text-[#5A5A5A]">Cross-Chain Settlement</span>
           </div>
         </div>
-
-        {/* Network Status Sub-Bar */}
-        <div className="bg-[#FFFDF5] p-3 rounded-xl border border-[rgba(43,43,43,0.08)] flex flex-wrap items-center justify-between gap-3 text-xs font-mono text-[#5A5A5A] shadow-xs">
-          <div className="flex items-center gap-4">
-            <span>Capital Available: <strong className="text-[#2B2B2B]">$124,800 USDC</strong></span>
-            <span>Active Intents: <strong className="text-[#D4A017]">04</strong></span>
-            <span>Pending Executions: <strong className="text-[#2B2B2B]">02</strong></span>
-          </div>
-          <span className="text-[10px] text-[#607A3A] font-bold">✓ Dual-Consensus Bridge Relayers Synced</span>
-        </div>
       </div>
 
       {/* =========================================================================
-          2. ROW 1: INDIVIDUAL SOLVER CARDS (7 COLS) + CAPITAL & LIQUIDITY MAP (5 COLS)
+          2. ROW 1: 3 COMPETING SOLVER CARDS WITH CURRENT INTENT BID CONNECTION (7 COLS)
+             + CAPITAL & LIQUIDITY MAP (5 COLS)
          ========================================================================= */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
         
-        {/* Left: 3 Individual Solver Cards */}
+        {/* Left: 3 Competing Solver Cards with Current Bid Connection (Refinement #1) */}
         <div className="lg:col-span-7 space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-bold text-[#2B2B2B] font-headline uppercase tracking-wider">
-              Competing Solver Agents
+              Competing Solver Nodes & Live Intent Bids
             </h2>
-            <span className="text-xs text-[#5A5A5A] font-mono">3 Specialized Strategies</span>
+            <span className="text-xs text-[#5A5A5A] font-mono">Real-time Intent #INT-8492</span>
           </div>
 
           <div className="space-y-3">
             {SOLVERS_DATA.map((solver) => (
               <div
                 key={solver.id}
-                className="glass-card p-5 rounded-2xl border border-[rgba(43,43,43,0.12)] bg-[#FFFDF5] hover:border-[#D4A017] transition-all space-y-3 shadow-xs"
+                className={`glass-card p-5 rounded-2xl border transition-all space-y-3 shadow-xs ${
+                  solver.isSelectedWinner
+                    ? 'border-2 border-[#D4A017] bg-[#F7E7B5]/70 ring-2 ring-[#D4A017]/30'
+                    : 'border-[rgba(43,43,43,0.12)] bg-[#FFFDF5] hover:border-[#D4A017]'
+                }`}
               >
+                {/* Solver Header */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[rgba(43,43,43,0.08)] pb-2.5">
                   <div className="flex items-center gap-2.5">
                     <span className="w-2.5 h-2.5 rounded-full bg-[#607A3A]" />
                     <div>
-                      <h3 className="text-sm font-bold text-[#2B2B2B] font-mono">{solver.name}</h3>
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-sm font-bold text-[#2B2B2B] font-mono">{solver.name}</h3>
+                        {solver.isSelectedWinner && (
+                          <span className="text-[10px] font-bold bg-[#D4A017] text-[#2B2B2B] px-2 py-0.2 rounded-full uppercase">
+                            ✓ Selected Winner
+                          </span>
+                        )}
+                      </div>
                       <p className="text-xs text-[#5A5A5A] font-sans">{solver.tagline}</p>
                     </div>
                   </div>
 
-                  <span className="text-xs font-mono font-bold text-[#D4A017] bg-[#F7E7B5] px-2.5 py-1 rounded-lg border border-[#D4A017]/30 self-start sm:self-auto">
-                    {solver.reputation} REP
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 font-mono text-xs">
-                  <div className="bg-[#F7E7B5]/50 p-2 rounded-lg border border-[rgba(43,43,43,0.06)]">
-                    <span className="text-[10px] text-[#5A5A5A] block">Success Rate</span>
-                    <span className="text-sm font-bold text-[#607A3A]">{solver.successRate}%</span>
-                  </div>
-
-                  <div className="bg-[#F7E7B5]/50 p-2 rounded-lg border border-[rgba(43,43,43,0.06)]">
-                    <span className="text-[10px] text-[#5A5A5A] block">Capital</span>
-                    <span className="text-sm font-bold text-[#2B2B2B]">${(solver.totalCapital / 1000).toFixed(1)}K</span>
-                  </div>
-
-                  <div className="bg-[#F7E7B5]/50 p-2 rounded-lg border border-[rgba(43,43,43,0.06)]">
-                    <span className="text-[10px] text-[#5A5A5A] block">Avg Execution</span>
-                    <span className="text-sm font-bold text-[#2B2B2B]">{solver.avgExecutionSec}s</span>
-                  </div>
-
-                  <div className="bg-[#F7E7B5]/50 p-2 rounded-lg border border-[rgba(43,43,43,0.06)]">
-                    <span className="text-[10px] text-[#5A5A5A] block">Avg Slippage</span>
-                    <span className="text-sm font-bold text-[#2B2B2B]">{solver.avgSlippagePct}%</span>
+                  <div className="flex items-center gap-2 font-mono self-start sm:self-auto">
+                    <span className="text-xs font-bold text-[#D4A017] bg-[#F7E7B5] px-2.5 py-1 rounded-lg border border-[#D4A017]/30">
+                      {solver.reputation} REP
+                    </span>
+                    <span className="text-xs font-bold text-[#2B2B2B] bg-[#FFFDF5] px-2.5 py-1 rounded-lg border border-[rgba(43,43,43,0.1)]">
+                      ${(solver.totalCapital / 1000).toFixed(1)}K Pool
+                    </span>
                   </div>
                 </div>
 
+                {/* CURRENT INTENT CONNECTION SECTION (Refinement #1) */}
+                <div className="bg-[#FFFDF5] p-3 rounded-xl border border-[rgba(43,43,43,0.08)] space-y-2 font-mono text-xs shadow-inner">
+                  <div className="flex justify-between items-center text-[10px] text-[#5A5A5A] uppercase font-bold border-b border-[rgba(43,43,43,0.06)] pb-1">
+                    <span>Live Bid for Intent #INT-8492 ($500 USDC)</span>
+                    <span className="text-[#D4A017] font-bold">Score: {solver.preferenceFitScore.toFixed(1)}/100</span>
+                  </div>
+
+                  <div className="grid grid-cols-4 gap-2 text-center">
+                    <div>
+                      <span className="text-[9px] text-[#5A5A5A] block uppercase">Output</span>
+                      <span className="font-bold text-[#2B2B2B] text-xs">${solver.currentBidOutput}</span>
+                    </div>
+                    <div>
+                      <span className="text-[9px] text-[#5A5A5A] block uppercase">Fee</span>
+                      <span className="font-bold text-[#2B2B2B] text-xs">${solver.currentBidFee.toFixed(2)}</span>
+                    </div>
+                    <div>
+                      <span className="text-[9px] text-[#5A5A5A] block uppercase">ETA</span>
+                      <span className="font-bold text-[#2B2B2B] text-xs">{solver.currentBidEta}s</span>
+                    </div>
+                    <div>
+                      <span className="text-[9px] text-[#5A5A5A] block uppercase">Slippage</span>
+                      <span className="font-bold text-[#2B2B2B] text-xs">{solver.currentBidSlippage}%</span>
+                    </div>
+                  </div>
+
+                  {/* Preference Fit Progress Bar */}
+                  <div className="space-y-0.5 pt-1">
+                    <div className="flex justify-between text-[10px] text-[#5A5A5A]">
+                      <span>Preference Fit Match</span>
+                      <span className="font-bold text-[#2B2B2B]">{solver.preferenceFitScore.toFixed(1)}%</span>
+                    </div>
+                    <div className="w-full bg-black/10 h-1.5 rounded-full overflow-hidden">
+                      <div
+                        className={`h-full rounded-full ${solver.isSelectedWinner ? 'bg-[#D4A017]' : 'bg-[#5A5A5A]'}`}
+                        style={{ width: `${solver.preferenceFitScore}%` }}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Footer: Capital at Risk + Profile Trigger (Refinement #2) */}
                 <div className="flex items-center justify-between text-xs font-mono border-t border-[rgba(43,43,43,0.08)] pt-2.5">
-                  <span className="text-[#5A5A5A]">Intents: {solver.completedIntents} fulfilled · {solver.failedIntents} slashed</span>
+                  <span className="text-[#2B2B2B] font-bold flex items-center gap-1.5">
+                    <Lock className="w-3.5 h-3.5 text-[#D4A017]" />
+                    <span>${solver.collateralBond} Bond at Risk</span>
+                  </span>
+
                   <button
                     type="button"
                     onClick={() => setSelectedProfile(solver)}
@@ -268,7 +326,7 @@ export const SolverDashboard: React.FC<SolverDashboardProps> = () => {
             <h2 className="text-sm font-bold text-[#2B2B2B] font-headline uppercase tracking-wider">
               Capital & Liquidity Map
             </h2>
-            <span className="text-xs text-[#5A5A5A] font-mono">Cross-Chain Distribution</span>
+            <span className="text-xs text-[#5A5A5A] font-mono">Cross-Chain Pools</span>
           </div>
 
           <div className="glass-card p-6 rounded-2xl border border-[rgba(43,43,43,0.12)] bg-[#FFFDF5] space-y-5 flex-1 flex flex-col justify-between shadow-xs">
@@ -340,7 +398,7 @@ export const SolverDashboard: React.FC<SolverDashboardProps> = () => {
          ========================================================================= */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
         
-        {/* Explainable Reputation Card with SVG Chart */}
+        {/* Explainable Reputation Card with Interactive SVG Chart */}
         <div className="lg:col-span-6 glass-card p-6 rounded-2xl border border-[rgba(43,43,43,0.12)] bg-[#FFFDF5] space-y-4 shadow-xs">
           <div className="flex items-center justify-between border-b border-[rgba(43,43,43,0.08)] pb-3">
             <div className="flex items-center gap-2.5">
@@ -530,17 +588,17 @@ export const SolverDashboard: React.FC<SolverDashboardProps> = () => {
           </div>
         </div>
 
-        {/* Accountability & Economic Security Panel */}
+        {/* Accountability & Capital at Risk Panel (Refinement #2) */}
         <div className="lg:col-span-6 glass-card p-6 rounded-2xl border border-[rgba(43,43,43,0.12)] bg-[#FFFDF5] space-y-4 shadow-xs">
           <div className="flex items-center justify-between border-b border-[rgba(43,43,43,0.08)] pb-3">
             <div className="flex items-center gap-2.5">
               <ShieldCheck className="w-5 h-5 text-[#D4A017]" />
               <h3 className="text-sm font-bold text-[#2B2B2B] font-headline uppercase tracking-wider">
-                Solver Accountability & Collateral
+                Solver Accountability & Capital at Risk
               </h3>
             </div>
             <span className="text-xs font-mono font-bold text-[#607A3A] bg-[#607A3A]/15 px-2.5 py-1 rounded-lg">
-              Full Bond Enforced
+              $500 Staked in Bond Vault
             </span>
           </div>
 
@@ -559,15 +617,20 @@ export const SolverDashboard: React.FC<SolverDashboardProps> = () => {
             </div>
           </div>
 
-          {/* Slashing Rules */}
-          <div className="bg-[#F7E7B5]/40 p-3.5 rounded-xl border border-[rgba(43,43,43,0.08)] space-y-1.5 font-mono text-xs">
-            <span className="text-[11px] font-bold text-[#2B2B2B] uppercase block">
-              Self-Enforcing Failure Protocols:
+          {/* Explicit Trust Model Rules (Refinement #2) */}
+          <div className="bg-[#F7E7B5]/40 p-3.5 rounded-xl border border-[rgba(43,43,43,0.08)] space-y-2 font-mono text-xs">
+            <span className="text-[11px] font-bold text-[#2B2B2B] uppercase block border-b border-[rgba(43,43,43,0.06)] pb-1">
+              Deterministic Economic Security Protocols:
             </span>
-            <div className="text-[#5A5A5A] text-[11px] space-y-1">
-              <div>→ <strong>Timeout / Failure:</strong> Full $500 bond slashed instantly</div>
-              <div>→ <strong>User Escrow:</strong> 100% refunded with zero capital loss</div>
-              <div>→ <strong>Reputation:</strong> -25 points deduction & mesh flag</div>
+            <div className="text-[#5A5A5A] text-[11px] space-y-1.5">
+              <div className="flex items-start gap-1.5">
+                <span className="text-[#607A3A] font-bold">✓ FULFILLED:</span>
+                <span>Bond unlocked & returned + solver receives agreed $1.20 routing fee.</span>
+              </div>
+              <div className="flex items-start gap-1.5">
+                <span className="text-[#B84A39] font-bold">❌ FAILED:</span>
+                <span>Full $500 bond slashed instantly + user 100% refunded + reputation penalized (-25 pts).</span>
+              </div>
             </div>
           </div>
         </div>
@@ -584,7 +647,7 @@ export const SolverDashboard: React.FC<SolverDashboardProps> = () => {
             <div className="flex items-center gap-2.5">
               <AlertTriangle className="w-5 h-5 text-[#D4A017]" />
               <h3 className="text-sm font-bold text-[#2B2B2B] font-headline uppercase tracking-wider">
-                Solver Risk Monitor & Collusion Watch
+                Solver Risk Monitor & Coordinated Bidding Signal
               </h3>
             </div>
             <span className="text-xs font-mono font-bold text-[#2B2B2B] bg-[#F7E7B5] px-2.5 py-1 rounded-lg border border-[#D4A017]/30">
@@ -603,7 +666,7 @@ export const SolverDashboard: React.FC<SolverDashboardProps> = () => {
               <span className="text-[#607A3A] font-bold">✓ No anomalies detected</span>
             </div>
 
-            {/* Solver C Anomaly Flag */}
+            {/* Solver C Anomaly Flag (Refinement #3) */}
             <div
               onClick={() => setIsRiskModalOpen(true)}
               className="flex justify-between items-center bg-[#F0C94C]/20 border border-[#D4A017] p-3 rounded-xl cursor-pointer hover:bg-[#F0C94C]/30 transition-all shadow-xs"
@@ -611,10 +674,10 @@ export const SolverDashboard: React.FC<SolverDashboardProps> = () => {
               <div>
                 <span className="font-bold text-[#2B2B2B]">SOLVER C:</span>
                 <span className="text-[#B84A39] font-bold block text-[11px]">
-                  ⚠ 2 unusually similar bids — Review recommended
+                  ⚠ 87.4% bid similarity across 4 intents — Review recommended
                 </span>
               </div>
-              <span className="text-xs text-[#D4A017] font-bold underline">Inspect Signal →</span>
+              <span className="text-xs text-[#D4A017] font-bold underline">Review Evidence →</span>
             </div>
           </div>
         </div>
@@ -625,7 +688,7 @@ export const SolverDashboard: React.FC<SolverDashboardProps> = () => {
             <div className="flex items-center gap-2.5">
               <Radio className="w-5 h-5 text-[#D4A017] animate-pulse" />
               <h3 className="text-sm font-bold text-[#2B2B2B] font-headline uppercase tracking-wider">
-                Live Solver Activity Feed
+                Live Solver Activity Stream
               </h3>
             </div>
             <span className="text-xs font-mono font-bold text-[#607A3A] bg-[#607A3A]/15 px-2.5 py-1 rounded-lg">
@@ -635,104 +698,93 @@ export const SolverDashboard: React.FC<SolverDashboardProps> = () => {
 
           <div className="bg-[#2B2B2B] text-[#FFFDF5] p-3.5 rounded-xl space-y-1.5 font-mono text-xs max-h-48 overflow-y-auto shadow-inner">
             <div className="text-[11px]"><span className="text-[#F0C94C] font-bold">[10:42:18]</span> Solver B joined auction #INT-8492</div>
-            <div className="text-[11px]"><span className="text-[#F0C94C] font-bold">[10:42:19]</span> Solver A submitted bid ($497.50 output)</div>
+            <div className="text-[11px]"><span className="text-[#F0C94C] font-bold">[10:42:19]</span> Solver A submitted bid ($498.90 output)</div>
             <div className="text-[11px]"><span className="text-[#F0C94C] font-bold">[10:42:19]</span> Solver B submitted bid ($497.82 output, 42.8s)</div>
-            <div className="text-[11px]"><span className="text-[#F0C94C] font-bold">[10:42:20]</span> Solver C submitted bid ($496.80 output, 28.4s)</div>
-            <div className="text-[11px] text-[#CEF26D]"><span className="text-[#F0C94C] font-bold">[10:42:22]</span> Solver B selected as Rank #1 Winner</div>
-            <div className="text-[11px] text-[#CEF26D]"><span className="text-[#F0C94C] font-bold">[10:42:23]</span> Solver B posted $500 collateral bond</div>
+            <div className="text-[11px]"><span className="text-[#F0C94C] font-bold">[10:42:20]</span> Solver C submitted bid ($495.50 output, 28.4s)</div>
+            <div className="text-[11px] text-[#CEF26D]"><span className="text-[#F0C94C] font-bold">[10:42:22]</span> Solver B selected as Rank #1 Winner (91.4 Score)</div>
+            <div className="text-[11px] text-[#CEF26D]"><span className="text-[#F0C94C] font-bold">[10:42:23]</span> Solver B locked $500 bond in SolverBonding.sol</div>
           </div>
         </div>
       </div>
 
       {/* =========================================================================
-          5. ROW 4: RECENT BID HISTORY (7 COLS) + ACCOUNTABILITY HISTORY (5 COLS)
+          5. MODAL: RISK SIGNAL & COORDINATED BIDDING EVIDENCE (Refinement #3)
          ========================================================================= */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-        
-        {/* Recent Bids Competition Table */}
-        <div className="lg:col-span-7 glass-card p-6 rounded-2xl border border-[rgba(43,43,43,0.12)] bg-[#FFFDF5] space-y-4 shadow-xs">
-          <div className="flex items-center justify-between border-b border-[rgba(43,43,43,0.08)] pb-3">
-            <h3 className="text-sm font-bold text-[#2B2B2B] font-headline uppercase tracking-wider">
-              Recent Intent Bids & Marketplace Outcomes
-            </h3>
-            <span className="text-xs text-[#5A5A5A] font-mono">Last 4 Competitions</span>
-          </div>
-
-          <div className="space-y-2 font-mono text-xs">
-            <div className="grid grid-cols-5 text-[10px] text-[#5A5A5A] font-bold uppercase pb-1 border-b border-[rgba(43,43,43,0.06)]">
-              <span>Intent</span>
-              <span>Output</span>
-              <span>Fee</span>
-              <span>Time</span>
-              <span className="text-right">Result</span>
-            </div>
-
-            <div className="grid grid-cols-5 items-center p-2 rounded-lg bg-[#F7E7B5]/60 font-bold">
-              <span className="text-[#2B2B2B]">#8492</span>
-              <span className="text-[#D4A017]">$497.82</span>
-              <span className="text-[#2B2B2B]">$1.20</span>
-              <span className="text-[#2B2B2B]">42.8s</span>
-              <span className="text-right text-[#607A3A]">✓ WON</span>
-            </div>
-
-            <div className="grid grid-cols-5 items-center p-2 rounded-lg bg-[#FFFDF5] border border-[rgba(43,43,43,0.06)]">
-              <span className="text-[#2B2B2B]">#8487</span>
-              <span className="text-[#2B2B2B]">$998.31</span>
-              <span className="text-[#2B2B2B]">$0.80</span>
-              <span className="text-[#2B2B2B]">51.2s</span>
-              <span className="text-right text-[#5A5A5A]">✕ LOST</span>
-            </div>
-
-            <div className="grid grid-cols-5 items-center p-2 rounded-lg bg-[#F7E7B5]/60 font-bold">
-              <span className="text-[#2B2B2B]">#8479</span>
-              <span className="text-[#D4A017]">$249.41</span>
-              <span className="text-[#2B2B2B]">$0.40</span>
-              <span className="text-[#2B2B2B]">31.7s</span>
-              <span className="text-right text-[#607A3A]">✓ WON</span>
-            </div>
-
-            <div className="grid grid-cols-5 items-center p-2 rounded-lg bg-[#FFFDF5] border border-[rgba(43,43,43,0.06)]">
-              <span className="text-[#2B2B2B]">#8472</span>
-              <span className="text-[#2B2B2B]">$499.02</span>
-              <span className="text-[#2B2B2B]">$1.10</span>
-              <span className="text-[#2B2B2B]">39.4s</span>
-              <span className="text-right text-[#5A5A5A]">✕ LOST</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Accountability / Slashing History */}
-        <div className="lg:col-span-5 glass-card p-6 rounded-2xl border border-[rgba(43,43,43,0.12)] bg-[#FFFDF5] space-y-4 shadow-xs">
-          <div className="flex items-center justify-between border-b border-[rgba(43,43,43,0.08)] pb-3">
-            <h3 className="text-sm font-bold text-[#2B2B2B] font-headline uppercase tracking-wider">
-              Accountability & Slashing Log
-            </h3>
-            <span className="text-xs text-[#B84A39] font-mono font-bold">Audit Enforced</span>
-          </div>
-
-          <div className="space-y-2.5 font-mono text-xs">
-            <div className="bg-[#B84A39]/10 border border-[#B84A39]/30 p-3 rounded-xl space-y-1">
-              <div className="flex justify-between font-bold text-[#B84A39]">
-                <span>Intent #8392: Deadline Missed</span>
-                <span>-$500 Bond</span>
+      {isRiskModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#2B2B2B]/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-[#FFFDF5] border-2 border-[#D4A017] rounded-2xl max-w-lg w-full p-6 space-y-5 shadow-2xl text-[#2B2B2B]">
+            <div className="flex items-start justify-between border-b border-[rgba(43,43,43,0.08)] pb-3">
+              <div className="flex items-center gap-2.5">
+                <AlertTriangle className="w-6 h-6 text-[#D4A017]" />
+                <div>
+                  <h3 className="text-base font-bold text-[#2B2B2B] font-headline uppercase">
+                    ⚠ COORDINATED BIDDING SIGNAL EVIDENCE
+                  </h3>
+                  <p className="text-xs text-[#5A5A5A]">Solver C Anomaly Pattern Analysis</p>
+                </div>
               </div>
-              <p className="text-[11px] text-[#5A5A5A]">
-                Penalty: $500 slashed to reserve · User 100% refunded · Reputation: -4 pts
+
+              <button onClick={() => setIsRiskModalOpen(false)} className="p-1 text-[#5A5A5A] hover:text-[#2B2B2B] cursor-pointer">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Metrics Header */}
+            <div className="grid grid-cols-2 gap-3 text-center font-mono text-xs">
+              <div className="bg-[#F7E7B5]/60 p-3 rounded-xl border border-[rgba(43,43,43,0.08)]">
+                <span className="text-[10px] text-[#5A5A5A] block uppercase">Bid Similarity</span>
+                <span className="text-xl font-bold text-[#D4A017] mt-0.5 block">87.4%</span>
+              </div>
+              <div className="bg-[#F7E7B5]/60 p-3 rounded-xl border border-[rgba(43,43,43,0.08)]">
+                <span className="text-[10px] text-[#5A5A5A] block uppercase">Intents Analyzed</span>
+                <span className="text-xl font-bold text-[#2B2B2B] mt-0.5 block">4 Intents</span>
+              </div>
+            </div>
+
+            {/* Observed Pattern Table */}
+            <div className="bg-[#FFFDF5] p-3.5 rounded-xl border border-[rgba(43,43,43,0.1)] space-y-2 font-mono text-xs shadow-inner">
+              <span className="text-[10px] font-bold text-[#5A5A5A] uppercase block border-b border-[rgba(43,43,43,0.06)] pb-1 flex items-center gap-1">
+                <FileSearch className="w-3.5 h-3.5 text-[#D4A017]" />
+                Observed Similar Bidding Sequence:
+              </span>
+              <div className="space-y-1 text-[#2B2B2B] text-[11px]">
+                <div className="flex justify-between">
+                  <span>• Intent #8492 (Current):</span>
+                  <span className="font-bold text-[#D4A017]">91.2 Score Ratio</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>• Intent #8478:</span>
+                  <span className="font-bold text-[#D4A017]">91.5 Score Ratio</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>• Intent #8451:</span>
+                  <span className="font-bold text-[#D4A017]">91.1 Score Ratio</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>• Intent #8419:</span>
+                  <span className="font-bold text-[#D4A017]">91.3 Score Ratio</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-[#F7E7B5]/40 p-3 rounded-xl border border-[#D4A017]/30 text-xs text-[#5A5A5A] font-sans">
+              <p>
+                <strong>Protocol Response:</strong> No automatic penalty applied. Protocol will temporarily increase verification requirements and flag solver node for review.
               </p>
             </div>
 
-            <div className="bg-[#B84A39]/10 border border-[#B84A39]/30 p-3 rounded-xl space-y-1">
-              <div className="flex justify-between font-bold text-[#B84A39]">
-                <span>Intent #8174: Challenge Lost</span>
-                <span>-$250 Bond</span>
-              </div>
-              <p className="text-[11px] text-[#5A5A5A]">
-                Penalty: $250 slashed · User compensated · Reputation: -3 pts
-              </p>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setIsRiskModalOpen(false)}
+                className="flex-1 py-2.5 rounded-xl bg-[#D4A017] text-[#2B2B2B] font-mono text-xs font-bold hover:bg-[#E0AB1E] transition-all cursor-pointer uppercase"
+              >
+                Acknowledge & Monitor
+              </button>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* =========================================================================
           6. MODAL: DETAILED SOLVER PROFILE & LIFECYCLE STEPPER
@@ -830,57 +882,7 @@ export const SolverDashboard: React.FC<SolverDashboardProps> = () => {
       )}
 
       {/* =========================================================================
-          7. MODAL: RISK SIGNAL AUDIT
-         ========================================================================= */}
-      {isRiskModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#2B2B2B]/60 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-[#FFFDF5] border-2 border-[#D4A017] rounded-2xl max-w-lg w-full p-6 space-y-5 shadow-2xl text-[#2B2B2B]">
-            <div className="flex items-start justify-between border-b border-[rgba(43,43,43,0.08)] pb-3">
-              <div className="flex items-center gap-2.5">
-                <AlertTriangle className="w-6 h-6 text-[#D4A017]" />
-                <div>
-                  <h3 className="text-base font-bold text-[#2B2B2B] font-headline">RISK SIGNAL AUDIT</h3>
-                  <p className="text-xs text-[#5A5A5A]">Coordinated bidding detection report</p>
-                </div>
-              </div>
-
-              <button onClick={() => setIsRiskModalOpen(false)} className="p-1 text-[#5A5A5A] hover:text-[#2B2B2B] cursor-pointer">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="bg-[#F7E7B5]/60 p-4 rounded-xl space-y-2 font-mono text-xs border border-[rgba(43,43,43,0.08)]">
-              <div className="flex justify-between">
-                <span>Observed Bid Similarity:</span>
-                <span className="font-bold text-[#D4A017]">87.4%</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Observed Across:</span>
-                <span className="font-bold text-[#2B2B2B]">4 Recent Intents</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Signal Classification:</span>
-                <span className="font-bold text-[#B84A39]">Possible Coordinated Bidding</span>
-              </div>
-            </div>
-
-            <p className="text-xs text-[#5A5A5A] font-sans">
-              <strong>Notice:</strong> No automatic penalty has been applied. Manual review is recommended to preserve open marketplace integrity.
-            </p>
-
-            <button
-              type="button"
-              onClick={() => setIsRiskModalOpen(false)}
-              className="w-full py-2.5 rounded-xl bg-[#D4A017] text-[#2B2B2B] font-mono text-xs font-bold hover:bg-[#E0AB1E] transition-all cursor-pointer uppercase"
-            >
-              Acknowledge & Close
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* =========================================================================
-          8. MODAL: REGISTER SOLVER CONCEPT
+          7. MODAL: REGISTER SOLVER CONCEPT
          ========================================================================= */}
       {isRegisterModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#2B2B2B]/60 backdrop-blur-sm animate-in fade-in duration-200">
