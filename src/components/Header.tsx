@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { web3Provider, GANACHE_CHAIN_ID } from '../services/web3Provider';
+import { web3Provider, GANACHE_CHAIN_ID, GANACHE_CHAIN_ID_ALT } from '../services/web3Provider';
 import type { WalletState } from '../services/web3Provider';
 import { Layers, Cpu, Wallet, History, Plug, AlertTriangle, UserCheck } from 'lucide-react';
 
@@ -44,7 +44,8 @@ export const Header: React.FC<HeaderProps> = ({
     setIsSwitching(false);
   };
 
-  const isWrongNetwork = wallet.isConnected && wallet.chainId !== GANACHE_CHAIN_ID && wallet.chainId !== 11155111;
+  const isGanache = wallet.chainId === GANACHE_CHAIN_ID || wallet.chainId === GANACHE_CHAIN_ID_ALT;
+  const isWrongNetwork = wallet.isConnected && !isGanache && wallet.chainId !== 11155111;
 
   return (
     <div className="sticky top-0 z-50">
@@ -53,7 +54,7 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="bg-amber-950 border-b border-amber-800 px-4 py-2 text-xs font-mono flex items-center justify-between text-amber-200">
           <div className="flex items-center gap-2">
             <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
-            <span>Wrong Network Detected (Chain ID #{wallet.chainId}). Please switch to Ganache Localnet (Chain #5777) or Sepolia.</span>
+            <span>Wrong Network Detected (Chain ID #{wallet.chainId}). Please switch to Ganache Localnet or Sepolia.</span>
           </div>
 
           <button
@@ -62,7 +63,7 @@ export const Header: React.FC<HeaderProps> = ({
             disabled={isSwitching}
             className="px-3 py-1 rounded bg-amber-600 hover:bg-amber-500 text-white font-bold text-[11px] transition-all shrink-0"
           >
-            {isSwitching ? 'Switching...' : 'Switch to Ganache (5777)'}
+            {isSwitching ? 'Switching...' : 'Switch to Ganache (1337)'}
           </button>
         </div>
       )}
