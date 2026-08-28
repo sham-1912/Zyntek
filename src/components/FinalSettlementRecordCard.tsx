@@ -14,6 +14,7 @@ export const FinalSettlementRecordCard: React.FC<FinalSettlementRecordCardProps>
   settlementResult,
 }) => {
   const [copiedHash, setCopiedHash] = useState<string | null>(null);
+  const [activeProofTab, setActiveProofTab] = useState<'provenance' | 'json' | 'hashes'>('provenance');
 
   const handleCopy = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
@@ -22,7 +23,7 @@ export const FinalSettlementRecordCard: React.FC<FinalSettlementRecordCardProps>
   };
 
   const canonicalJson = {
-    protocol: 'ZYNTEX',
+    protocol: 'ZYNTEK',
     intentId: `INT-${intent.intentId.slice(0, 8)}`,
     status: 'SETTLED',
     solver: winningBid.solverName.split('—')[0].trim(),
@@ -67,19 +68,19 @@ export const FinalSettlementRecordCard: React.FC<FinalSettlementRecordCardProps>
         </div>
       </div>
 
-      {/* Outcome Flow Diagram: Ethereum -> ZYNTEX -> Solana */}
+      {/* Outcome Flow Diagram: Ethereum -> ZYNTEK -> Solana */}
       <div className="p-4 bg-[#F7E7B5]/60 rounded-2xl border border-[rgba(43,43,43,0.1)] flex flex-col md:flex-row items-center justify-between gap-4 font-mono text-center">
         {/* Source */}
         <div className="flex-1 bg-[#FFFDF5] p-3.5 rounded-xl border border-[rgba(43,43,43,0.08)] shadow-xs w-full">
           <span className="text-[10px] text-[#5A5A5A] uppercase block font-semibold">Deposited</span>
-          <span className="text-lg font-bold text-[#2B2B2B] block">${intent.sourceAmount} USDC</span>
+          <span className="text-lg sm:text-xl font-bold text-[#2B2B2B] block">${intent.sourceAmount} USDC</span>
           <span className="text-[11px] text-[#5A5A5A]">Ethereum EscrowVault.sol</span>
         </div>
 
         {/* Middle Core Protocol Bridge */}
         <div className="flex flex-col items-center justify-center shrink-0 px-4">
           <span className="text-xs font-bold text-[#2B2B2B] uppercase tracking-widest font-headline">
-            ZYNTEX PROTOCOL
+            ZYNTEK PROTOCOL
           </span>
           <div className="flex items-center gap-2 my-1">
             <div className="h-0.5 w-8 sm:w-16 bg-[#D4A017]" />
@@ -91,210 +92,218 @@ export const FinalSettlementRecordCard: React.FC<FinalSettlementRecordCardProps>
         {/* Destination */}
         <div className="flex-1 bg-[#FFFDF5] p-3.5 rounded-xl border border-[rgba(43,43,43,0.08)] shadow-xs w-full">
           <span className="text-[10px] text-[#5A5A5A] uppercase block font-semibold">Delivered Output</span>
-          <span className="text-lg font-bold text-[#D4A017] block">${winningBid.expectedOutput} USDC</span>
+          <span className="text-lg sm:text-xl font-bold text-[#D4A017] block">${winningBid.expectedOutput} USDC</span>
           <span className="text-[11px] text-[#5A5A5A]">Solana Destination Wallet</span>
         </div>
       </div>
 
-      {/* COMPLETE END-TO-END PROVENANCE CHAIN — "PROOF OF EVERYTHING" (Refinement #5) */}
-      <div className="bg-[#2B2B2B] text-[#FFFDF5] p-5 sm:p-6 rounded-2xl space-y-4 border border-black/20 shadow-inner font-mono text-xs">
-        <div className="flex items-center justify-between border-b border-white/10 pb-3">
+      {/* UNIFIED TABBED MASTER VERIFICATION & PROOF CONTAINER (Refinement #5) */}
+      <div className="bg-[#2B2B2B] text-[#FFFDF5] rounded-2xl border border-black/20 shadow-inner overflow-hidden font-mono text-xs">
+        
+        {/* Tab Headers */}
+        <div className="flex items-center justify-between border-b border-white/10 p-3 sm:p-4 bg-black/40 flex-wrap gap-2">
           <div className="flex items-center gap-2">
-            <GitCommit className="w-4 h-4 text-[#F0C94C]" />
-            <span className="text-xs sm:text-sm font-bold text-[#F0C94C] uppercase tracking-wider font-headline">
-              Complete Protocol Provenance Chain
-            </span>
+            <button
+              type="button"
+              onClick={() => setActiveProofTab('provenance')}
+              className={`px-3.5 py-1.5 rounded-xl font-bold transition-all flex items-center gap-1.5 cursor-pointer text-xs ${
+                activeProofTab === 'provenance'
+                  ? 'bg-[#D4A017] text-[#2B2B2B] shadow-sm'
+                  : 'text-[#FFFDF5]/70 hover:text-white bg-white/5'
+              }`}
+            >
+              <GitCommit className="w-3.5 h-3.5" />
+              <span>1. Complete Provenance Chain</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveProofTab('json')}
+              className={`px-3.5 py-1.5 rounded-xl font-bold transition-all flex items-center gap-1.5 cursor-pointer text-xs ${
+                activeProofTab === 'json'
+                  ? 'bg-[#D4A017] text-[#2B2B2B] shadow-sm'
+                  : 'text-[#FFFDF5]/70 hover:text-white bg-white/5'
+              }`}
+            >
+              <FileCode className="w-3.5 h-3.5" />
+              <span>2. Canonical JSON Audit</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveProofTab('hashes')}
+              className={`px-3.5 py-1.5 rounded-xl font-bold transition-all flex items-center gap-1.5 cursor-pointer text-xs ${
+                activeProofTab === 'hashes'
+                  ? 'bg-[#D4A017] text-[#2B2B2B] shadow-sm'
+                  : 'text-[#FFFDF5]/70 hover:text-white bg-white/5'
+              }`}
+            >
+              <Hash className="w-3.5 h-3.5" />
+              <span>3. Cryptographic Hashes</span>
+            </button>
           </div>
-          <span className="text-[10px] text-[#CEF26D] font-bold bg-white/10 px-2.5 py-0.5 rounded-full">
-            ● End-to-End Cryptographic Audit Trace
+
+          <span className="text-[10px] text-[#CEF26D] font-bold bg-white/10 px-2.5 py-0.5 rounded-full hidden md:inline">
+            ● Verified On-Chain
           </span>
         </div>
 
-        {/* Step-by-Step Vertical Provenance Flow */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-left">
-          {/* Step 1 */}
-          <div className="bg-black/30 p-3 rounded-xl border border-white/5 space-y-1">
-            <div className="flex items-center justify-between text-[10px] text-[#D4A017] font-bold">
-              <span>1. INTENT</span>
-              <span>#INT-{intent.intentId.slice(0, 4)}</span>
-            </div>
-            <p className="text-[11px] text-[#FFFDF5] font-bold">${intent.sourceAmount} USDC</p>
-            <p className="text-[10px] text-[#888]">Ethereum → Solana</p>
-          </div>
+        {/* Tab 1: Complete Provenance Chain */}
+        {activeProofTab === 'provenance' && (
+          <div className="p-5 sm:p-6 space-y-4 animate-in fade-in duration-200">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-left">
+              {/* Step 1 */}
+              <div className="bg-black/30 p-3.5 rounded-xl border border-white/5 space-y-1">
+                <div className="flex items-center justify-between text-[10px] text-[#D4A017] font-bold">
+                  <span>1. INTENT</span>
+                  <span>#INT-{intent.intentId.slice(0, 4)}</span>
+                </div>
+                <p className="text-xs text-[#FFFDF5] font-bold">${intent.sourceAmount} USDC</p>
+                <p className="text-[10px] text-[#888]">Ethereum → Solana</p>
+              </div>
 
-          {/* Step 2 */}
-          <div className="bg-black/30 p-3 rounded-xl border border-white/5 space-y-1">
-            <div className="flex items-center justify-between text-[10px] text-[#D4A017] font-bold">
-              <span>2. AUCTION</span>
-              <span>3 Solvers</span>
-            </div>
-            <p className="text-[11px] text-[#FFFDF5] font-bold">Dynamic Scoring</p>
-            <p className="text-[10px] text-[#888]">Cost vs Speed vs Rep</p>
-          </div>
+              {/* Step 2 */}
+              <div className="bg-black/30 p-3.5 rounded-xl border border-white/5 space-y-1">
+                <div className="flex items-center justify-between text-[10px] text-[#D4A017] font-bold">
+                  <span>2. AUCTION</span>
+                  <span>3 Solvers</span>
+                </div>
+                <p className="text-xs text-[#FFFDF5] font-bold">Dynamic Scoring</p>
+                <p className="text-[10px] text-[#888]">Cost vs Speed vs Rep</p>
+              </div>
 
-          {/* Step 3 */}
-          <div className="bg-black/30 p-3 rounded-xl border border-white/5 space-y-1">
-            <div className="flex items-center justify-between text-[10px] text-[#D4A017] font-bold">
-              <span>3. SELECTION</span>
-              <span>Score: {winningBid.reputationScore} REP</span>
-            </div>
-            <p className="text-[11px] text-[#CEF26D] font-bold">{winningBid.solverName.split('—')[0]}</p>
-            <p className="text-[10px] text-[#888]">Rank #1 Optimum Fit</p>
-          </div>
+              {/* Step 3 */}
+              <div className="bg-black/30 p-3.5 rounded-xl border border-white/5 space-y-1">
+                <div className="flex items-center justify-between text-[10px] text-[#D4A017] font-bold">
+                  <span>3. SELECTION</span>
+                  <span>Score: {winningBid.reputationScore} REP</span>
+                </div>
+                <p className="text-xs text-[#CEF26D] font-bold">{winningBid.solverName.split('—')[0]}</p>
+                <p className="text-[10px] text-[#888]">Rank #1 Optimum Fit</p>
+              </div>
 
-          {/* Step 4 */}
-          <div className="bg-black/30 p-3 rounded-xl border border-white/5 space-y-1">
-            <div className="flex items-center justify-between text-[10px] text-[#D4A017] font-bold">
-              <span>4. ACCOUNTABILITY</span>
-              <span>Bond Vault</span>
-            </div>
-            <p className="text-[11px] text-[#FFFDF5] font-bold">$500 Bond at Risk</p>
-            <p className="text-[10px] text-[#888]">SolverBonding.sol</p>
-          </div>
+              {/* Step 4 */}
+              <div className="bg-black/30 p-3.5 rounded-xl border border-white/5 space-y-1">
+                <div className="flex items-center justify-between text-[10px] text-[#D4A017] font-bold">
+                  <span>4. ACCOUNTABILITY</span>
+                  <span>Bond Vault</span>
+                </div>
+                <p className="text-xs text-[#FFFDF5] font-bold">$500 Bond Staked</p>
+                <p className="text-[10px] text-[#888]">SolverBonding.sol</p>
+              </div>
 
-          {/* Step 5 */}
-          <div className="bg-black/30 p-3 rounded-xl border border-white/5 space-y-1">
-            <div className="flex items-center justify-between text-[10px] text-[#D4A017] font-bold">
-              <span>5. EXECUTION</span>
-              <span>{(settlementResult.executionTimeMs / 1000).toFixed(1)}s</span>
-            </div>
-            <p className="text-[11px] text-[#FFFDF5] font-bold">${winningBid.expectedOutput} Delivered</p>
-            <p className="text-[10px] text-[#888]">Solana SVM Slot</p>
-          </div>
+              {/* Step 5 */}
+              <div className="bg-black/30 p-3.5 rounded-xl border border-white/5 space-y-1">
+                <div className="flex items-center justify-between text-[10px] text-[#D4A017] font-bold">
+                  <span>5. EXECUTION</span>
+                  <span>{(settlementResult.executionTimeMs / 1000).toFixed(1)}s</span>
+                </div>
+                <p className="text-xs text-[#FFFDF5] font-bold">${winningBid.expectedOutput} Delivered</p>
+                <p className="text-[10px] text-[#888]">Solana SVM Slot</p>
+              </div>
 
-          {/* Step 6 */}
-          <div className="bg-black/30 p-3 rounded-xl border border-white/5 space-y-1">
-            <div className="flex items-center justify-between text-[10px] text-[#D4A017] font-bold">
-              <span>6. VERIFICATION</span>
-              <span>Dual-Consensus</span>
-            </div>
-            <p className="text-[11px] text-[#CEF26D] font-bold">✓ Confirmed</p>
-            <p className="text-[10px] text-[#888]">Optimistic + ZK Attest</p>
-          </div>
+              {/* Step 6 */}
+              <div className="bg-black/30 p-3.5 rounded-xl border border-white/5 space-y-1">
+                <div className="flex items-center justify-between text-[10px] text-[#D4A017] font-bold">
+                  <span>6. VERIFICATION</span>
+                  <span>Dual-Consensus</span>
+                </div>
+                <p className="text-xs text-[#CEF26D] font-bold">✓ Confirmed</p>
+                <p className="text-[10px] text-[#888]">Optimistic + ZK Proof</p>
+              </div>
 
-          {/* Step 7 */}
-          <div className="bg-black/30 p-3 rounded-xl border border-white/5 space-y-1">
-            <div className="flex items-center justify-between text-[10px] text-[#D4A017] font-bold">
-              <span>7. SETTLEMENT</span>
-              <span>Finalized</span>
-            </div>
-            <p className="text-[11px] text-[#CEF26D] font-bold">✓ Payout Unlocked</p>
-            <p className="text-[10px] text-[#888]">Bond Returned + Fee</p>
-          </div>
+              {/* Step 7 */}
+              <div className="bg-black/30 p-3.5 rounded-xl border border-white/5 space-y-1">
+                <div className="flex items-center justify-between text-[10px] text-[#D4A017] font-bold">
+                  <span>7. SETTLEMENT</span>
+                  <span>Finalized</span>
+                </div>
+                <p className="text-xs text-[#CEF26D] font-bold">✓ Payout Unlocked</p>
+                <p className="text-[10px] text-[#888]">Bond Returned + Fee</p>
+              </div>
 
-          {/* Step 8 */}
-          <div className="bg-black/30 p-3 rounded-xl border border-white/5 space-y-1">
-            <div className="flex items-center justify-between text-[10px] text-[#D4A017] font-bold">
-              <span>8. PROOF ROOT</span>
-              <span>On-Chain</span>
+              {/* Step 8 */}
+              <div className="bg-black/30 p-3.5 rounded-xl border border-white/5 space-y-1">
+                <div className="flex items-center justify-between text-[10px] text-[#D4A017] font-bold">
+                  <span>8. PROOF ROOT</span>
+                  <span>On-Chain</span>
+                </div>
+                <p className="text-xs text-[#F0C94C] font-bold truncate">{settlementResult.txHash.slice(0, 10)}...</p>
+                <p className="text-[10px] text-[#888]">EIP-712 Leaf Hash</p>
+              </div>
             </div>
-            <p className="text-[11px] text-[#F0C94C] font-bold truncate">{settlementResult.txHash.slice(0, 10)}...</p>
-            <p className="text-[10px] text-[#888]">EIP-712 Leaf Hash</p>
           </div>
-        </div>
-      </div>
+        )}
 
-      {/* Middle Grid: Canonical JSON Record + Cryptographic Hashes (Directive 9) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch font-mono text-xs">
-        
-        {/* Left: Canonical JSON Settlement Record (Charcoal #2B2B2B Terminal) */}
-        <div className="lg:col-span-6 bg-[#2B2B2B] text-[#FFFDF5] p-5 rounded-2xl space-y-3 flex flex-col justify-between shadow-inner border border-black/20">
-          <div>
-            <div className="flex items-center justify-between border-b border-white/10 pb-2 mb-2">
-              <span className="text-xs font-bold text-[#F0C94C] uppercase tracking-wider flex items-center gap-1.5 font-headline">
-                <FileCode className="w-4 h-4 text-[#F0C94C]" />
-                Canonical Settlement Record
-              </span>
+        {/* Tab 2: Canonical JSON */}
+        {activeProofTab === 'json' && (
+          <div className="p-5 sm:p-6 space-y-3 animate-in fade-in duration-200">
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-[#FFFDF5]/70">EIP-712 Structured Canonical Settlement Object:</span>
               <button
                 type="button"
                 onClick={() => handleCopy(JSON.stringify(canonicalJson, null, 2), 'json')}
-                className="text-xs text-[#F0C94C] hover:text-[#FFFDF5] transition-colors cursor-pointer flex items-center gap-1 bg-white/10 px-2 py-1 rounded font-bold"
+                className="text-xs text-[#F0C94C] hover:text-[#FFFDF5] transition-colors cursor-pointer flex items-center gap-1 bg-white/10 px-3 py-1 rounded-lg font-bold"
               >
                 {copiedHash === 'json' ? <Check className="w-3.5 h-3.5 text-[#607A3A]" /> : <Copy className="w-3.5 h-3.5" />}
                 <span>{copiedHash === 'json' ? 'Copied' : 'Copy JSON'}</span>
               </button>
             </div>
-            <pre className="text-[#FFFDF5] text-[11px] bg-black/40 p-3 rounded-xl max-h-52 overflow-y-auto leading-relaxed font-mono border border-white/5">
+            <pre className="text-[#FFFDF5] text-xs bg-black/50 p-4 rounded-xl max-h-60 overflow-y-auto leading-relaxed font-mono border border-white/5">
               <span className="text-[#F0C94C]">{JSON.stringify(canonicalJson, null, 2)}</span>
             </pre>
           </div>
-          <span className="text-[10px] text-[#FFFDF5]/50 block border-t border-white/10 pt-2">
-            EIP-712 Structured Intent Canonical Proof
-          </span>
-        </div>
+        )}
 
-        {/* Right: Cryptographic Hashes Record */}
-        <div className="lg:col-span-6 glass-sub-box p-5 space-y-3.5 flex flex-col justify-between bg-[#F7E7B5]/60 border border-[rgba(43,43,43,0.1)] rounded-2xl">
-          <div>
-            <span className="text-xs font-bold text-[#2B2B2B] uppercase tracking-wider block border-b border-[rgba(43,43,43,0.08)] pb-2 mb-3 font-headline flex items-center gap-1.5">
-              <Hash className="w-4 h-4 text-[#D4A017]" />
-              Cryptographic On-Chain Record
-            </span>
-
-            <div className="space-y-3">
-              {/* Settlement Root Hash */}
-              <div>
-                <span className="text-[11px] text-[#5A5A5A] block font-semibold">SETTLEMENT ROOT HASH</span>
-                <div className="flex items-center justify-between bg-[#FFFDF5] p-2.5 rounded-xl text-xs font-bold text-[#2B2B2B] mt-1 border border-[rgba(43,43,43,0.08)] shadow-xs">
-                  <span className="truncate">{settlementResult.txHash}</span>
-                  <button
-                    type="button"
-                    onClick={() => handleCopy(settlementResult.txHash, 'settle')}
-                    className="text-[#D4A017] hover:text-[#2B2B2B] ml-2 cursor-pointer p-1 rounded hover:bg-black/5"
-                    title="Copy Settlement Hash"
-                  >
-                    {copiedHash === 'settle' ? <Check className="w-3.5 h-3.5 text-[#607A3A]" /> : <Copy className="w-3.5 h-3.5" />}
-                  </button>
-                </div>
+        {/* Tab 3: Cryptographic Hashes */}
+        {activeProofTab === 'hashes' && (
+          <div className="p-5 sm:p-6 space-y-4 animate-in fade-in duration-200">
+            {/* Settlement Root Hash */}
+            <div>
+              <span className="text-[11px] text-[#D4A017] block font-bold mb-1">1. SETTLEMENT ROOT HASH</span>
+              <div className="flex items-center justify-between bg-black/40 p-3 rounded-xl text-xs font-bold text-[#FFFDF5] border border-white/10">
+                <span className="truncate">{settlementResult.txHash}</span>
+                <button
+                  type="button"
+                  onClick={() => handleCopy(settlementResult.txHash, 'settle')}
+                  className="text-[#F0C94C] hover:text-white ml-2 cursor-pointer p-1 rounded hover:bg-white/10 shrink-0"
+                >
+                  {copiedHash === 'settle' ? <Check className="w-3.5 h-3.5 text-[#607A3A]" /> : <Copy className="w-3.5 h-3.5" />}
+                </button>
               </div>
+            </div>
 
-              {/* Intent EIP-712 Hash */}
-              <div>
-                <span className="text-[11px] text-[#5A5A5A] block font-semibold">INTENT EIP-712 HASH</span>
-                <div className="flex items-center justify-between bg-[#FFFDF5] p-2.5 rounded-xl text-xs font-bold text-[#2B2B2B] mt-1 border border-[rgba(43,43,43,0.08)] shadow-xs">
-                  <span className="truncate">{intentHash}</span>
-                  <button
-                    type="button"
-                    onClick={() => handleCopy(intentHash, 'intent')}
-                    className="text-[#D4A017] hover:text-[#2B2B2B] ml-2 cursor-pointer p-1 rounded hover:bg-black/5"
-                    title="Copy Intent Hash"
-                  >
-                    {copiedHash === 'intent' ? <Check className="w-3.5 h-3.5 text-[#607A3A]" /> : <Copy className="w-3.5 h-3.5" />}
-                  </button>
-                </div>
+            {/* Intent EIP-712 Hash */}
+            <div>
+              <span className="text-[11px] text-[#D4A017] block font-bold mb-1">2. INTENT EIP-712 HASH</span>
+              <div className="flex items-center justify-between bg-black/40 p-3 rounded-xl text-xs font-bold text-[#FFFDF5] border border-white/10">
+                <span className="truncate">{intentHash}</span>
+                <button
+                  type="button"
+                  onClick={() => handleCopy(intentHash, 'intent')}
+                  className="text-[#F0C94C] hover:text-white ml-2 cursor-pointer p-1 rounded hover:bg-white/10 shrink-0"
+                >
+                  {copiedHash === 'intent' ? <Check className="w-3.5 h-3.5 text-[#607A3A]" /> : <Copy className="w-3.5 h-3.5" />}
+                </button>
               </div>
+            </div>
 
-              {/* Verification Proof Hash */}
-              <div>
-                <span className="text-[11px] text-[#5A5A5A] block font-semibold">VERIFICATION PROOF HASH</span>
-                <div className="flex items-center justify-between bg-[#FFFDF5] p-2.5 rounded-xl text-xs font-bold text-[#2B2B2B] mt-1 border border-[rgba(43,43,43,0.08)] shadow-xs">
-                  <span className="truncate">{verificationHash}</span>
-                  <button
-                    type="button"
-                    onClick={() => handleCopy(verificationHash, 'verify')}
-                    className="text-[#D4A017] hover:text-[#2B2B2B] ml-2 cursor-pointer p-1 rounded hover:bg-black/5"
-                    title="Copy Verification Hash"
-                  >
-                    {copiedHash === 'verify' ? <Check className="w-3.5 h-3.5 text-[#607A3A]" /> : <Copy className="w-3.5 h-3.5" />}
-                  </button>
-                </div>
+            {/* Verification Proof Hash */}
+            <div>
+              <span className="text-[11px] text-[#D4A017] block font-bold mb-1">3. VERIFICATION PROOF HASH</span>
+              <div className="flex items-center justify-between bg-black/40 p-3 rounded-xl text-xs font-bold text-[#FFFDF5] border border-white/10">
+                <span className="truncate">{verificationHash}</span>
+                <button
+                  type="button"
+                  onClick={() => handleCopy(verificationHash, 'verify')}
+                  className="text-[#F0C94C] hover:text-white ml-2 cursor-pointer p-1 rounded hover:bg-white/10 shrink-0"
+                >
+                  {copiedHash === 'verify' ? <Check className="w-3.5 h-3.5 text-[#607A3A]" /> : <Copy className="w-3.5 h-3.5" />}
+                </button>
               </div>
             </div>
           </div>
-
-          <div className="flex items-center justify-between border-t border-[rgba(43,43,43,0.08)] pt-3 text-[11px]">
-            <span className="text-[#607A3A] font-bold">✓ Dual-Consensus State Verified</span>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => handleCopy(settlementResult.txHash, 'settle')}
-                className="px-3 py-1 rounded-lg bg-[#D4A017] text-[#2B2B2B] font-bold hover:bg-[#E0AB1E] transition-all cursor-pointer shadow-xs"
-              >
-                Copy Hash
-              </button>
-            </div>
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );

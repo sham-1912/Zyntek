@@ -64,7 +64,7 @@ export const IntentForm: React.FC<IntentFormProps> = ({
               </span>
             </div>
             <p className="text-xs text-[#5A5A5A] font-sans">
-              Specify your target outcome — Zyntix solver mesh discovers optimal routing
+              Specify your target outcome — ZYNTEK solver mesh discovers optimal routing
             </p>
           </div>
         </div>

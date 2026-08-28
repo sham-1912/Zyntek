@@ -108,7 +108,7 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-lg font-bold tracking-tight text-[#FFFDF5] font-headline">ZYNTEX</h1>
+                <h1 className="text-lg font-bold tracking-tight text-[#FFFDF5] font-headline">ZYNTEK</h1>
                 <span className="text-[10px] uppercase font-mono tracking-wider font-bold px-2 py-0.5 rounded-full bg-[#FFFDF5]/15 text-[#F0C94C] border border-[#D4A017]/30 whitespace-nowrap">
                   {wallet.networkName}
                 </span>
