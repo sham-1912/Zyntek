@@ -172,14 +172,14 @@ export default function App() {
       // Staggered Solver B Arrival (t = +1.5s into auction)
       addTimeout(() => {
         setIsBroadcasting(false);
-        setArrivalMessage('✓ Solver B connected (Balanced Executor)');
+        setArrivalMessage('Solver B connected (Balanced Executor)');
         setVisibleBids([scoredPool[0]]);
         addLog('SOLVER B (Balanced Executor) submitted bid: Output $' + scoredPool[0].expectedOutput, 'info');
       }, 1500);
 
       // Staggered Solver A Arrival (t = +3.2s into auction)
       addTimeout(() => {
-        setArrivalMessage('✓ Solver A submitted bid (Cost Optimizer)');
+        setArrivalMessage('Solver A submitted bid (Cost Optimizer)');
         const currentPool = [scoredPool[0], scoredPool[1]];
         setVisibleBids(recalculateAllScores(currentPool, sliders).sort((a, b) => b.finalScore - a.finalScore));
         addLog('SOLVER A (Cost Optimizer) submitted bid: Lowest fee route', 'info');
@@ -187,7 +187,7 @@ export default function App() {
 
       // Staggered Solver C Arrival (t = +5.0s into auction)
       addTimeout(() => {
-        setArrivalMessage('✓ Solver C submitted bid (Speed Specialist)');
+        setArrivalMessage('Solver C submitted bid (Speed Specialist)');
         setVisibleBids(recalculateAllScores(scoredPool, sliders).sort((a, b) => b.finalScore - a.finalScore));
         addLog('SOLVER C (Speed Specialist) submitted bid: 28.4s ETA route', 'info');
       }, 5000);
@@ -216,14 +216,14 @@ export default function App() {
     if (scenario === 'ambiguous') {
       setIsAmbiguous(true);
       setIsSensitiveModalOpen(true);
-      addLog('⚠ SENSITIVE DECISION REQUIRED: Top 2 bids tied within 0.6%', 'warn');
+      addLog('SENSITIVE DECISION REQUIRED: Top 2 bids tied within 0.6%', 'warn');
       return;
     }
 
     if (scenario === 'high_value') {
       setIsHighValue(true);
       setIsSensitiveModalOpen(true);
-      addLog('⚠ HIGH-VALUE TRANSFER: $1,500 intent requires Oracle Attestation sign-off', 'warn');
+      addLog('HIGH-VALUE TRANSFER: $1,500 intent requires Oracle Attestation sign-off', 'warn');
       return;
     }
 
@@ -260,9 +260,9 @@ export default function App() {
         setFailureReason('Solver missed destination execution deadline (Timeout on Solana SVM leg).');
         setStage('slashed_refunded');
         const b = ganacheLedger.pushIntentTransaction('slashBond', currentIntent ? currentIntent.intentId : '0x0', 500);
-        addLog('❌ SOLVER FAILURE: Execution deadline exceeded on Solana SVM', 'error');
-        addLog(`⚡ FULL BOND SLASHED: $500 collateral confiscated in Block #${b.number}`, 'error');
-        addLog('✓ USER PROTECTED: $500 escrow 100% refunded to user account', 'success');
+        addLog('SOLVER FAILURE: Execution deadline exceeded on Solana SVM', 'error');
+        addLog(`FULL BOND SLASHED: $500 collateral confiscated in Block #${b.number}`, 'error');
+        addLog('USER PROTECTED: $500 escrow 100% refunded to user account', 'success');
       }, 7500);
       return;
     }
@@ -304,7 +304,7 @@ export default function App() {
     setStage('settlement');
     setLifecycleStep('settlement_complete');
     const b = ganacheLedger.pushIntentTransaction('settleIntent', currentIntent ? currentIntent.intentId : '0x0', winner.expectedOutput);
-    addLog(`✓ SETTLEMENT COMPLETE: $${winner.expectedOutput} USDC released in Block #${b.number}`, 'success');
+    addLog(`SETTLEMENT COMPLETE: $${winner.expectedOutput} USDC released in Block #${b.number}`, 'success');
 
     confetti({
       particleCount: 80,
@@ -393,8 +393,11 @@ export default function App() {
     scrollToSection('intent-section');
   };
 
+  const [isAutoNavEnabled, setIsAutoNavEnabled] = useState<boolean>(true);
+
   // Auto-scroll tour director: smoothly navigates to each active section without manual scrolling
   const scrollToSection = (sectionId: string) => {
+    if (!isAutoNavEnabled) return;
     setTimeout(() => {
       const el = document.getElementById(sectionId);
       if (el) {
@@ -405,7 +408,7 @@ export default function App() {
 
   // Automatically scroll between sections as lifecycle progresses
   useEffect(() => {
-    if (viewMode !== 'user') return;
+    if (!isAutoNavEnabled || viewMode !== 'user') return;
 
     if (stage === 'intent' || stage === 'escrow') {
       scrollToSection('pipeline-section');
@@ -420,7 +423,7 @@ export default function App() {
     } else if (stage === 'slashed_refunded') {
       scrollToSection('verification-section');
     }
-  }, [stage, viewMode]);
+  }, [stage, viewMode, isAutoNavEnabled]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -448,6 +451,8 @@ export default function App() {
           activeScenario={activeScenario}
           onSelectScenario={handleSelectScenario}
           onResetState={handleHardReset}
+          isAutoNavEnabled={isAutoNavEnabled}
+          onToggleAutoNav={() => setIsAutoNavEnabled(!isAutoNavEnabled)}
         />
       </div>
 
@@ -463,7 +468,7 @@ export default function App() {
                 </div>
                 <div>
                   <h4 className="text-sm font-bold text-[#2B2B2B] font-headline uppercase">
-                    ⚠ SENSITIVE DECISION REQUIRED — TIE DETECTED
+                    SENSITIVE DECISION REQUIRED — TIE DETECTED
                   </h4>
                   <p className="text-xs text-[#5A5A5A]">
                     Two executions are effectively tied (0.6% difference). Automation paused until manual sign-off.
@@ -579,7 +584,7 @@ export default function App() {
           </div>
 
           {/* =========================================================================
-              ROW 6 — ⑤ VISUAL CLIMAX: ✓ INTENT SUCCESSFULLY SETTLED (12 Cols)
+              ROW 6 — ⑤ VISUAL CLIMAX: INTENT SUCCESSFULLY SETTLED (12 Cols)
              ========================================================================= */}
           {stage === 'settlement' && currentIntent && winningSolver && settlementResult && (
             <div id="settlement-section" className="w-full scroll-mt-24">

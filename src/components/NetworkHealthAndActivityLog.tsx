@@ -35,7 +35,7 @@ export const NetworkHealthAndActivityLog: React.FC<NetworkHealthAndActivityLogPr
               <Check className="w-3.5 h-3.5 text-[#CEF26D]" />
               Total Collateral Bonded
             </span>
-            <span className="text-[#CEF26D] font-bold">$188,100 USDC ✓</span>
+            <span className="text-[#CEF26D] font-bold">$188,100 USDC</span>
           </div>
 
           <div className="flex items-center justify-between p-2 rounded-lg bg-[#142848] border border-white/5">

@@ -28,10 +28,10 @@ export const NetworkStatusOverview: React.FC<NetworkStatusOverviewProps> = ({
             </span>
           </div>
         </div>
-        <span className="flex items-center gap-1.5 text-[10px] font-mono text-[#2B2B2B] bg-[#F7E7B5] px-2.5 py-1 rounded-full border border-[#D4A017]/40 font-bold shadow-xs">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#D4A017] animate-ping" />
-          ● Network Live
-        </span>
+          <div className="flex items-center gap-1.5 text-[10px] font-mono text-[#2B2B2B] bg-[#F7E7B5] px-2.5 py-1 rounded-full border border-[#D4A017]/30 font-bold shadow-xs">
+            <span className="w-2 h-2 rounded-full bg-[#607A3A] animate-pulse" />
+            <span>Network Live</span>
+          </div>
       </div>
 
       {/* 2x2 Telemetry Grid: Compact inside, generous between */}

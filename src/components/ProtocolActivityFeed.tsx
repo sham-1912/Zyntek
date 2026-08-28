@@ -73,7 +73,10 @@ export const ProtocolActivityFeed: React.FC<ProtocolActivityFeedProps> = ({ logs
       {/* Footer */}
       <div className="flex items-center justify-between text-xs font-mono text-[#5A5A5A] border-t border-[rgba(43,43,43,0.08)] pt-2.5">
         <span>Dual-Consensus SVM/EVM Relayer Mesh</span>
-        <span className="text-[#607A3A] font-bold">● Feed Connected (0ms Latency)</span>
+        <span className="text-[#607A3A] font-bold flex items-center gap-1.5">
+          <span className="w-2 h-2 rounded-full bg-[#607A3A]" />
+          <span>Feed Connected (0ms Latency)</span>
+        </span>
       </div>
     </div>
   );

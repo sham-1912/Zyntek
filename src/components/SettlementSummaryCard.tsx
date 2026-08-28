@@ -15,7 +15,7 @@ export const SettlementSummaryCard: React.FC<SettlementSummaryCardProps> = ({ re
         <div className="flex items-center justify-between font-bold text-sm border-b border-alert/30 pb-3">
           <span className="flex items-center gap-2 text-alert">
             <ShieldCheck className="w-5 h-5 text-alert animate-bounce" />
-            <span>⚠ Verification Failure & Automated Refund Executed</span>
+            <span>Verification Failure & Automated Refund Executed</span>
           </span>
           <span className="text-metadata">Tx: {result.txHash.slice(0, 10)}...</span>
         </div>

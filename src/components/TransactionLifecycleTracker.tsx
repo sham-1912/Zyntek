@@ -1,8 +1,20 @@
 import React from 'react';
-import { Check, Loader2, AlertCircle, Circle, Layers } from 'lucide-react';
-import type { UserIntent, SolverBid, PipelineStage } from '../services/types';
+import type { SolverBid, UserIntent } from '../services/types';
+import {
+  Layers,
+  ArrowRight,
+  Shield,
+  Clock,
+  Coins,
+  CheckCircle2,
+  Check,
+  Loader2,
+  AlertCircle,
+  Circle,
+} from 'lucide-react';
 
 export type LifecycleStepId =
+  | 'idle'
   | 'intent_submitted'
   | 'funds_locked'
   | 'solver_selected'
@@ -12,51 +24,51 @@ export type LifecycleStepId =
   | 'verification'
   | 'settlement_complete';
 
-export type StepState = 'completed' | 'active' | 'pending' | 'failed';
-
-export interface StepItem {
-  id: LifecycleStepId;
-  stepNum: string;
-  title: string;
-  subtext: string;
-}
-
-const LIFECYCLE_STEPS: StepItem[] = [
-  { id: 'intent_submitted', stepNum: '01', title: 'Intent Created', subtext: 'EIP-712 Signed' },
-  { id: 'funds_locked', stepNum: '02', title: 'Escrow Locked', subtext: 'Vault.sol (EVM)' },
-  { id: 'solver_selected', stepNum: '03', title: 'Solver Selected', subtext: 'Rank #1 Winner' },
-  { id: 'bond_posted', stepNum: '04', title: 'Bond Staked', subtext: '$500 Collateral' },
-  { id: 'cross_chain_execution', stepNum: '05', title: 'SVM Execution', subtext: 'Raydium/Orca' },
-  { id: 'destination_confirmed', stepNum: '06', title: 'Delivery OK', subtext: 'SVM Verified' },
-  { id: 'verification', stepNum: '07', title: 'Verification', subtext: 'Dual-Consensus' },
-  { id: 'settlement_complete', stepNum: '08', title: 'Settlement', subtext: 'Funds Released' },
-];
-
 interface TransactionLifecycleTrackerProps {
-  currentStepId: LifecycleStepId | 'idle';
+  currentStepId: LifecycleStepId | string;
   isFailed?: boolean;
   failureReason?: string;
   selectedSolverName?: string;
   bondAmountUsd?: number;
   intent?: UserIntent | null;
   selectedBid?: SolverBid | null;
-  stage?: PipelineStage;
+  stage?: string;
 }
+
+type StepState = 'pending' | 'active' | 'completed' | 'failed';
+
+interface StepDefinition {
+  id: string;
+  stepNum: string;
+  title: string;
+  subtext: string;
+  actor: string;
+}
+
+const LIFECYCLE_STEPS: StepDefinition[] = [
+  { id: 'intent_submitted', stepNum: '01', title: 'Intent Created', subtext: 'EIP-712 Signed', actor: 'User' },
+  { id: 'funds_locked', stepNum: '02', title: 'Escrow Locked', subtext: 'EscrowVault.sol', actor: 'EVM' },
+  { id: 'solver_selected', stepNum: '03', title: 'Solver Selected', subtext: 'Rank #1 Winner', actor: 'Protocol' },
+  { id: 'bond_posted', stepNum: '04', title: 'Bond Staked', subtext: 'SolverBonding.sol', actor: 'Solver' },
+  { id: 'cross_chain_execution', stepNum: '05', title: 'SVM Execution', subtext: 'Private Relayer', actor: 'Relayer' },
+  { id: 'destination_confirmed', stepNum: '06', title: 'Delivery OK', subtext: 'Slot Verified', actor: 'Solana' },
+  { id: 'verification', stepNum: '07', title: 'Verification', subtext: 'Optimistic / ZK', actor: 'Oracle' },
+  { id: 'settlement_complete', stepNum: '08', title: 'Settlement', subtext: 'Payout Unlocked', actor: 'Protocol' },
+];
 
 export const TransactionLifecycleTracker: React.FC<TransactionLifecycleTrackerProps> = ({
   currentStepId,
-  isFailed,
-  failureReason,
+  isFailed = false,
   selectedSolverName,
   bondAmountUsd = 500,
   intent,
   selectedBid,
-  stage = 'idle',
+  stage,
 }) => {
   const currentIdx = LIFECYCLE_STEPS.findIndex((s) => s.id === currentStepId);
 
   const isEscrowLocked = stage !== 'idle' && stage !== 'intent';
-  const isExecuting = stage === 'execution' || stage === 'executing_cross_chain';
+  const isExecuting = stage === 'execution';
   const isDelivered = stage === 'verification' || stage === 'settlement' || stage === 'settled';
   const isVerified = stage === 'settlement' || stage === 'settled';
 
@@ -74,7 +86,7 @@ export const TransactionLifecycleTracker: React.FC<TransactionLifecycleTrackerPr
                 MAIN EXECUTION LIFECYCLE TRACKER
               </span>
               <span className="text-xs px-2.5 py-0.5 rounded-full bg-[#F7E7B5] text-[#2B2B2B] border border-[#D4A017]/40 font-mono font-bold shadow-xs">
-                {currentStepId === 'settlement_complete' ? '✓ Settled' : currentStepId !== 'idle' ? '● In Progress' : '○ Standby'}
+                {currentStepId === 'settlement_complete' ? 'Settled' : currentStepId !== 'idle' ? 'In Progress' : 'Standby'}
               </span>
             </div>
             <h3 className="text-base sm:text-lg font-bold text-[#2B2B2B] font-headline mt-0.5">
@@ -158,10 +170,10 @@ export const TransactionLifecycleTracker: React.FC<TransactionLifecycleTrackerPr
                 <p className="text-[10px] text-[#5A5A5A] font-sans truncate">{step.subtext}</p>
 
                 <div className="pt-1 font-mono text-[10px] font-bold">
-                  {state === 'completed' && <span className="text-[#607A3A]">✓ Cleared</span>}
-                  {state === 'active' && <span className="text-[#2B2B2B] animate-pulse">◉ Running</span>}
-                  {state === 'failed' && <span className="text-[#B84A39]">❌ Failed</span>}
-                  {state === 'pending' && <span className="text-[#5A5A5A]/50">○ Standby</span>}
+                  {state === 'completed' && <span className="text-[#607A3A]">Cleared</span>}
+                  {state === 'active' && <span className="text-[#2B2B2B] animate-pulse">Running</span>}
+                  {state === 'failed' && <span className="text-[#B84A39]">Failed</span>}
+                  {state === 'pending' && <span className="text-[#5A5A5A]/50">Standby</span>}
                 </div>
               </div>
             </div>
@@ -178,47 +190,33 @@ export const TransactionLifecycleTracker: React.FC<TransactionLifecycleTrackerPr
             : 'bg-[#FFFDF5] border-[rgba(43,43,43,0.1)] text-[#5A5A5A]'
         }`}>
           <div className="flex justify-between items-center mb-1">
-            <span className="text-xs text-[#5A5A5A] uppercase font-semibold">1. Ethereum Escrow</span>
-            {isEscrowLocked ? (
-              <Check className="w-4 h-4 text-[#607A3A]" />
-            ) : (
-              <Circle className="w-3.5 h-3.5 text-black/20" />
-            )}
+            <span className="text-xs text-[#5A5A5A] uppercase font-bold">Ethereum Escrow</span>
+            <Coins className="w-3.5 h-3.5 text-[#D4A017]" />
           </div>
-          <div className="font-bold text-[#2B2B2B] text-sm sm:text-base">
-            {intent ? `$${intent.sourceAmount} ${intent.sourceAsset}` : '$500 USDC'}
+          <div className="text-base font-bold text-[#2B2B2B] my-0.5">
+            ${intent?.sourceAmount || 500} USDC
           </div>
-          <span className={`text-xs mt-1 block font-bold ${isEscrowLocked ? 'text-[#607A3A]' : 'text-[#5A5A5A]'}`}>
-            {isEscrowLocked ? '✓ Funds in Escrow' : '○ Standby'}
-          </span>
+          <div className="text-[11px] text-[#607A3A] font-bold">
+            {isEscrowLocked ? 'Funds in Escrow' : 'Standby'}
+          </div>
         </div>
 
-        {/* Node 2: Solver Network */}
+        {/* Node 2: Solver Mesh */}
         <div className={`p-3.5 rounded-xl border transition-all ${
-          isExecuting
-            ? 'bg-[#F0C94C] border-[#D4A017] text-[#2B2B2B] shadow-md ring-2 ring-[#D4A017]/40'
-            : isDelivered
+          selectedBid
             ? 'bg-[#F7E7B5] border-[#D4A017]/40 text-[#2B2B2B] shadow-xs'
             : 'bg-[#FFFDF5] border-[rgba(43,43,43,0.1)] text-[#5A5A5A]'
         }`}>
           <div className="flex justify-between items-center mb-1">
-            <span className="text-xs text-[#5A5A5A] uppercase font-semibold">2. Solver Mesh</span>
-            {isExecuting ? (
-              <Loader2 className="w-4 h-4 text-[#2B2B2B] animate-spin" />
-            ) : isDelivered ? (
-              <Check className="w-4 h-4 text-[#607A3A]" />
-            ) : (
-              <Circle className="w-3.5 h-3.5 text-black/20" />
-            )}
+            <span className="text-xs text-[#5A5A5A] uppercase font-bold">Solver Mesh</span>
+            <Shield className="w-3.5 h-3.5 text-[#D4A017]" />
           </div>
-          <div className="font-bold text-[#2B2B2B] text-sm sm:text-base">
-            {selectedBid ? selectedBid.solverName.split('—')[0] : 'Solver B'}
+          <div className="text-base font-bold text-[#2B2B2B] my-0.5 truncate">
+            {selectedBid ? selectedBid.solverName.split('—')[0] : '3 Active Solvers'}
           </div>
-          <span className={`text-xs mt-1 block font-bold ${
-            isExecuting ? 'text-[#2B2B2B]' : isDelivered ? 'text-[#607A3A]' : 'text-[#5A5A5A]'
-          }`}>
-            {isExecuting ? '◉ Executing SVM Leg' : isDelivered ? '✓ Fulfilled' : '○ Standby'}
-          </span>
+          <div className="text-[11px] text-[#607A3A] font-bold">
+            {isExecuting ? 'Executing SVM Leg' : isDelivered ? 'Fulfilled' : 'Standby'}
+          </div>
         </div>
 
         {/* Node 3: Solana Destination */}
@@ -228,19 +226,15 @@ export const TransactionLifecycleTracker: React.FC<TransactionLifecycleTrackerPr
             : 'bg-[#FFFDF5] border-[rgba(43,43,43,0.1)] text-[#5A5A5A]'
         }`}>
           <div className="flex justify-between items-center mb-1">
-            <span className="text-xs text-[#5A5A5A] uppercase font-semibold">3. Solana Target</span>
-            {isDelivered ? (
-              <Check className="w-4 h-4 text-[#607A3A]" />
-            ) : (
-              <Circle className="w-3.5 h-3.5 text-black/20" />
-            )}
+            <span className="text-xs text-[#5A5A5A] uppercase font-bold">Solana Target</span>
+            <ArrowRight className="w-3.5 h-3.5 text-[#D4A017]" />
           </div>
-          <div className="font-bold text-[#D4A017] text-sm sm:text-base">
-            {selectedBid ? `$${selectedBid.expectedOutput} USDC` : '$497.82 USDC'}
+          <div className="text-base font-bold text-[#D4A017] my-0.5">
+            ${selectedBid?.expectedOutput || '497.82'} USDC
           </div>
-          <span className={`text-xs mt-1 block font-bold ${isDelivered ? 'text-[#607A3A]' : 'text-[#5A5A5A]'}`}>
-            {isDelivered ? '✓ Delivered on SVM' : '○ Awaiting Delivery'}
-          </span>
+          <div className="text-[11px] text-[#607A3A] font-bold">
+            {isDelivered ? 'Delivered on SVM' : 'Awaiting Delivery'}
+          </div>
         </div>
 
         {/* Node 4: Verification & Release */}
@@ -250,36 +244,21 @@ export const TransactionLifecycleTracker: React.FC<TransactionLifecycleTrackerPr
             : 'bg-[#FFFDF5] border-[rgba(43,43,43,0.1)] text-[#5A5A5A]'
         }`}>
           <div className="flex justify-between items-center mb-1">
-            <span className="text-xs text-[#5A5A5A] uppercase font-semibold">4. Verification & Release</span>
+            <span className="text-xs text-[#5A5A5A] uppercase font-bold">Verification & Release</span>
             {isVerified ? (
-              <Check className="w-4 h-4 text-[#607A3A]" />
+              <CheckCircle2 className="w-3.5 h-3.5 text-[#607A3A]" />
             ) : (
-              <Circle className="w-3.5 h-3.5 text-black/20" />
+              <Clock className="w-3.5 h-3.5 text-[#D4A017]" />
             )}
           </div>
-          <div className="font-bold text-[#2B2B2B] text-sm sm:text-base">
-            Dual-Consensus
+          <div className="text-base font-bold text-[#2B2B2B] my-0.5">
+            {isVerified ? 'Dual Consensus' : 'Optimistic'}
           </div>
-          <span className={`text-xs mt-1 block font-bold ${isVerified ? 'text-[#607A3A]' : 'text-[#5A5A5A]'}`}>
-            {isVerified ? '✓ Settlement Final' : '○ Pending Proof'}
-          </span>
+          <div className="text-[11px] text-[#607A3A] font-bold">
+            {isVerified ? 'Settlement Final' : 'Pending Proof'}
+          </div>
         </div>
       </div>
-
-      {/* Failure Alert Banner */}
-      {isFailed && (
-        <div className="bg-[#B84A39]/15 border-2 border-[#B84A39] rounded-xl p-4 flex items-start gap-3 text-xs text-[#B84A39] font-mono animate-in fade-in duration-200">
-          <AlertCircle className="w-5 h-5 text-[#B84A39] shrink-0 mt-0.5" />
-          <div className="space-y-1">
-            <span className="font-bold text-[#B84A39] uppercase tracking-wider block">
-              Execution Failure Detected at Step {currentIdx + 1}
-            </span>
-            <p className="text-[#5A5A5A] text-xs font-sans">
-              {failureReason || 'Solver failed to confirm destination delivery before the deadline.'}
-            </p>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

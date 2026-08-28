@@ -31,8 +31,9 @@ export const HybridVerificationPanel: React.FC<HybridVerificationPanelProps> = (
               <span className="text-xs uppercase font-mono tracking-widest text-[#D4A017] font-bold">
                 Settlement Verification Panel
               </span>
-              <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-[#F7E7B5] text-[#2B2B2B] border border-[#D4A017]/30 font-mono font-bold">
-                {isOptimistic ? '● Optimistic Challenge Guard' : '◆ Cryptographic Oracle Attestation'}
+              <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-[#F7E7B5] text-[#2B2B2B] border border-[#D4A017]/30 font-mono font-bold flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#D4A017]" />
+                <span>{isOptimistic ? 'Optimistic Challenge Guard' : 'Cryptographic Oracle Attestation'}</span>
               </span>
             </div>
             <h3 className="text-sm sm:text-base font-bold text-[#2B2B2B] font-headline mt-0.5">
@@ -59,7 +60,7 @@ export const HybridVerificationPanel: React.FC<HybridVerificationPanelProps> = (
               </div>
               <div className="flex items-center gap-2 text-xs text-[#607A3A] font-bold">
                 <span className="w-2 h-2 rounded-full bg-[#607A3A] animate-pulse" />
-                <span>✓ No challenges detected on-chain</span>
+                <span>No challenges detected on-chain</span>
               </div>
             </div>
 

@@ -50,7 +50,7 @@ export const FinalSettlementRecordCard: React.FC<FinalSettlementRecordCardProps>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
               <h2 className="text-xl sm:text-2xl font-bold text-[#2B2B2B] font-headline tracking-tight">
-                ✓ INTENT SUCCESSFULLY SETTLED
+                INTENT SUCCESSFULLY SETTLED
               </h2>
               <span className="text-xs uppercase font-mono font-bold px-3 py-1 rounded-full bg-[#D4A017] text-[#2B2B2B] shadow-xs">
                 Finalized On-Chain
@@ -143,8 +143,9 @@ export const FinalSettlementRecordCard: React.FC<FinalSettlementRecordCardProps>
             </button>
           </div>
 
-          <span className="text-[10px] text-[#CEF26D] font-bold bg-white/10 px-2.5 py-0.5 rounded-full hidden md:inline">
-            ● Verified On-Chain
+          <span className="text-[10px] text-[#CEF26D] font-bold bg-white/10 px-2.5 py-0.5 rounded-full hidden md:inline flex items-center gap-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#CEF26D]" />
+            <span>Verified On-Chain</span>
           </span>
         </div>
 
@@ -208,7 +209,7 @@ export const FinalSettlementRecordCard: React.FC<FinalSettlementRecordCardProps>
                   <span>6. VERIFICATION</span>
                   <span>Dual-Consensus</span>
                 </div>
-                <p className="text-xs text-[#CEF26D] font-bold">✓ Confirmed</p>
+                <p className="text-xs text-[#CEF26D] font-bold">Confirmed</p>
                 <p className="text-[10px] text-[#888]">Optimistic + ZK Proof</p>
               </div>
 
@@ -218,7 +219,7 @@ export const FinalSettlementRecordCard: React.FC<FinalSettlementRecordCardProps>
                   <span>7. SETTLEMENT</span>
                   <span>Finalized</span>
                 </div>
-                <p className="text-xs text-[#CEF26D] font-bold">✓ Payout Unlocked</p>
+                <p className="text-xs text-[#CEF26D] font-bold">Payout Unlocked</p>
                 <p className="text-[10px] text-[#888]">Bond Returned + Fee</p>
               </div>
 

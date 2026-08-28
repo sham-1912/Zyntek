@@ -310,7 +310,7 @@ export const GanacheBlockLedgerDrawer: React.FC<GanacheBlockLedgerDrawerProps> =
 
                       <div className="text-[10px] text-[#FFFDF5]/50 border-t border-white/10 pt-2 flex justify-between">
                         <span>Parent Hash: {b.parentHash.slice(0, 14)}...</span>
-                        <span>State Root Verified ✓</span>
+                        <span>State Root Verified</span>
                       </div>
                     </div>
                   )}

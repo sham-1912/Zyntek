@@ -138,7 +138,7 @@ export const PipelineStatusTracker: React.FC<PipelineStatusTrackerProps> = ({
                 <div className="mt-1">
                   {isCompleted && (
                     <span className="text-[9px] font-mono text-[#D1FE5D] font-bold">
-                      ✓ Completed
+                      Completed
                     </span>
                   )}
                   {isActive && (
@@ -149,7 +149,7 @@ export const PipelineStatusTracker: React.FC<PipelineStatusTrackerProps> = ({
                   )}
                   {isUpcoming && (
                     <span className="text-[9px] font-mono text-[#A5A5B8]">
-                      ○ Upcoming
+                      Upcoming
                     </span>
                   )}
                 </div>

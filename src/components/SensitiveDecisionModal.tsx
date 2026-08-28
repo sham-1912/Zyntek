@@ -42,8 +42,8 @@ export const SensitiveDecisionModal: React.FC<SensitiveDecisionModalProps> = ({
             <div className="flex items-center gap-2 flex-wrap">
               <h3 className="text-lg sm:text-xl font-bold text-[#2B2B2B] font-headline">
                 {isHighValue && !isAmbiguous
-                  ? '⚠ HIGH-VALUE TRANSFER DETECTED'
-                  : '⚠ SENSITIVE DECISION REQUIRED: TIE DETECTED'}
+                  ? 'HIGH-VALUE TRANSFER DETECTED'
+                  : 'SENSITIVE DECISION REQUIRED: TIE DETECTED'}
               </h3>
               <span className="text-xs uppercase font-mono font-bold px-2.5 py-0.5 rounded-full bg-[#D4A017] text-[#2B2B2B] shadow-xs">
                 User Sign-Off Gate

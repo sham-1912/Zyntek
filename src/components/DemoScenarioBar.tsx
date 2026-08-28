@@ -1,5 +1,5 @@
 import React from 'react';
-import { Play, AlertTriangle, ShieldCheck, AlertOctagon, Sparkles, ShieldAlert, RefreshCw } from 'lucide-react';
+import { Play, AlertTriangle, ShieldCheck, AlertOctagon, Sparkles, ShieldAlert, RefreshCw, Compass } from 'lucide-react';
 
 export type DemoScenarioType = 'happy_path' | 'ambiguous' | 'high_value' | 'solver_failure' | 'risk_audit';
 
@@ -7,19 +7,23 @@ interface DemoScenarioBarProps {
   activeScenario: DemoScenarioType | null;
   onSelectScenario: (scenario: DemoScenarioType) => void;
   onResetState?: () => void;
+  isAutoNavEnabled?: boolean;
+  onToggleAutoNav?: () => void;
 }
 
 export const DemoScenarioBar: React.FC<DemoScenarioBarProps> = ({
   activeScenario,
   onSelectScenario,
   onResetState,
+  isAutoNavEnabled = true,
+  onToggleAutoNav,
 }) => {
   return (
     <div className="glass-card p-5 space-y-3.5 shadow-md border border-[rgba(43,43,43,0.12)] bg-[#FFFDF5]">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[rgba(43,43,43,0.08)] pb-3">
         <div className="flex items-center gap-2.5">
-          <div className="w-6 h-6 rounded-lg bg-[#2B2B2B] text-[#D4A017] flex items-center justify-center shadow-xs">
-            <Sparkles className="w-3.5 h-3.5 fill-current" />
+          <div className="w-7 h-7 rounded-lg bg-[#2B2B2B] text-[#D4A017] flex items-center justify-center shadow-xs">
+            <Sparkles className="w-4 h-4 fill-current" />
           </div>
           <div>
             <h3 className="text-xs sm:text-sm font-bold text-[#2B2B2B] uppercase font-headline tracking-wider">
@@ -31,11 +35,28 @@ export const DemoScenarioBar: React.FC<DemoScenarioBarProps> = ({
           </div>
         </div>
         
-        <div className="flex items-center gap-3 self-start sm:self-auto">
+        <div className="flex items-center gap-2.5 flex-wrap self-start sm:self-auto">
+          {/* Auto-Navigation Toggle Button */}
+          {onToggleAutoNav && (
+            <button
+              type="button"
+              onClick={onToggleAutoNav}
+              className={`px-3 py-1.5 rounded-xl border text-xs font-mono font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-xs ${
+                isAutoNavEnabled
+                  ? 'bg-[#2B2B2B] text-[#F0C94C] border-[#D4A017]'
+                  : 'bg-[#FFFDF5] text-[#5A5A5A] hover:bg-[#F7E7B5]/60 border-[rgba(43,43,43,0.15)]'
+              }`}
+              title="Toggle automatic smooth page navigation between lifecycle stages"
+            >
+              <Compass className={`w-3.5 h-3.5 ${isAutoNavEnabled ? 'text-[#F0C94C] animate-spin-slow' : 'text-[#888]'}`} />
+              <span>Auto-Tour: {isAutoNavEnabled ? 'ON' : 'OFF'}</span>
+            </button>
+          )}
+
           {activeScenario && (
-            <span className="text-[11px] font-mono font-bold px-2.5 py-1 rounded-full bg-[#607A3A]/15 text-[#607A3A] border border-[#607A3A]/30 flex items-center gap-1.5 animate-pulse">
-              <span className="w-2 h-2 rounded-full bg-[#607A3A]" />
-              Scenario Armed & Active
+            <span className="text-[11px] font-mono font-bold px-2.5 py-1 rounded-full bg-[#607A3A]/15 text-[#607A3A] border border-[#607A3A]/30 flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-[#607A3A] animate-pulse" />
+              <span>Scenario Active</span>
             </span>
           )}
 
@@ -78,7 +99,10 @@ export const DemoScenarioBar: React.FC<DemoScenarioBarProps> = ({
             Optimistic verification & instant dual-chain settlement
           </span>
           {activeScenario === 'happy_path' && (
-            <div className="mt-2 text-[10px] text-[#CEF26D] font-bold font-mono">● CURRENTLY RUNNING</div>
+            <div className="mt-2 text-[10px] text-[#CEF26D] font-bold font-mono flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#CEF26D] animate-ping" />
+              <span>CURRENTLY RUNNING</span>
+            </div>
           )}
         </button>
 
@@ -106,7 +130,10 @@ export const DemoScenarioBar: React.FC<DemoScenarioBarProps> = ({
             Tied scores trigger user sign-off decision gate
           </span>
           {activeScenario === 'ambiguous' && (
-            <div className="mt-2 text-[10px] text-[#CEF26D] font-bold font-mono">● CURRENTLY RUNNING</div>
+            <div className="mt-2 text-[10px] text-[#CEF26D] font-bold font-mono flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#CEF26D] animate-ping" />
+              <span>CURRENTLY RUNNING</span>
+            </div>
           )}
         </button>
 
@@ -134,7 +161,10 @@ export const DemoScenarioBar: React.FC<DemoScenarioBarProps> = ({
             ZK-Oracle Groth16 proof & manual authorization
           </span>
           {activeScenario === 'high_value' && (
-            <div className="mt-2 text-[10px] text-[#CEF26D] font-bold font-mono">● CURRENTLY RUNNING</div>
+            <div className="mt-2 text-[10px] text-[#CEF26D] font-bold font-mono flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#CEF26D] animate-ping" />
+              <span>CURRENTLY RUNNING</span>
+            </div>
           )}
         </button>
 
@@ -162,7 +192,10 @@ export const DemoScenarioBar: React.FC<DemoScenarioBarProps> = ({
             Full $500 bond slashed & user 100% refunded
           </span>
           {activeScenario === 'solver_failure' && (
-            <div className="mt-2 text-[10px] text-[#B84A39] font-bold font-mono">● CURRENTLY RUNNING</div>
+            <div className="mt-2 text-[10px] text-[#B84A39] font-bold font-mono flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#B84A39] animate-ping" />
+              <span>CURRENTLY RUNNING</span>
+            </div>
           )}
         </button>
 
@@ -190,7 +223,10 @@ export const DemoScenarioBar: React.FC<DemoScenarioBarProps> = ({
             Inspect coordinated bidding anomaly report
           </span>
           {activeScenario === 'risk_audit' && (
-            <div className="mt-2 text-[10px] text-[#CEF26D] font-bold font-mono">● CURRENTLY RUNNING</div>
+            <div className="mt-2 text-[10px] text-[#CEF26D] font-bold font-mono flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#CEF26D] animate-ping" />
+              <span>CURRENTLY RUNNING</span>
+            </div>
           )}
         </button>
       </div>

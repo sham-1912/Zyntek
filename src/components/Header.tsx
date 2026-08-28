@@ -55,22 +55,22 @@ export const Header: React.FC<HeaderProps> = ({
     switch (stage) {
       case 'intent':
       case 'escrow':
-        return { label: '● ESCROW LOCKING ($500 USDC)', color: 'bg-[#D4A017] text-[#2B2B2B]' };
+        return { label: 'ESCROW LOCKING ($500 USDC)', color: 'bg-[#D4A017] text-[#2B2B2B]' };
       case 'auction':
-        return { label: '● SOLVER AUCTION OPEN (3 Competing)', color: 'bg-[#F0C94C] text-[#2B2B2B]' };
+        return { label: 'SOLVER AUCTION OPEN (3 Competing)', color: 'bg-[#F0C94C] text-[#2B2B2B]' };
       case 'winner':
       case 'commitment':
-        return { label: '● BOND POSTED ($500 Collateral at Risk)', color: 'bg-[#D4A017] text-[#2B2B2B]' };
+        return { label: 'BOND POSTED ($500 Collateral at Risk)', color: 'bg-[#D4A017] text-[#2B2B2B]' };
       case 'execution':
-        return { label: '● EXECUTING (Solana SVM Relayer)', color: 'bg-[#D4A017] text-[#2B2B2B]' };
+        return { label: 'EXECUTING (Solana SVM Relayer)', color: 'bg-[#D4A017] text-[#2B2B2B]' };
       case 'verifying':
-        return { label: '● VERIFYING (Dual-Consensus Window)', color: 'bg-[#F0C94C] text-[#2B2B2B]' };
+        return { label: 'VERIFYING (Dual-Consensus Window)', color: 'bg-[#F0C94C] text-[#2B2B2B]' };
       case 'settlement':
-        return { label: '✓ INTENT SETTLED (Cryptographically Verified)', color: 'bg-[#607A3A] text-[#FFFDF5]' };
+        return { label: 'INTENT SETTLED (Cryptographically Verified)', color: 'bg-[#607A3A] text-[#FFFDF5]' };
       case 'slashed_refunded':
-        return { label: '❌ FAILED & SLASHED (100% User Refunded)', color: 'bg-[#B84A39] text-[#FFFDF5]' };
+        return { label: 'FAILED & SLASHED (100% User Refunded)', color: 'bg-[#B84A39] text-[#FFFDF5]' };
       default:
-        return { label: '● LIVE (3/3 Solvers · $124.8K Capital)', color: 'bg-[#242424] text-[#CEF26D] border border-white/10' };
+        return { label: 'LIVE (3/3 Solvers · $124.8K Capital)', color: 'bg-[#242424] text-[#CEF26D] border border-white/10' };
     }
   };
 
@@ -214,12 +214,15 @@ export const Header: React.FC<HeaderProps> = ({
               }`}
             >
               {viewMode === 'user'
-                ? '👤 USER INTENT PERSPECTIVE — Outcome Specification & Dual-Chain Settlement'
-                : '🤖 SOLVER NETWORK PERSPECTIVE — Competing Solver Mesh, Collusion Monitor & Liquidity'}
+                ? 'USER INTENT PERSPECTIVE — Outcome Specification & Dual-Chain Settlement'
+                : 'SOLVER NETWORK PERSPECTIVE — Competing Solver Mesh, Collusion Monitor & Liquidity'}
             </span>
           </div>
 
-          <span className="text-[#607A3A] font-bold hidden sm:inline">● Ganache Node Active #1337</span>
+          <span className="text-[#607A3A] font-bold hidden sm:inline flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-[#607A3A]" />
+            <span>Ganache Node Active #1337</span>
+          </span>
         </div>
       </header>
     </div>

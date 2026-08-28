@@ -165,7 +165,7 @@ export const SolverDashboard: React.FC<SolverDashboardProps> = () => {
           <div className="flex items-center gap-3">
             <span className="flex items-center gap-1.5 text-xs font-mono text-[#2B2B2B] bg-[#F7E7B5] px-3 py-1.5 rounded-xl border border-[#D4A017]/30 font-bold shadow-xs">
               <span className="w-2 h-2 rounded-full bg-[#607A3A] animate-pulse" />
-              ● 3 / 3 Solvers Online
+              <span>3 / 3 Solvers Online</span>
             </span>
 
             <button
@@ -241,7 +241,7 @@ export const SolverDashboard: React.FC<SolverDashboardProps> = () => {
                         <h3 className="text-sm font-bold text-[#2B2B2B] font-mono">{solver.name}</h3>
                         {solver.isSelectedWinner && (
                           <span className="text-[10px] font-bold bg-[#D4A017] text-[#2B2B2B] px-2 py-0.2 rounded-full uppercase">
-                            ✓ Selected Winner
+                            Selected Winner
                           </span>
                         )}
                       </div>
@@ -609,7 +609,7 @@ export const SolverDashboard: React.FC<SolverDashboardProps> = () => {
             </div>
             <div className="bg-[#F7E7B5]/60 p-3 rounded-xl border border-[rgba(43,43,43,0.08)]">
               <span className="text-[10px] text-[#5A5A5A] block">Posted Bond</span>
-              <span className="text-base font-bold text-[#607A3A] mt-0.5 block">$500 ✓</span>
+              <span className="text-base font-bold text-[#607A3A] mt-0.5 block">$500 Staked</span>
             </div>
             <div className="bg-[#F7E7B5]/60 p-3 rounded-xl border border-[rgba(43,43,43,0.08)]">
               <span className="text-[10px] text-[#5A5A5A] block">Capital At Risk</span>
@@ -624,11 +624,11 @@ export const SolverDashboard: React.FC<SolverDashboardProps> = () => {
             </span>
             <div className="text-[#5A5A5A] text-[11px] space-y-1.5">
               <div className="flex items-start gap-1.5">
-                <span className="text-[#607A3A] font-bold">✓ FULFILLED:</span>
+                <span className="text-[#607A3A] font-bold">FULFILLED:</span>
                 <span>Bond unlocked & returned + solver receives agreed $1.20 routing fee.</span>
               </div>
               <div className="flex items-start gap-1.5">
-                <span className="text-[#B84A39] font-bold">❌ FAILED:</span>
+                <span className="text-[#B84A39] font-bold">FAILED:</span>
                 <span>Full $500 bond slashed instantly + user 100% refunded + reputation penalized (-25 pts).</span>
               </div>
             </div>
@@ -658,12 +658,12 @@ export const SolverDashboard: React.FC<SolverDashboardProps> = () => {
           <div className="space-y-2.5 font-mono text-xs">
             <div className="flex justify-between items-center bg-[#F7E7B5]/50 p-3 rounded-xl">
               <span>SOLVER A:</span>
-              <span className="text-[#607A3A] font-bold">✓ Normal bidding behavior</span>
+              <span className="text-[#607A3A] font-bold">Normal bidding behavior</span>
             </div>
 
             <div className="flex justify-between items-center bg-[#F7E7B5]/50 p-3 rounded-xl">
               <span>SOLVER B:</span>
-              <span className="text-[#607A3A] font-bold">✓ No anomalies detected</span>
+              <span className="text-[#607A3A] font-bold">No anomalies detected</span>
             </div>
 
             {/* Solver C Anomaly Flag (Refinement #3) */}
@@ -674,7 +674,7 @@ export const SolverDashboard: React.FC<SolverDashboardProps> = () => {
               <div>
                 <span className="font-bold text-[#2B2B2B]">SOLVER C:</span>
                 <span className="text-[#B84A39] font-bold block text-[11px]">
-                  ⚠ 87.4% bid similarity across 4 intents — Review recommended
+                  87.4% bid similarity across 4 intents — Review recommended
                 </span>
               </div>
               <span className="text-xs text-[#D4A017] font-bold underline">Review Evidence →</span>
@@ -692,7 +692,7 @@ export const SolverDashboard: React.FC<SolverDashboardProps> = () => {
               </h3>
             </div>
             <span className="text-xs font-mono font-bold text-[#607A3A] bg-[#607A3A]/15 px-2.5 py-1 rounded-lg">
-              ● Relayer Stream
+              Relayer Stream
             </span>
           </div>
 
@@ -718,7 +718,7 @@ export const SolverDashboard: React.FC<SolverDashboardProps> = () => {
                 <AlertTriangle className="w-6 h-6 text-[#D4A017]" />
                 <div>
                   <h3 className="text-base font-bold text-[#2B2B2B] font-headline uppercase">
-                    ⚠ COORDINATED BIDDING SIGNAL EVIDENCE
+                    COORDINATED BIDDING SIGNAL EVIDENCE
                   </h3>
                   <p className="text-xs text-[#5A5A5A]">Solver C Anomaly Pattern Analysis</p>
                 </div>
@@ -868,7 +868,10 @@ export const SolverDashboard: React.FC<SolverDashboardProps> = () => {
 
             {/* Footer */}
             <div className="flex items-center justify-between border-t border-[rgba(43,43,43,0.08)] pt-4 text-xs font-mono">
-              <span className="text-[#607A3A] font-bold">● Active Protocol Agent</span>
+              <span className="text-[#607A3A] font-bold flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-[#607A3A]" />
+                <span>Active Protocol Agent</span>
+              </span>
               <button
                 type="button"
                 onClick={() => setSelectedProfile(null)}

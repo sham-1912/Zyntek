@@ -29,7 +29,7 @@ export const CrossChainVisualizer: React.FC<CrossChainVisualizerProps> = ({
           </h3>
         </div>
         <span className="text-[10px] font-mono text-[#CEF26D] font-bold">
-          {stage === 'settlement' || stage === 'settled' ? '✓ Settled' : stage !== 'idle' ? '◉ Live' : '○ Standby'}
+          {stage === 'settlement' || stage === 'settled' ? 'Settled' : stage !== 'idle' ? 'Live' : 'Standby'}
         </span>
       </div>
 
@@ -53,7 +53,7 @@ export const CrossChainVisualizer: React.FC<CrossChainVisualizerProps> = ({
             {intent ? `$${intent.sourceAmount} ${intent.sourceAsset}` : '500 USDC'}
           </div>
           <span className={`text-[10px] mt-1 block font-bold ${isEscrowLocked ? 'text-[#CEF26D]' : 'text-[#CBD5E1]'}`}>
-            {isEscrowLocked ? '✓ Funds in Escrow' : '○ Awaiting Deposit'}
+            {isEscrowLocked ? 'Funds in Escrow' : 'Awaiting Deposit'}
           </span>
         </div>
 
@@ -81,7 +81,7 @@ export const CrossChainVisualizer: React.FC<CrossChainVisualizerProps> = ({
           <span className={`text-[10px] mt-1 block font-bold ${
             isExecuting ? 'text-[#8DC2FF]' : isDelivered ? 'text-[#CEF26D]' : 'text-[#CBD5E1]'
           }`}>
-            {isExecuting ? '◉ Executing Leg' : isDelivered ? '✓ Fulfill Completed' : '○ Standby'}
+            {isExecuting ? 'Executing Leg' : isDelivered ? 'Fulfill Completed' : 'Standby'}
           </span>
         </div>
 
@@ -103,7 +103,7 @@ export const CrossChainVisualizer: React.FC<CrossChainVisualizerProps> = ({
             {selectedBid ? `~$${selectedBid.expectedOutput} USDC` : '~496.50 USDC'}
           </div>
           <span className={`text-[10px] mt-1 block font-bold ${isDelivered ? 'text-[#CEF26D]' : 'text-[#CBD5E1]'}`}>
-            {isDelivered ? '✓ Delivered' : '○ Awaiting Delivery'}
+            {isDelivered ? 'Delivered' : 'Awaiting Delivery'}
           </span>
         </div>
 
@@ -125,7 +125,7 @@ export const CrossChainVisualizer: React.FC<CrossChainVisualizerProps> = ({
             Optimistic / ZK
           </div>
           <span className={`text-[10px] mt-1 block font-bold ${isVerified ? 'text-[#CEF26D]' : 'text-[#CBD5E1]'}`}>
-            {isVerified ? '✓ Settlement Final' : '○ Pending Proof'}
+            {isVerified ? 'Settlement Final' : 'Pending Proof'}
           </span>
         </div>
       </div>

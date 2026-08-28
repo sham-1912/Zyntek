@@ -1,5 +1,5 @@
 import React from 'react';
-import { AlertOctagon, ShieldCheck, UserCheck, AlertTriangle, ArrowRight, RefreshCw, CheckCircle2 } from 'lucide-react';
+import { AlertOctagon, ShieldCheck, UserCheck, AlertTriangle, ArrowRight, RefreshCw, CheckCircle2, Check } from 'lucide-react';
 
 interface FailureSlashingPanelProps {
   solverName: string;
@@ -32,7 +32,7 @@ export const FailureSlashingPanel: React.FC<FailureSlashingPanelProps> = ({
               </span>
             </div>
             <h3 className="text-base sm:text-lg font-bold text-[#B84A39] font-headline mt-0.5">
-              ❌ SOLVER FAILURE — COLLATERAL SLASHED & USER REFUNDED
+              SOLVER FAILURE — COLLATERAL SLASHED & USER REFUNDED
             </h3>
           </div>
         </div>
@@ -109,15 +109,15 @@ export const FailureSlashingPanel: React.FC<FailureSlashingPanelProps> = ({
           </div>
           <div className="space-y-1 text-[#5A5A5A] text-xs">
             <div className="flex items-center gap-1.5 text-[#607A3A]">
-              <span>✓</span>
+              <Check className="w-3.5 h-3.5 stroke-[2.5]" />
               <span>Escrow Protected: ${escrowAmountUsd} USDC</span>
             </div>
             <div className="flex items-center gap-1.5 text-[#607A3A]">
-              <span>✓</span>
+              <Check className="w-3.5 h-3.5 stroke-[2.5]" />
               <span>Automatic 100% Refund Released</span>
             </div>
             <div className="flex items-center gap-1.5 text-[#607A3A]">
-              <span>✓</span>
+              <Check className="w-3.5 h-3.5 stroke-[2.5]" />
               <span>Zero Capital Loss Incurred</span>
             </div>
           </div>
