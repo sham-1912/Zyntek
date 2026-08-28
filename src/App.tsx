@@ -372,7 +372,7 @@ export default function App() {
     startLifecycleSequence(demoIntent, scenario);
   };
 
-  // Hard Reset: Clears simulation state completely
+  // Hard Reset: Clears simulation state completely & resets ledger to Block #0
   const handleHardReset = () => {
     clearAllTimeouts();
     setCurrentIntent(null);
@@ -388,7 +388,8 @@ export default function App() {
     setActiveScenario(null);
     setSourceAmount(500);
     setSliders({ cost: 50, speed: 30, safety: 20 });
-    addLog('PROTOCOL STATE RESET: Clean baseline restored across all variables', 'info');
+    ganacheLedger.resetLedger(0);
+    addLog('PROTOCOL STATE RESET: Block ledger reset to #0 & clean baseline restored', 'info');
   };
 
   // Cleanup on unmount
