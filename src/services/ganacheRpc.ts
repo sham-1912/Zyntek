@@ -186,10 +186,13 @@ export async function sendDirectGanacheTransaction(label: string): Promise<{
   return sendZyntekTransaction({ stage, intentId: label.slice(0, 32), amountUsdc: 500 });
 }
 
-// Convert string to bytes32 hex (padded)
+// Convert string to bytes32 hex (padded) — browser safe (no Node Buffer)
 function toBytes32(str: string): string {
-  const hex = Buffer.from(str.slice(0, 32).padEnd(32, '\0')).toString('hex');
-  return '0x' + hex;
+  const encoder = new TextEncoder();
+  const bytes = encoder.encode(str.slice(0, 32));
+  const padded = new Uint8Array(32);
+  padded.set(bytes);
+  return '0x' + Array.from(padded).map((b) => b.toString(16).padStart(2, '0')).join('');
 }
 
 export async function testGanacheConnection(): Promise<boolean> {
