@@ -22,20 +22,18 @@ export const WhySolverWonCard: React.FC<WhySolverWonCardProps> = ({
   const safetyContrib = activeBid ? Number((activeBid.subScores.safetyScore * (sliders.safety / 100)).toFixed(1)) : 0;
 
   return (
-    <div className="glass-card p-6 space-y-4 shadow-md flex flex-col justify-start h-full border border-[rgba(43,43,43,0.12)]">
+    <div className="glass-card p-6 flex flex-col justify-start h-full border border-[rgba(43,43,43,0.12)] space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between border-b border-[rgba(43,43,43,0.08)] pb-3">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-[#D4A017] flex items-center justify-center text-[#2B2B2B] shadow-xs">
-            <Award className="w-5 h-5" />
+          <div className="w-8 h-8 rounded-lg bg-[#D4A017] flex items-center justify-center text-[#2B2B2B] shadow-xs shrink-0">
+            <Award className="w-4 h-4" />
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <h3 className="text-xs sm:text-sm font-bold text-[#2B2B2B] font-headline uppercase tracking-wider">
-                {winningBid ? `Why ${winningBid.solverName.split('—')[0]} Won` : activeBid ? `Leading Bid Evaluation` : 'Competitive Scoring Formula'}
-              </h3>
-            </div>
-            <p className="text-xs text-[#5A5A5A] mt-0.5 font-sans">
+            <h3 className="text-xs sm:text-sm font-bold text-[#2B2B2B] font-headline uppercase tracking-wider">
+              {winningBid ? `Why ${winningBid.solverName.split('—')[0]} Won` : activeBid ? `Leading Bid Evaluation` : 'Competitive Scoring Formula'}
+            </h3>
+            <p className="text-xs text-[#5A5A5A] font-sans">
               {activeBid ? `Dynamic Score: ${activeBid.finalScore.toFixed(1)} / 100` : 'Deterministic multi-attribute weighting'}
             </p>
           </div>
@@ -44,43 +42,43 @@ export const WhySolverWonCard: React.FC<WhySolverWonCardProps> = ({
         <button
           type="button"
           onClick={() => setIsOpen(!isOpen)}
-          className="px-3 py-1.5 rounded-lg bg-[#F7E7B5] text-xs font-mono text-[#2B2B2B] flex items-center gap-1 hover:bg-[#F0C94C]/40 transition-all cursor-pointer border border-[rgba(43,43,43,0.08)] shadow-xs font-semibold"
+          className="px-2.5 py-1 rounded-lg bg-[#F7E7B5] text-xs font-mono text-[#2B2B2B] flex items-center gap-1 hover:bg-[#F0C94C]/40 transition-all cursor-pointer border border-[rgba(43,43,43,0.08)] shadow-xs font-semibold"
         >
           <span>{isOpen ? 'Less' : 'More'}</span>
           {isOpen ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
         </button>
       </div>
 
-      {/* User Priority Weights Connection */}
-      <div className="glass-sub-box p-3.5 space-y-2 bg-[#F7E7B5]/60 border border-[rgba(43,43,43,0.1)]">
-        <div className="flex items-center justify-between text-[#2B2B2B] font-bold text-xs font-mono">
+      {/* User Priority Weights Connection: Clean compact inside, spacious between */}
+      <div className="glass-sub-box p-2.5 space-y-2 bg-[#F7E7B5]/60 border border-[rgba(43,43,43,0.1)]">
+        <div className="flex items-center justify-between text-[#2B2B2B] font-bold text-xs font-mono px-0.5">
           <span className="flex items-center gap-1.5">
-            <Sparkles className="w-4 h-4 text-[#D4A017]" />
+            <Sparkles className="w-3.5 h-3.5 text-[#D4A017]" />
             Active Priority Weights:
           </span>
           <span className="text-[#5A5A5A] text-[11px]">100% Normalized</span>
         </div>
 
-        <div className="grid grid-cols-3 gap-2.5 text-center text-xs font-mono">
-          <div className="bg-[#FFFDF5] p-2 rounded-lg border border-[rgba(43,43,43,0.08)] shadow-xs">
+        <div className="grid grid-cols-3 gap-2 text-center text-xs font-mono">
+          <div className="bg-[#FFFDF5] py-1.5 px-2 rounded-lg border border-[rgba(43,43,43,0.08)] shadow-xs">
             <span className="text-[11px] text-[#5A5A5A] block font-semibold">Cost</span>
-            <span className="text-[#D4A017] font-bold text-sm">{sliders.cost}%</span>
+            <span className="text-[#D4A017] font-bold text-sm leading-tight">{sliders.cost}%</span>
           </div>
-          <div className="bg-[#FFFDF5] p-2 rounded-lg border border-[rgba(43,43,43,0.08)] shadow-xs">
+          <div className="bg-[#FFFDF5] py-1.5 px-2 rounded-lg border border-[rgba(43,43,43,0.08)] shadow-xs">
             <span className="text-[11px] text-[#5A5A5A] block font-semibold">Speed</span>
-            <span className="text-[#2B2B2B] font-bold text-sm">{sliders.speed}%</span>
+            <span className="text-[#2B2B2B] font-bold text-sm leading-tight">{sliders.speed}%</span>
           </div>
-          <div className="bg-[#FFFDF5] p-2 rounded-lg border border-[rgba(43,43,43,0.08)] shadow-xs">
+          <div className="bg-[#FFFDF5] py-1.5 px-2 rounded-lg border border-[rgba(43,43,43,0.08)] shadow-xs">
             <span className="text-[11px] text-[#5A5A5A] block font-semibold">Safety</span>
-            <span className="text-[#2B2B2B] font-bold text-sm">{sliders.safety}%</span>
+            <span className="text-[#2B2B2B] font-bold text-sm leading-tight">{sliders.safety}%</span>
           </div>
         </div>
       </div>
 
-      {/* Mathematical Score Contributions */}
+      {/* Mathematical Score Contributions: Compact inner tiles, well-spaced from surrounding */}
       {activeBid && (
         <div className="grid grid-cols-3 gap-2.5 font-mono text-xs">
-          <div className="bg-[#FFFDF5] p-2.5 space-y-1 rounded-lg border border-[rgba(43,43,43,0.08)] shadow-xs">
+          <div className="bg-[#FFFDF5] p-2 space-y-0.5 rounded-lg border border-[rgba(43,43,43,0.08)] shadow-xs">
             <div className="flex justify-between items-center text-[#D4A017] font-bold text-xs">
               <span className="flex items-center gap-1">
                 <DollarSign className="w-3.5 h-3.5" /> Cost
@@ -93,7 +91,7 @@ export const WhySolverWonCard: React.FC<WhySolverWonCardProps> = ({
             </div>
           </div>
 
-          <div className="bg-[#FFFDF5] p-2.5 space-y-1 rounded-lg border border-[rgba(43,43,43,0.08)] shadow-xs">
+          <div className="bg-[#FFFDF5] p-2 space-y-0.5 rounded-lg border border-[rgba(43,43,43,0.08)] shadow-xs">
             <div className="flex justify-between items-center text-[#2B2B2B] font-bold text-xs">
               <span className="flex items-center gap-1">
                 <Zap className="w-3.5 h-3.5 text-[#F0C94C]" /> Speed
@@ -106,7 +104,7 @@ export const WhySolverWonCard: React.FC<WhySolverWonCardProps> = ({
             </div>
           </div>
 
-          <div className="bg-[#FFFDF5] p-2.5 space-y-1 rounded-lg border border-[rgba(43,43,43,0.08)] shadow-xs">
+          <div className="bg-[#FFFDF5] p-2 space-y-0.5 rounded-lg border border-[rgba(43,43,43,0.08)] shadow-xs">
             <div className="flex justify-between items-center text-[#2B2B2B] font-bold text-xs">
               <span className="flex items-center gap-1">
                 <Shield className="w-3.5 h-3.5 text-[#2B2B2B]" /> Safety
@@ -121,13 +119,13 @@ export const WhySolverWonCard: React.FC<WhySolverWonCardProps> = ({
         </div>
       )}
 
-      {/* Key Winning Drivers Checklist */}
+      {/* Key Winning Drivers Checklist: Sleek compact list */}
       {isOpen && activeBid && (
-        <div className="glass-sub-box p-3.5 space-y-2 text-xs font-mono animate-in fade-in duration-200 bg-[#F7E7B5]/40 border border-[rgba(43,43,43,0.08)]">
-          <span className="text-xs font-bold text-[#2B2B2B] uppercase tracking-wider block">
+        <div className="glass-sub-box p-2.5 space-y-1.5 text-xs font-mono animate-in fade-in duration-200 bg-[#F7E7B5]/40 border border-[rgba(43,43,43,0.08)]">
+          <span className="text-xs font-bold text-[#2B2B2B] uppercase tracking-wider block px-0.5">
             Competitive Drivers:
           </span>
-          <div className="space-y-1.5 text-[#5A5A5A]">
+          <div className="space-y-1 text-[#5A5A5A]">
             <div className="flex items-center gap-2">
               <Check className="w-3.5 h-3.5 text-[#607A3A] shrink-0 font-bold" />
               <span className="text-[#2B2B2B]">Fastest execution time ({activeBid.etaSec}s ETA)</span>
