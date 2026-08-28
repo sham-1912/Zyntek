@@ -9,7 +9,7 @@ interface NetworkStatusOverviewProps {
 
 export const NetworkStatusOverview: React.FC<NetworkStatusOverviewProps> = ({
   contractState,
-  activeSolversCount = 5,
+  activeSolversCount = 3,
 }) => {
   return (
     <div className="glass-card p-6 flex flex-col justify-between h-full shadow-md border border-[rgba(43,43,43,0.12)] space-y-4 bg-[#FFFDF5]">
@@ -45,7 +45,7 @@ export const NetworkStatusOverview: React.FC<NetworkStatusOverviewProps> = ({
             <CheckCircle2 className="w-3.5 h-3.5 text-[#607A3A]" />
           </div>
           <span className="text-base font-bold text-[#2B2B2B] block leading-tight">
-            {activeSolversCount} / 5 Online
+            {activeSolversCount} / 3 Online
           </span>
           <span className="text-[10px] text-[#607A3A] font-bold block">
             100% Quorum Active

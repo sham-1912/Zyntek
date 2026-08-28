@@ -40,7 +40,7 @@ export default function App() {
     safety: 20,
   });
 
-  // Solvers & Auction state
+  // Solvers & Auction state (Strictly 3 registered solvers)
   const [visibleBids, setVisibleBids] = useState<SolverBid[]>([]);
   const [isBroadcasting, setIsBroadcasting] = useState<boolean>(false);
   const [arrivalMessage, setArrivalMessage] = useState<string>('');
@@ -64,7 +64,7 @@ export default function App() {
   const [isHighValue, setIsHighValue] = useState<boolean>(false);
   const [settlementResult, setSettlementResult] = useState<SettlementResult | null>(null);
 
-  // View Mode: 'user' vs 'solver' (Directive 11)
+  // View Mode: 'user' vs 'solver'
   const [viewMode, setViewMode] = useState<'user' | 'solver'>('user');
 
   // Activity Logs, Contract state & Drawers
@@ -162,43 +162,35 @@ export default function App() {
       addLog(`[EVM EscrowVault.sol] Locked $${intent.sourceAmount} USDC deposit in Block #${b.number}`, 'success');
     }, 1200);
 
-    // 3. Stage: SOLVER AUCTION (t = 2.4s)
+    // 3. Stage: SOLVER AUCTION (t = 2.4s) — 3 Registered Solvers
     addTimeout(() => {
       setStage('auction');
       setIsBroadcasting(true);
-      setArrivalMessage('Searching for solvers across decentralized mesh...');
-      addLog('SOLVER AUCTION OPEN: Competitive bidding initialized', 'info');
+      setArrivalMessage('Searching for registered solvers across decentralized mesh...');
+      addLog('SOLVER AUCTION OPEN: 3 registered solvers competing', 'info');
 
-      // Staggered Solver 01 Arrival
+      // Staggered Solver B Arrival
       addTimeout(() => {
         setIsBroadcasting(false);
-        setArrivalMessage('✓ Solver 01 connected (Alpha Route)');
+        setArrivalMessage('✓ Solver B connected (Balanced Executor)');
         setVisibleBids([scoredPool[0]]);
-        addLog('SOLVER 01 (Alpha Route) submitted bid: Output $' + scoredPool[0].expectedOutput, 'info');
+        addLog('SOLVER B (Balanced Executor) submitted bid: Output $' + scoredPool[0].expectedOutput, 'info');
       }, 1000);
 
-      // Staggered Solver 02 Arrival
+      // Staggered Solver A Arrival
       addTimeout(() => {
-        setArrivalMessage('✓ Solver 02 submitted bid (Flash Relay)');
+        setArrivalMessage('✓ Solver A submitted bid (Cost Optimizer)');
         const currentPool = [scoredPool[0], scoredPool[1]];
         setVisibleBids(recalculateAllScores(currentPool, sliders).sort((a, b) => b.finalScore - a.finalScore));
-        addLog('SOLVER 02 (Flash Relay) submitted bid: 42.8s ETA route', 'info');
+        addLog('SOLVER A (Cost Optimizer) submitted bid: Lowest fee route', 'info');
       }, 2200);
 
-      // Staggered Solver 03 Arrival
+      // Staggered Solver C Arrival
       addTimeout(() => {
-        setArrivalMessage('✓ Solver 03 submitted bid (Shield Vault)');
-        const currentPool = [scoredPool[0], scoredPool[1], scoredPool[2]];
-        setVisibleBids(recalculateAllScores(currentPool, sliders).sort((a, b) => b.finalScore - a.finalScore));
-        addLog('SOLVER 03 (Shield Vault) submitted bid: $500 collateral bond', 'info');
-      }, 3400);
-
-      // Staggered Solver 04 & 05 Arrival
-      addTimeout(() => {
-        setArrivalMessage('✓ Solvers 04 & 05 submitted bids (Nexus & Horizon)');
+        setArrivalMessage('✓ Solver C submitted bid (Speed Specialist)');
         setVisibleBids(recalculateAllScores(scoredPool, sliders).sort((a, b) => b.finalScore - a.finalScore));
-        addLog('SCORING COMPLETE: 5 solver bids ranked dynamically', 'success');
-      }, 4600);
+        addLog('SOLVER C (Speed Specialist) submitted bid: 28.4s ETA route', 'info');
+      }, 3400);
 
       // Auction Countdown: 10s down to 0
       let timerVal = 10;
@@ -350,6 +342,17 @@ export default function App() {
   // Select Scenario 1-click test
   const handleSelectScenario = (scenario: DemoScenarioType) => {
     setActiveScenario(scenario);
+
+    // 5th Scenario: Risk & Collusion Audit
+    if (scenario === 'risk_audit') {
+      setViewMode('solver');
+      addLog('AUDIT TRIGGERED: Switched to Solver Network Risk Monitor (Solver C anomaly highlighted)', 'warn');
+      return;
+    }
+
+    // Default to User View for active trade flows
+    setViewMode('user');
+
     const amount = scenario === 'high_value' ? 1500 : 500;
     setSourceAmount(amount);
 
@@ -369,7 +372,8 @@ export default function App() {
     startLifecycleSequence(demoIntent, scenario);
   };
 
-  const handleReset = () => {
+  // Hard Reset: Clears simulation state completely
+  const handleHardReset = () => {
     clearAllTimeouts();
     setCurrentIntent(null);
     setDraftIntent(null);
@@ -381,6 +385,10 @@ export default function App() {
     setIsSensitiveModalOpen(false);
     setWinningBidId(undefined);
     setSettlementResult(null);
+    setActiveScenario(null);
+    setSourceAmount(500);
+    setSliders({ cost: 50, speed: 30, safety: 20 });
+    addLog('PROTOCOL STATE RESET: Clean baseline restored across all variables', 'info');
   };
 
   // Cleanup on unmount
@@ -402,17 +410,17 @@ export default function App() {
         onToggleViewMode={setViewMode}
       />
 
+      {/* Persistent Global Scenario Bar */}
+      <div className="max-w-[1440px] mx-auto w-full px-4 sm:px-6 lg:px-8 pt-5">
+        <DemoScenarioBar
+          activeScenario={activeScenario}
+          onSelectScenario={handleSelectScenario}
+          onResetState={handleHardReset}
+        />
+      </div>
+
       {viewMode === 'user' ? (
-        <main className="flex-1 max-w-[1440px] mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-          {/* =========================================================================
-              ROW 1 — DEMO SCENARIOS (Full Width: 12 Columns)
-             ========================================================================= */}
-          <div className="w-full">
-            <DemoScenarioBar
-              activeScenario={activeScenario}
-              onSelectScenario={handleSelectScenario}
-            />
-          </div>
+        <main className="flex-1 max-w-[1440px] mx-auto w-full px-4 sm:px-6 lg:px-8 py-5 space-y-6">
 
           {/* In-Dashboard Sensitive Decision Alert Banner (Directive 7) */}
           {isAmbiguous && !winningBidId && isAuctionClosed && (
@@ -460,7 +468,7 @@ export default function App() {
             <div className="lg:col-span-4 flex flex-col">
               <NetworkStatusOverview
                 contractState={contractState}
-                activeSolversCount={visibleBids.length > 0 ? visibleBids.length : 5}
+                activeSolversCount={3}
               />
             </div>
           </div>
@@ -514,10 +522,10 @@ export default function App() {
             <div className="lg:col-span-7 flex flex-col">
               {isFailed ? (
                 <FailureSlashingPanel
-                  solverName={winningSolver?.solverName || 'Solver 02 (Flash Relay)'}
+                  solverName={winningSolver?.solverName || 'Solver B (Balanced Executor)'}
                   bondAmountUsd={winningSolver?.collateralOfferedUsd || 500}
                   escrowAmountUsd={currentIntent?.sourceAmount || 500}
-                  onReset={handleReset}
+                  onReset={handleHardReset}
                 />
               ) : (
                 <HybridVerificationPanel
@@ -552,7 +560,7 @@ export default function App() {
           )}
         </main>
       ) : (
-        <main className="flex-1 max-w-[1440px] mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+        <main className="flex-1 max-w-[1440px] mx-auto w-full px-4 sm:px-6 lg:px-8 py-5 space-y-6">
           <SolverDashboard history={history} />
         </main>
       )}
@@ -573,7 +581,7 @@ export default function App() {
             setIsSensitiveModalOpen(false);
             proceedWithSelectedSolver(visibleBids[0], activeScenario === 'solver_failure');
           }}
-          onCancel={handleReset}
+          onCancel={handleHardReset}
         />
       )}
 

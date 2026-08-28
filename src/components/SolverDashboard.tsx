@@ -103,6 +103,11 @@ export const SolverDashboard: React.FC<SolverDashboardProps> = () => {
   const [selectedProfile, setSelectedProfile] = useState<SolverDetail | null>(null);
   const [isRiskModalOpen, setIsRiskModalOpen] = useState<boolean>(false);
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState<boolean>(false);
+  const [activeChartPoint, setActiveChartPoint] = useState<{ day: string; score: number; note: string }>({
+    day: 'Today',
+    score: 94.0,
+    note: 'Current verified standing (94.0 pts) with clean dispute record and 98.7% success rate.',
+  });
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300 font-sans text-[#2B2B2B]">
@@ -335,7 +340,7 @@ export const SolverDashboard: React.FC<SolverDashboardProps> = () => {
          ========================================================================= */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
         
-        {/* Explainable Reputation Card */}
+        {/* Explainable Reputation Card with SVG Chart */}
         <div className="lg:col-span-6 glass-card p-6 rounded-2xl border border-[rgba(43,43,43,0.12)] bg-[#FFFDF5] space-y-4 shadow-xs">
           <div className="flex items-center justify-between border-b border-[rgba(43,43,43,0.08)] pb-3">
             <div className="flex items-center gap-2.5">
@@ -423,14 +428,77 @@ export const SolverDashboard: React.FC<SolverDashboardProps> = () => {
                   filter="url(#glow)"
                 />
 
-                {/* Data Points */}
-                <circle cx="30" cy="80" r="3" fill="#FFFDF5" stroke="#D4A017" strokeWidth="1.5" />
-                <circle cx="80" cy="80" r="3" fill="#FFFDF5" stroke="#D4A017" strokeWidth="1.5" />
-                <circle cx="140" cy="50" r="3" fill="#FFFDF5" stroke="#D4A017" strokeWidth="1.5" />
-                <circle cx="200" cy="50" r="3" fill="#FFFDF5" stroke="#D4A017" strokeWidth="1.5" />
-                <circle cx="260" cy="25" r="3.5" fill="#CEF26D" stroke="#2B2B2B" strokeWidth="1.5" />
-                <circle cx="320" cy="38" r="3" fill="#FFFDF5" stroke="#D4A017" strokeWidth="1.5" />
-                <circle cx="385" cy="38" r="4.5" fill="#F0C94C" stroke="#FFFDF5" strokeWidth="2" />
+                {/* Data Points with interactive clicks */}
+                <circle
+                  cx="30"
+                  cy="80"
+                  r="4"
+                  fill="#FFFDF5"
+                  stroke="#D4A017"
+                  strokeWidth="2"
+                  className="cursor-pointer hover:r-6 transition-all"
+                  onClick={() => setActiveChartPoint({ day: '30d ago', score: 90.0, note: 'Initial solver onboarding baseline at 90.0 reputation.' })}
+                />
+                <circle
+                  cx="80"
+                  cy="80"
+                  r="4"
+                  fill="#FFFDF5"
+                  stroke="#D4A017"
+                  strokeWidth="2"
+                  className="cursor-pointer hover:r-6 transition-all"
+                  onClick={() => setActiveChartPoint({ day: '25d ago', score: 90.0, note: 'Completed 12 consecutive trades with zero slippage.' })}
+                />
+                <circle
+                  cx="140"
+                  cy="50"
+                  r="4"
+                  fill="#FFFDF5"
+                  stroke="#D4A017"
+                  strokeWidth="2"
+                  className="cursor-pointer hover:r-6 transition-all"
+                  onClick={() => setActiveChartPoint({ day: '20d ago', score: 95.0, note: 'Promoted to Top 10% Solver Tier (+5.0 pts).' })}
+                />
+                <circle
+                  cx="200"
+                  cy="50"
+                  r="4"
+                  fill="#FFFDF5"
+                  stroke="#D4A017"
+                  strokeWidth="2"
+                  className="cursor-pointer hover:r-6 transition-all"
+                  onClick={() => setActiveChartPoint({ day: '14d ago', score: 95.0, note: 'High liquidity provision across Solana SVM pool.' })}
+                />
+                <circle
+                  cx="260"
+                  cy="25"
+                  r="5"
+                  fill="#CEF26D"
+                  stroke="#2B2B2B"
+                  strokeWidth="2"
+                  className="cursor-pointer hover:r-7 transition-all"
+                  onClick={() => setActiveChartPoint({ day: '7d ago (Peak)', score: 98.0, note: 'Peak score (98.0) after 45 consecutive on-time optimistic settlements.' })}
+                />
+                <circle
+                  cx="320"
+                  cy="38"
+                  r="4"
+                  fill="#FFFDF5"
+                  stroke="#D4A017"
+                  strokeWidth="2"
+                  className="cursor-pointer hover:r-6 transition-all"
+                  onClick={() => setActiveChartPoint({ day: '3d ago', score: 93.5, note: 'Dropped 4.5 pts from a minor execution timeout on Oct 21.' })}
+                />
+                <circle
+                  cx="385"
+                  cy="38"
+                  r="5.5"
+                  fill="#F0C94C"
+                  stroke="#FFFDF5"
+                  strokeWidth="2.5"
+                  className="cursor-pointer hover:r-8 transition-all"
+                  onClick={() => setActiveChartPoint({ day: 'Today', score: 94.0, note: 'Recovered to 94.0 pts with clean dispute record and 98.7% success rate.' })}
+                />
 
                 {/* Floating Tooltip at Peak */}
                 <rect x="235" y="6" width="50" height="14" rx="3" fill="#CEF26D" />
@@ -444,11 +512,20 @@ export const SolverDashboard: React.FC<SolverDashboardProps> = () => {
 
             {/* X-Axis Timeline */}
             <div className="flex justify-between text-[10px] text-[#888] font-mono px-6 pt-1 border-t border-white/10">
-              <span>30d ago (90.0)</span>
-              <span>21d</span>
-              <span>14d</span>
-              <span>7d (98.0)</span>
-              <span className="text-[#F0C94C] font-bold">Today (94.0)</span>
+              <button type="button" onClick={() => setActiveChartPoint({ day: '30d ago', score: 90.0, note: 'Initial solver onboarding baseline at 90.0 reputation.' })} className="hover:text-white cursor-pointer">30d (90.0)</button>
+              <button type="button" onClick={() => setActiveChartPoint({ day: '20d ago', score: 95.0, note: 'Promoted to Top 10% Solver Tier (+5.0 pts).' })} className="hover:text-white cursor-pointer">20d</button>
+              <button type="button" onClick={() => setActiveChartPoint({ day: '14d ago', score: 95.0, note: 'High liquidity provision across Solana SVM pool.' })} className="hover:text-white cursor-pointer">14d</button>
+              <button type="button" onClick={() => setActiveChartPoint({ day: '7d ago (Peak)', score: 98.0, note: 'Peak score (98.0) after 45 consecutive on-time optimistic settlements.' })} className="hover:text-[#CEF26D] cursor-pointer text-[#CEF26D] font-bold">7d (98.0)</button>
+              <button type="button" onClick={() => setActiveChartPoint({ day: 'Today', score: 94.0, note: 'Recovered to 94.0 pts with clean dispute record and 98.7% success rate.' })} className="hover:text-[#F0C94C] cursor-pointer text-[#F0C94C] font-bold">Today (94.0)</button>
+            </div>
+
+            {/* Narrative Explanation Box for Active Point */}
+            <div className="bg-black/40 p-2 rounded-lg border border-white/5 flex items-center justify-between text-[11px] text-[#FFFDF5]">
+              <div>
+                <span className="text-[#D4A017] font-bold">[{activeChartPoint.day} — {activeChartPoint.score} pts]: </span>
+                <span className="text-[#FFFDF5]/80">{activeChartPoint.note}</span>
+              </div>
+              <span className="text-[10px] text-[#5A5A5A] uppercase font-bold shrink-0 ml-2 hidden sm:inline">Click dot to inspect</span>
             </div>
           </div>
         </div>
@@ -710,7 +787,7 @@ export const SolverDashboard: React.FC<SolverDashboardProps> = () => {
               </div>
             </div>
 
-            {/* Solver Lifecycle (Key Feature from Prompt) */}
+            {/* Solver Lifecycle */}
             <div className="space-y-2.5 font-mono text-xs">
               <span className="text-xs font-bold text-[#2B2B2B] uppercase tracking-wider block font-headline">
                 Deterministic Solver Protocol Lifecycle

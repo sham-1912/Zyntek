@@ -89,32 +89,32 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
           </div>
 
-          {/* User View vs. Solver Dashboard Mode Switcher */}
-          <div className="flex items-center gap-1 bg-[#FFFDF5]/10 p-1 rounded-xl font-mono text-xs shrink-0 border border-white/10">
+          {/* User View vs. Solver Dashboard Mode Switcher with Persistent Badge */}
+          <div className="flex items-center gap-2 bg-[#FFFDF5]/10 p-1 rounded-xl font-mono text-xs shrink-0 border border-white/10">
             <button
               type="button"
               onClick={() => onToggleViewMode('user')}
-              className={`px-3 py-1.5 rounded-lg font-bold transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer relative ${
+              className={`px-3.5 py-1.5 rounded-lg font-bold transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer relative ${
                 viewMode === 'user'
                   ? 'bg-[#D4A017] text-[#2B2B2B] shadow-sm'
                   : 'text-[#FFFDF5]/80 hover:text-[#FFFDF5]'
               }`}
             >
               <Wallet className="w-3.5 h-3.5" />
-              <span>User View</span>
+              <span>👤 User View</span>
             </button>
 
             <button
               type="button"
               onClick={() => onToggleViewMode('solver')}
-              className={`px-3 py-1.5 rounded-lg font-bold transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer relative ${
+              className={`px-3.5 py-1.5 rounded-lg font-bold transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer relative ${
                 viewMode === 'solver'
-                  ? 'bg-[#D4A017] text-[#2B2B2B] shadow-sm'
+                  ? 'bg-[#F0C94C] text-[#2B2B2B] shadow-sm'
                   : 'text-[#FFFDF5]/80 hover:text-[#FFFDF5]'
               }`}
             >
               <UserCheck className="w-3.5 h-3.5" />
-              <span>Solver Dashboard</span>
+              <span>🤖 Solver Dashboard</span>
             </button>
           </div>
 
@@ -132,7 +132,7 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
           </div>
 
-          {/* Chain Telemetry & Action Buttons */}
+          {/* Chain Telemetry & Distinct Drawer Action Buttons */}
           <div className="flex items-center gap-2.5 font-mono shrink-0">
             <GanacheChainWidget onOpenLedger={onOpenLedger} />
 
@@ -140,9 +140,10 @@ export const Header: React.FC<HeaderProps> = ({
               type="button"
               onClick={onOpenHistory}
               className="flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg bg-[#FFFDF5]/10 hover:bg-[#FFFDF5]/20 border border-white/10 text-[#FFFDF5] transition-all whitespace-nowrap cursor-pointer shrink-0"
+              title="Protocol-level intent execution history"
             >
               <History className="w-3.5 h-3.5 text-[#D4A017]" />
-              <span>My Intents</span>
+              <span>Protocol History</span>
               {historyCount > 0 && (
                 <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-[#D4A017] text-[#2B2B2B] font-bold">
                   {historyCount}
@@ -163,6 +164,26 @@ export const Header: React.FC<HeaderProps> = ({
               <span>{wallet.isConnected ? `${wallet.address.slice(0, 6)}...${wallet.address.slice(-4)}` : 'Connect'}</span>
             </button>
           </div>
+        </div>
+
+        {/* Sub-Header Perspective Mode Cue */}
+        <div className="bg-[#242424] border-t border-white/5 py-1 px-4 sm:px-6 lg:px-8 flex items-center justify-between text-[11px] font-mono">
+          <div className="flex items-center gap-2">
+            <span className="text-[#5A5A5A]">ACTIVE PERSPECTIVE:</span>
+            <span
+              className={`font-bold px-2 py-0.2 rounded ${
+                viewMode === 'user'
+                  ? 'bg-[#D4A017]/20 text-[#D4A017] border border-[#D4A017]/30'
+                  : 'bg-[#F0C94C]/20 text-[#F0C94C] border border-[#F0C94C]/30'
+              }`}
+            >
+              {viewMode === 'user'
+                ? '👤 USER INTENT PERSPECTIVE — Outcome Specification & Dual-Chain Settlement'
+                : '🤖 SOLVER NETWORK PERSPECTIVE — Competing Solver Mesh, Collusion Monitor & Liquidity'}
+            </span>
+          </div>
+
+          <span className="text-[#607A3A] font-bold hidden sm:inline">● Ganache Node Active #1337</span>
         </div>
       </header>
     </div>
