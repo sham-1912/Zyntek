@@ -36,9 +36,9 @@ export interface GanacheTxParams {
 
 let _deployedContractAddress: string | null = null;
 
-// EVM contract deployment bytecode for ZyntekIntentLedger — accepts all function calldata without reverting
+// EVM contract deployment bytecode for ZyntekIntentLedger — stack-safe STOP runtime
 const ZYNTEK_LEDGER_BYTECODE =
-  '0x600a80600d6000396000f360006000f3';
+  '0x6001600d60003960016000f300';
 
 async function getOrDeployZyntekContractAddress(provider: JsonRpcProvider, fromAddress: string): Promise<string> {
   if (_deployedContractAddress) return _deployedContractAddress;
