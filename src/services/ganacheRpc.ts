@@ -1,16 +1,17 @@
+import { JsonRpcProvider } from 'ethers';
+
 export const GANACHE_HTTP_URL = 'http://127.0.0.1:7545';
 
-let requestId = 1;
+// Shared provider instance
+let _provider: JsonRpcProvider | null = null;
 
-async function rpc(method: string, params: unknown[] = []): Promise<unknown> {
-  const res = await fetch(GANACHE_HTTP_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ jsonrpc: '2.0', method, params, id: requestId++ }),
-  });
-  const json = await res.json();
-  if (json.error) throw new Error(`Ganache RPC error: ${json.error.message}`);
-  return json.result;
+function getProvider(): JsonRpcProvider {
+  if (!_provider) {
+    _provider = new JsonRpcProvider(GANACHE_HTTP_URL, undefined, {
+      staticNetwork: true,
+    });
+  }
+  return _provider;
 }
 
 export async function sendDirectGanacheTransaction(label: string): Promise<{
@@ -19,61 +20,54 @@ export async function sendDirectGanacheTransaction(label: string): Promise<{
   success: boolean;
 }> {
   try {
-    // Get Ganache pre-funded accounts (no CORS issue — Ganache allows all origins)
-    const accounts = (await rpc('eth_accounts')) as string[];
+    const provider = getProvider();
+
+    // Get Ganache pre-funded accounts (unlocked by default)
+    const accounts = (await provider.send('eth_accounts', [])) as string[];
+
     if (!accounts || accounts.length === 0) {
-      console.warn('No Ganache pre-funded accounts found');
+      console.warn('[Ganache] No accounts returned');
       return { success: false };
     }
 
     const from = accounts[0];
-    const to = accounts[1] ?? accounts[0]; // self-transfer if only one account
+    const to = accounts[1] ?? accounts[0];
 
-    // Encode label as hex data
-    const hexData =
-      '0x' +
-      Array.from(new TextEncoder().encode(label.slice(0, 32)))
-        .map((b) => b.toString(16).padStart(2, '0'))
-        .join('');
+    // Get the unlocked signer for the Ganache account (no MetaMask popup!)
+    const signer = await provider.getSigner(from);
 
-    // Ganache auto-mines and auto-signs — no MetaMask popup needed!
-    const txHash = (await rpc('eth_sendTransaction', [
-      {
-        from,
-        to,
-        value: '0x2386F26FC10000', // 0.01 ETH
-        gas: '0x5208',
-        data: hexData,
-      },
-    ])) as string;
+    // Send real transaction — Ganache auto-mines a block immediately
+    const tx = await signer.sendTransaction({
+      to,
+      value: 10_000_000_000_000n, // 0.00001 ETH
+      data: '0x' + Buffer.from(label.slice(0, 32)).toString('hex'),
+    });
 
-    if (txHash) {
-      // Get receipt to confirm block number
-      let blockNumber = 1;
-      try {
-        const receipt = (await rpc('eth_getTransactionReceipt', [txHash])) as {
-          blockNumber?: string;
-        } | null;
-        if (receipt?.blockNumber) {
-          blockNumber = parseInt(receipt.blockNumber, 16);
-        }
-      } catch {
-        // receipt fallback
-      }
+    console.log(`[Ganache] TX sent: ${tx.hash}`);
+    const receipt = await tx.wait();
+    const blockNumber = receipt?.blockNumber ?? 1;
 
-      console.log(
-        `✅ Ganache block mined! TX: ${txHash} | Block: #${blockNumber} | ${label}`
-      );
-      return { txHash, blockNumber, success: true };
-    }
+    console.log(`✅ [Ganache] Block #${blockNumber} mined! TX: ${tx.hash} | ${label}`);
+    return { txHash: tx.hash, blockNumber, success: true };
   } catch (e) {
-    console.warn('Direct Ganache RPC call failed:', e);
+    console.error('[Ganache] Transaction failed:', e);
+    return {
+      txHash: `0x${Math.random().toString(16).substring(2)}`.padEnd(66, '0'),
+      blockNumber: 0,
+      success: false,
+    };
   }
+}
 
-  // Graceful fallback — UI still works, just no real block
-  return {
-    txHash: `0x${Math.random().toString(16).substring(2)}`.padEnd(66, '0'),
-    blockNumber: 0,
-    success: false,
-  };
+// Test connectivity to Ganache — call this on app startup
+export async function testGanacheConnection(): Promise<boolean> {
+  try {
+    const provider = getProvider();
+    const blockNumber = await provider.getBlockNumber();
+    console.log(`[Ganache] Connected ✅ | Current block: ${blockNumber}`);
+    return true;
+  } catch (e) {
+    console.warn('[Ganache] Not reachable at', GANACHE_HTTP_URL, e);
+    return false;
+  }
 }
