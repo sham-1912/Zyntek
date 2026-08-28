@@ -1,3 +1,5 @@
+import { JsonRpcProvider } from 'ethers';
+
 export interface LedgerTransaction {
   hash: string;
   from: string;
@@ -21,25 +23,51 @@ export interface LedgerBlock {
   transactions: LedgerTransaction[];
 }
 
+const GANACHE_RPC_URL = 'http://127.0.0.1:7545';
 const DEFAULT_MINER = '0x90F79bf6EB2c4f870365E785982E1f101E93b906';
 const ESCROW_CONTRACT = '0x345cA3e014Aaf5caA4570b2CD70FB3FE';
 const BONDING_CONTRACT = '0x71C8a92F1d4e08B991A54b4a1A59828453982845';
 
 class GanacheLedgerService {
   private blocks: LedgerBlock[] = [];
-  private currentBlockNumber = 14;
-  private autoMiningInterval = 4000; // 4 seconds per block
+  private currentBlockNumber = 16;
+  private autoMiningInterval = 3500; // 3.5 seconds
   private timer: NodeJS.Timeout | null = null;
   private isAutoMining = true;
   private listeners: ((blocks: LedgerBlock[], latestBlock: LedgerBlock) => void)[] = [];
+  private rpcProvider: JsonRpcProvider | null = null;
 
   constructor() {
+    this.initRpc();
     this.seedInitialBlocks();
     this.startAutoMining();
+    this.syncWithRealGanacheRpc();
+  }
+
+  private initRpc() {
+    try {
+      this.rpcProvider = new JsonRpcProvider(GANACHE_RPC_URL, undefined, { staticNetwork: true });
+    } catch {
+      this.rpcProvider = null;
+    }
   }
 
   private randomHash(prefix = '0x'): string {
     return prefix + Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
+  }
+
+  private async syncWithRealGanacheRpc() {
+    if (!this.rpcProvider) return;
+    try {
+      const hexBlock = (await this.rpcProvider.send('eth_blockNumber', [])) as string;
+      const realNum = parseInt(hexBlock, 16);
+      if (!isNaN(realNum) && realNum > 0) {
+        this.currentBlockNumber = Math.max(this.currentBlockNumber, realNum);
+        this.notifyListeners();
+      }
+    } catch (e) {
+      console.warn('[GanacheLedger] RPC sync fallback:', e);
+    }
   }
 
   private seedInitialBlocks() {
@@ -48,7 +76,7 @@ class GanacheLedgerService {
 
     for (let i = 1; i <= this.currentBlockNumber; i++) {
       const blockHash = this.randomHash();
-      const timeOffset = (this.currentBlockNumber - i) * 4500;
+      const timeOffset = (this.currentBlockNumber - i) * 3500;
       const txs = this.generateSimulatedTransactions(i, now - timeOffset);
       const totalGas = txs.reduce((acc, t) => acc + t.gasUsed, 21000);
 
@@ -69,11 +97,11 @@ class GanacheLedgerService {
 
   private generateSimulatedTransactions(blockNum: number, ts: number): LedgerTransaction[] {
     const methods = [
-      { method: 'lockEscrow', to: ESCROW_CONTRACT, gas: 48200, summary: 'Locked 500 USDC Deposit into EscrowVault' },
-      { method: 'commitBond', to: BONDING_CONTRACT, gas: 36400, summary: 'Solver locked $500 collateral bond' },
+      { method: 'lockEscrow', to: ESCROW_CONTRACT, gas: 48200, summary: 'Locked 500 USDC Deposit in EscrowVault.sol' },
+      { method: 'commitBond', to: BONDING_CONTRACT, gas: 36400, summary: 'Solver Node 01 locked $500 collateral bond' },
       { method: 'settleIntent', to: ESCROW_CONTRACT, gas: 62100, summary: 'Released 497.82 USDC payout to solver' },
       { method: 'verifyProof', to: ESCROW_CONTRACT, gas: 51200, summary: 'Validated ZK-SNARK Attestation proof' },
-      { method: 'transferUSDC', to: '0x8dc2...ff01', gas: 21000, summary: 'Mesh liquidity rebalance transfer' },
+      { method: 'rebalanceMesh', to: '0x8dc2...ff01', gas: 21000, summary: 'Cross-chain relayer liquidity rebalance' },
     ];
 
     const pick = methods[blockNum % methods.length];
@@ -114,10 +142,15 @@ class GanacheLedgerService {
   }
 
   public mineNewBlock(customTx?: LedgerTransaction): LedgerBlock {
-    this.currentBlockNumber += 1;
+    this.currentBlockNumber = Math.max(1, this.currentBlockNumber + 1);
     const latest = this.blocks[0];
     const newHash = this.randomHash();
     const ts = Date.now();
+
+    // Trigger Ganache evm_mine in background if available
+    if (this.rpcProvider) {
+      this.rpcProvider.send('evm_mine', []).catch(() => {});
+    }
 
     const txs: LedgerTransaction[] = customTx
       ? [customTx]
@@ -176,11 +209,20 @@ class GanacheLedgerService {
   }
 
   public getLatestBlock(): LedgerBlock {
-    return this.blocks[0];
+    return this.blocks[0] || {
+      number: 16,
+      hash: this.randomHash(),
+      parentHash: '0x0',
+      timestamp: Date.now(),
+      miner: DEFAULT_MINER,
+      gasUsed: 42000,
+      gasLimit: 30000000,
+      transactions: this.generateSimulatedTransactions(16, Date.now()),
+    };
   }
 
   public getBlockNumber(): number {
-    return this.currentBlockNumber;
+    return Math.max(1, this.currentBlockNumber);
   }
 
   public getIsAutoMining(): boolean {

@@ -37,7 +37,9 @@ class Web3ProviderService {
 
   private initGanacheProvider() {
     try {
-      this.ganacheProvider = new JsonRpcProvider(GANACHE_RPC_URL);
+      this.ganacheProvider = new JsonRpcProvider(GANACHE_RPC_URL, undefined, {
+        staticNetwork: true,
+      });
     } catch (e) {
       console.warn('Ganache RPC provider init fallback', e);
     }
@@ -98,10 +100,18 @@ class Web3ProviderService {
       const ethereum = (window as unknown as { ethereum: Eip1193Provider & { on?: (event: string, cb: (...args: unknown[]) => void) => void } }).ethereum;
 
       if (ethereum.on) {
-        ethereum.on('accountsChanged', (accounts: unknown) => {
+        ethereum.on('accountsChanged', async (accounts: unknown) => {
           const accs = accounts as string[];
           if (accs.length > 0) {
+            let bal = '100.00';
+            try {
+              const provider = new BrowserProvider(ethereum);
+              const rawBal = await provider.getBalance(accs[0]);
+              bal = (Number(rawBal) / 1e18).toFixed(3);
+            } catch {}
+
             this.walletState.address = accs[0];
+            this.walletState.balanceEth = bal;
             this.walletState.isConnected = true;
           } else {
             this.walletState.isConnected = false;
@@ -109,7 +119,7 @@ class Web3ProviderService {
           this.notifyListeners();
         });
 
-        ethereum.on('chainChanged', (chainIdHex: unknown) => {
+        ethereum.on('chainChanged', async (chainIdHex: unknown) => {
           const chainId = parseInt(chainIdHex as string, 16);
           const isGan = chainId === GANACHE_CHAIN_ID || chainId === GANACHE_CHAIN_ID_ALT;
           this.walletState.chainId = chainId;
@@ -207,7 +217,7 @@ class Web3ProviderService {
           this.notifyListeners();
         }
       } catch (e) {
-        console.warn('Browser wallet connection declined, using Ganache 1337 account.', e);
+        console.warn('Browser wallet connection declined, using Ganache account.', e);
         this.walletState.isConnected = true;
         this.notifyListeners();
       }
