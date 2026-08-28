@@ -1,6 +1,7 @@
 import React from 'react';
 import type { PrioritySliders as SlidersType } from '../services/types';
-import { DollarSign, Zap, Shield, CheckCircle2, Info } from 'lucide-react';
+import { getSliderMeaningPreview } from '../services/scoringEngine';
+import { DollarSign, Zap, Shield, CheckCircle2, Info, Compass } from 'lucide-react';
 
 interface PrioritySlidersProps {
   sliders: SlidersType;
@@ -10,6 +11,7 @@ interface PrioritySlidersProps {
 
 export const PrioritySliders: React.FC<PrioritySlidersProps> = ({ sliders, onChange, disabled }) => {
   const sum = sliders.cost + sliders.speed + sliders.safety;
+  const meaningPreview = getSliderMeaningPreview(sliders);
 
   // Proportional auto-rebalancing logic maintaining sum strictly equal to 100%
   const handleSliderChange = (key: keyof SlidersType, newValue: number) => {
@@ -57,6 +59,17 @@ export const PrioritySliders: React.FC<PrioritySlidersProps> = ({ sliders, onCha
         >
           <CheckCircle2 className="w-3.5 h-3.5" />
           <span>Total: {sum}% (Auto-Balanced)</span>
+        </div>
+      </div>
+
+      {/* Live "What This Means" Preview Line */}
+      <div className="bg-indigo-950/60 border border-indigo-800/80 p-3 rounded-lg flex items-start gap-2.5 text-xs text-indigo-200 font-mono">
+        <Compass className="w-4 h-4 text-indigo-400 shrink-0 mt-0.5" />
+        <div>
+          <span className="font-bold text-white uppercase text-[10px] tracking-wider block mb-0.5">
+            Live Strategy Preview:
+          </span>
+          <p className="font-sans text-[11px] leading-tight">{meaningPreview}</p>
         </div>
       </div>
 

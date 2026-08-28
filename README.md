@@ -5,17 +5,24 @@
 
 ---
 
-## 🌟 Overview & Core Novelty
+## 🌟 Overview & 10-Stage Protocol Lifecycle
 
 **Zyntek** is a competitive, trust-minimized cross-chain intent settlement network. Instead of forcing users to manually select bridges, liquidity pools, relayers, or routes, users specify **what outcome they want** (Source Asset/Chain $\rightarrow$ Destination Asset/Chain) along with dynamic per-intent **Priority Sliders** (Cost, Speed, Safety).
 
-Independent economic solver agents compete to fulfill the intent, and the EVM protocol verifies execution before releasing escrowed funds or slashing solver collateral.
+Independent economic solver agents compete to fulfill the intent, backed by EVM escrow, hybrid verifiers, and full-bond slashing accountability.
 
-### 🚀 Key Differentiators vs. Standard Aggregators
-1. **Per-Intent Dynamic Scoring**: Per-intent Cost/Speed/Safety sliders drive real-time bid ranking instead of a hardcoded global formula.
-2. **Tiered Hybrid Verification**: Fast, low-cost Optimistic verification for standard transfers; ZK/Oracle-backed proof verification for high-value intents ($\ge \$1,000$).
-3. **Sensitive-Decision Gating**: The user is automated out of the loop *except* when a decision genuinely matters (ambiguous top bids within 5% score gap or high-value releases).
-4. **Strict Solver Accountability**: 100% full-value collateral bond required from solvers prior to execution, automatically slashed on failure with live user refund.
+### 🔄 The 10 Protocol Lifecycle Stages
+1. **Stage 0 — Landing & Network Health**: Live status bar (3 active solvers, response latency, Escrow TVL) + 4-step primer (`Intent` $\rightarrow$ `Bid` $\rightarrow$ `Verify` $\rightarrow$ `Settle`).
+2. **Stage 1 — Intent Creation**: Smart defaults (EVM USDC $\rightarrow$ Solana USDC), auto-rebalancing sliders (strictly $100\%$), live strategy preview, inline high-value gate tooltip, and pre-commit wallet signature approval modal.
+3. **Stage 2 — Escrow Lock**: On-chain deposit confirmation with block explorer receipt (`0x8f2a...c91d`).
+4. **Stage 3 — Broadcasting to Solvers**: Network propagation visual with ticking solver counter (`1/3` $\rightarrow$ `3/3`).
+5. **Stage 4 — Solver Bidding**: Live 5-second auction countdown, staggered bid arrivals ($1.2\text{s}, 2.5\text{s}, 3.8\text{s}$), plain-language summary pills (`"Cheaper but slower"`, `"Fast but pricier"`), auto vs manual decision banners, and *"Why this ranked #1"* synthesis.
+6. **Stage 5 — Solver Commitment**: Staking collateral bond status with `"100% Collateralized"` skin-in-the-game badge.
+7. **Stage 6 — Cross-Chain Execution**: Paced 6-second multi-substep Solana execution tracker (`Broadcasting` $\rightarrow$ `Finalizing` $\rightarrow$ `Attesting`).
+8. **Stage 7 — Hybrid Verification**: Live 15-second challenge window countdown, contextual path notes (`Optimistic` vs `ZK/Oracle`), and inspectable cryptographic proof payload modal.
+9. **Stage 8 — Settlement**: Before/After balance comparison card (`$500.00 USDC (Ethereum) → $496.00 USDC (Solana)`) and two-sided solver payout breakdown.
+10. **Stage 9 — Organic Failure & Slashing**: Distinct warning visual framing, automatic escrow refund receipt, and transparent solver bond slashing breakdown.
+11. **Stage 10 — History & Persistence**: Complete `localStorage` state persistence so browser refreshes never lose active/past intents.
 
 ---
 
@@ -26,7 +33,7 @@ The repository was built across four dedicated feature branches and merged into 
 ```
 main (Final Integrated Codebase)
 ├── ritish        -> Smart Contracts (EVM Escrow, Solver Bonding, Hybrid Verifier, Settlement Engine)
-├── sham          -> Scoring Engine & Solver Agent Bidding Simulator (3 Profiles: Alpha, Flash, Shield)
+├── sham          -> Scoring Engine & Solver Agent Pool (3 Profiles: Alpha, Flash, Shield)
 ├── pratheen      -> Core Frontend UI (Intent Form, 100% Lock Sliders, Live Sub-Score Breakdown Table)
 └── n_v_rithish   -> Sensitive-Decision Gate, Status Pipeline Stepper, Failure Slashing Simulation
 ```
@@ -34,8 +41,6 @@ main (Final Integrated Codebase)
 ---
 
 ## 📐 Dynamic Multi-Dimensional Scoring Engine Formula
-
-Every bid submitted by solver agents is evaluated dynamically against normalized criteria:
 
 $$\text{normalized}(x) = \frac{x - \min(x)}{\max(x) - \min(x)}$$
 
@@ -50,34 +55,9 @@ $$\text{normalized}(x) = \frac{x - \min(x)}{\max(x) - \min(x)}$$
 ### Final Weighted Score:
 $$\text{FinalScore} = (w_{\text{cost}} \cdot \text{CostScore}) + (w_{\text{speed}} \cdot \text{SpeedScore}) + (w_{\text{safety}} \cdot \text{SafetyScore})$$
 
-*Where $w_{\text{cost}}, w_{\text{speed}}, w_{\text{safety}}$ are dynamically derived from the user's priority sliders (strictly summing to 100%).*
-
----
-
-## 🏛️ Smart Contracts Architecture (`/contracts`)
-
-- **`IntentEscrow.sol`**: Locks user funds on EVM source chain upon intent creation.
-- **`SolverBonding.sol`**: Enforces a 100% full-value collateral bond from the winning solver before cross-chain execution begins.
-- **`HybridVerifier.sol`**: Implements tiered verification modes (Optimistic challenge window vs. ZK/Oracle attestation).
-- **`SettlementEngine.sol`**: Releases escrow to solver upon valid proof, or slashes solver bond and refunds user on failure.
-
----
-
-## 💻 Tech Stack & Extensions
-
-- **Frontend**: React 19, TypeScript, Vite, TailwindCSS
-- **Design & Icons**: Lucide React, Glassmorphism Cyber Theme, Canvas Confetti
-- **Contracts / Web3 Integration**: Solidity ^0.8.20, Ethers.js, Contract Simulator Service
-
 ---
 
 ## 🛠️ Local Development & Build
-
-### Prerequisites
-- Node.js `v18+` or `v24+`
-- npm `v9+` or `v11+`
-
-### Installation & Launch
 
 ```bash
 # Clone the repository
@@ -98,13 +78,11 @@ npm run build
 
 ## ⏱️ 90-Second Walkthrough Script (For Judges)
 
-1. **Step 1: Intent & Priority Sliders (0:00 - 0:25)**
-   - Select $500 USDC deposit. Adjust sliders (e.g. 70% Cost, 20% Speed, 10% Safety). Observe live 100% rebalancing lock. Click **Broadcast Intent**.
-2. **Step 2: Live Bid Ranking & Sub-Score Breakdown (0:25 - 0:45)**
-   - Highlight the **Sub-score Breakdown** (Cost, Speed, Safety progress bars). Show how Solver A (Alpha) wins on Cost weighting.
-   - Adjust sliders to 80% Speed and re-broadcast $\rightarrow$ Solver B (Flash) dynamically jumps to Rank #1.
-3. **Step 3: Sensitive Decision Checkpoint (0:45 - 1:05)**
-   - Click the **$1,500 High-Value Preset**. Click Broadcast $\rightarrow$ The protocol pauses auto-execution and triggers the **Sensitive Decision Modal**, forcing ZK/Oracle verification & manual sign-off.
-4. **Step 4: Status Pipeline & Full-Bond Slashing (1:05 - 1:30)**
-   - Authorize execution $\rightarrow$ Watch live 5-stage status stepper: `Escrow Locked` $\rightarrow$ `Solver Committed` $\rightarrow$ `Solana Executed` $\rightarrow$ `Hybrid Verify` $\rightarrow$ `Settled`.
-   - Click **Simulate Solver Failure & Force Slashing** $\rightarrow$ Observe solver collateral bond slashed live and user escrow instantly refunded!
+1. **Step 1: Intent Creation & Sliders (0:00 - 0:25)**
+   - View live network status bar. Adjust sliders $\rightarrow$ Observe proportional auto-rebalancing and live strategy preview line. Click **Review & Broadcast Intent** $\rightarrow$ Approve wallet pre-commit signature.
+2. **Step 2: Staggered Auction & Plain-Language Bids (0:25 - 0:45)**
+   - Watch solvers arrive one by one ($1/3 \rightarrow 3/3$). Note summary pills (`Cheaper but slower`, `Fast but pricier`) and the *"Why this ranked #1"* scoring synthesis rationale.
+3. **Step 3: High-Value Gate Checkpoint (0:45 - 1:05)**
+   - Click `$1,500 High-Value Gate` preset $\rightarrow$ Hover high-value tooltip $\rightarrow$ Protocol triggers **Sensitive Decision Modal**, requiring ZK/Oracle verification & user sign-off.
+4. **Step 4: Paced Solana Execution & Settlement (1:05 - 1:30)**
+   - Authorize execution $\rightarrow$ Watch 6s multi-substep Solana execution $\rightarrow$ Challenge window timer (0:15) $\rightarrow$ Inspect cryptographic proof payload modal $\rightarrow$ View Stage 8 Before/After balance comparison card!

@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import type { PipelineStage, VerificationType, SettlementResult } from '../services/types';
-import { CheckCircle2, Loader2, ShieldCheck, ShieldAlert, Lock, Cpu, ArrowRight, ExternalLink, Clock, FileText } from 'lucide-react';
+import { ProofModal } from './ProofModal';
+import { SettlementSummaryCard } from './SettlementSummaryCard';
+import { CheckCircle2, Loader2, ShieldCheck, ShieldAlert, Lock, Cpu, ArrowRight, Clock, FileText, Info } from 'lucide-react';
 
 interface PipelineStatusTrackerProps {
   stage: PipelineStage;
@@ -9,6 +11,8 @@ interface PipelineStatusTrackerProps {
   subStatusText: string;
   settlementResult?: SettlementResult;
   intentId?: string;
+  solverBondUsd?: number;
+  intentAmountUsd?: number;
 }
 
 export const PipelineStatusTracker: React.FC<PipelineStatusTrackerProps> = ({
@@ -18,8 +22,10 @@ export const PipelineStatusTracker: React.FC<PipelineStatusTrackerProps> = ({
   subStatusText,
   settlementResult,
   intentId,
+  solverBondUsd,
+  intentAmountUsd,
 }) => {
-  const [showReceiptsModal, setShowReceiptsModal] = useState<boolean>(false);
+  const [showProofModal, setShowProofModal] = useState<boolean>(false);
 
   if (stage === 'idle') return null;
 
@@ -33,6 +39,7 @@ export const PipelineStatusTracker: React.FC<PipelineStatusTrackerProps> = ({
 
   const getStepStatus = (index: number) => {
     switch (stage) {
+      case 'escrow_mining':
       case 'escrow_locked':
         return index === 0 ? 'active' : index < 0 ? 'completed' : 'pending';
       case 'solver_committed':
@@ -50,6 +57,8 @@ export const PipelineStatusTracker: React.FC<PipelineStatusTrackerProps> = ({
     }
   };
 
+  const collateralRatio = solverBondUsd && intentAmountUsd ? Math.round((solverBondUsd / intentAmountUsd) * 100) : 100;
+
   return (
     <div className="glass-panel p-6 space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-4">
@@ -61,11 +70,18 @@ export const PipelineStatusTracker: React.FC<PipelineStatusTrackerProps> = ({
           <p className="text-xs text-slate-400 mt-0.5">{subStatusText || 'Live protocol state transitions across EVM & Solana'}</p>
         </div>
 
-        {intentId && (
-          <span className="text-[11px] font-mono text-indigo-400 px-2.5 py-1 rounded bg-indigo-950 border border-indigo-800 shrink-0">
-            ID: {intentId}
-          </span>
-        )}
+        <div className="flex items-center gap-2 shrink-0">
+          {solverBondUsd && (
+            <span className="text-[10px] font-mono text-cyan-300 px-2 py-0.5 rounded bg-slate-900 border border-cyan-800/80 font-bold">
+              {collateralRatio}% Collateralized
+            </span>
+          )}
+          {intentId && (
+            <span className="text-[11px] font-mono text-indigo-400 px-2.5 py-1 rounded bg-indigo-950 border border-indigo-800">
+              ID: {intentId}
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Stepper Grid */}
@@ -105,97 +121,76 @@ export const PipelineStatusTracker: React.FC<PipelineStatusTrackerProps> = ({
         })}
       </div>
 
-      {/* Visible Challenge Window Countdown Timer */}
+      {/* Stage 7 Hybrid Verification Challenge Countdown & Path Note */}
       {stage === 'verifying' && (
-        <div className="bg-indigo-950/60 border border-indigo-800 p-4 rounded-xl flex items-center justify-between gap-3 text-xs font-mono">
-          <div className="flex items-center gap-2 text-indigo-300">
-            <Clock className="w-4 h-4 text-indigo-400 animate-spin shrink-0" />
-            <div>
-              <span className="font-bold block">Optimistic Challenge Window Active</span>
-              <span className="text-[11px] text-slate-400 font-sans">
-                In production, this window is typically 15–30 minutes. Compressed for demo.
-              </span>
+        <div className="bg-indigo-950/60 border border-indigo-800 p-4 rounded-xl space-y-3 font-mono text-xs">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2 text-indigo-300">
+              <Clock className="w-4 h-4 text-indigo-400 animate-spin shrink-0" />
+              <div>
+                <span className="font-bold block">
+                  {verificationType === 'zk_oracle'
+                    ? 'ZK/Oracle Attestation Verification Active'
+                    : 'Optimistic Challenge Window Active'}
+                </span>
+                <span className="text-[11px] text-slate-400 font-sans">
+                  In production, this window is typically 15–30 minutes. Compressed for demo.
+                </span>
+              </div>
+            </div>
+            <div className="text-right shrink-0">
+              <span className="text-lg font-bold text-amber-400">0:{challengeCountdownSec.toString().padStart(2, '0')}</span>
+              <span className="block text-[10px] text-slate-500">Auto-settles if unchallenged</span>
             </div>
           </div>
-          <div className="text-right shrink-0">
-            <span className="text-lg font-bold text-amber-400">0:{challengeCountdownSec.toString().padStart(2, '0')}</span>
-            <span className="block text-[10px] text-slate-500">Auto-settles if unchallenged</span>
+
+          <div className="flex items-center justify-between pt-2 border-t border-indigo-900/60 text-[11px]">
+            <span className="text-slate-400 flex items-center gap-1 font-sans">
+              <Info className="w-3.5 h-3.5 text-indigo-400" />
+              {verificationType === 'zk_oracle'
+                ? 'High-Value Intent Path ($1,000+): Stronger ZK/Oracle attestation required.'
+                : 'Standard Intent Path (<$1,000): Fast optimistic verification window.'}
+            </span>
+
+            {settlementResult?.proofPayload && (
+              <button
+                type="button"
+                onClick={() => setShowProofModal(true)}
+                className="text-indigo-400 hover:text-indigo-300 flex items-center gap-1 font-bold font-mono"
+              >
+                <FileText className="w-3.5 h-3.5 text-indigo-400" />
+                <span>View Proof ↗</span>
+              </button>
+            )}
           </div>
         </div>
       )}
 
-      {/* Settlement Result Box & Proof Receipts */}
+      {/* Stage 8 Settlement Summary Card */}
       {settlementResult && (
-        <div
-          className={`p-4 rounded-xl border font-mono text-xs space-y-3 ${
-            settlementResult.success
-              ? 'bg-emerald-950/60 border-emerald-800 text-emerald-300'
-              : 'bg-rose-950/60 border-rose-800 text-rose-300'
-          }`}
-        >
-          <div className="flex items-center justify-between font-bold text-sm">
-            <span>{settlementResult.success ? '✓ Settlement Confirmed' : '⚠ Execution Failure & Bond Slashed'}</span>
+        <>
+          <SettlementSummaryCard result={settlementResult} />
+
+          <div className="flex justify-end pt-1">
             <button
               type="button"
-              onClick={() => setShowReceiptsModal(!showReceiptsModal)}
-              className="text-[11px] px-2.5 py-1 rounded bg-slate-900 border border-slate-700 hover:border-slate-500 text-white flex items-center gap-1 font-sans"
+              onClick={() => setShowProofModal(true)}
+              className="text-xs font-mono text-indigo-400 hover:text-indigo-300 flex items-center gap-1.5 font-bold"
             >
-              <FileText className="w-3.5 h-3.5 text-indigo-400" />
-              <span>View Block Proofs ↗</span>
+              <FileText className="w-4 h-4 text-indigo-400" />
+              <span>Inspect Cryptographic Proof Payload & Receipts ↗</span>
             </button>
           </div>
+        </>
+      )}
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 pt-2 border-t border-current/20">
-            <div>
-              <span className="text-slate-400 block text-[10px]">Verification Path</span>
-              <span className="font-bold">{settlementResult.verificationType.toUpperCase()}</span>
-            </div>
-            <div>
-              <span className="text-slate-400 block text-[10px]">Escrow Released</span>
-              <span className="font-bold">${settlementResult.escrowReleasedUsd}</span>
-            </div>
-            {settlementResult.solverBondSlashedUsd && (
-              <div>
-                <span className="text-slate-400 block text-[10px]">Solver Bond Slashed</span>
-                <span className="font-bold text-rose-400">${settlementResult.solverBondSlashedUsd}</span>
-              </div>
-            )}
-            {settlementResult.userRefundedUsd && (
-              <div>
-                <span className="text-slate-400 block text-[10px]">User Escrow Refunded</span>
-                <span className="font-bold text-emerald-400">${settlementResult.userRefundedUsd}</span>
-              </div>
-            )}
-          </div>
-
-          {/* Expanded Block Receipts List */}
-          {showReceiptsModal && (
-            <div className="mt-3 pt-3 border-t border-current/30 space-y-2">
-              <span className="text-[11px] font-bold uppercase tracking-wider block text-white">
-                Cryptographic & On-Chain Proof Receipts:
-              </span>
-              {settlementResult.receipts.map((receipt, idx) => (
-                <div key={idx} className="bg-slate-950/90 p-2.5 rounded-lg border border-slate-800 text-[11px] space-y-1">
-                  <div className="flex justify-between items-center text-slate-300 font-bold">
-                    <span>{receipt.stepName}</span>
-                    <a
-                      href={receipt.explorerUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-indigo-400 hover:text-indigo-300 flex items-center gap-1"
-                    >
-                      <span>{receipt.txHash.slice(0, 10)}...</span>
-                      <ExternalLink className="w-3 h-3" />
-                    </a>
-                  </div>
-                  <div className="text-[10px] text-slate-400">
-                    Block #{receipt.blockNumber} | Gas: {receipt.gasUsed} | Proof: {receipt.proofData}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+      {/* Proof Modal */}
+      {settlementResult?.proofPayload && (
+        <ProofModal
+          isOpen={showProofModal}
+          proofPayload={settlementResult.proofPayload}
+          onClose={() => setShowProofModal(false)}
+        />
       )}
     </div>
   );

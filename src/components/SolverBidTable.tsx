@@ -1,6 +1,6 @@
 import React from 'react';
 import type { SolverBid, UserIntent } from '../services/types';
-import { Award, Zap, Shield, DollarSign, ChevronRight, Activity, ShieldAlert, CheckCircle2, Clock, Info } from 'lucide-react';
+import { Award, Zap, Shield, DollarSign, ChevronRight, Activity, ShieldAlert, CheckCircle2, Clock, Info, Tag } from 'lucide-react';
 
 interface SolverBidTableProps {
   bids: SolverBid[];
@@ -29,7 +29,7 @@ export const SolverBidTable: React.FC<SolverBidTableProps> = ({
   isHighValue,
   onCancelAutoProceed,
 }) => {
-  if (isBroadcasting) {
+  if (isBroadcasting && bids.length === 0) {
     return (
       <div className="glass-panel p-8 text-center space-y-4">
         <div className="w-12 h-12 mx-auto rounded-full bg-indigo-950 border border-indigo-700/60 flex items-center justify-center animate-pulse-glow">
@@ -38,7 +38,7 @@ export const SolverBidTable: React.FC<SolverBidTableProps> = ({
         <div>
           <h3 className="text-base font-bold text-white font-mono">Broadcasting Intent to Solver Network...</h3>
           <p className="text-xs text-slate-400 mt-1">
-            Receiving competitive bids from Alpha, Flash & Shield solver agents...
+            Reaching distributed solvers (Alpha, Flash & Shield)...
           </p>
         </div>
       </div>
@@ -57,8 +57,8 @@ export const SolverBidTable: React.FC<SolverBidTableProps> = ({
         <div>
           <div className="flex items-center gap-2">
             <h2 className="text-lg font-bold text-white font-mono">Solver Bids Marketplace</h2>
-            <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-950 border border-emerald-800 text-emerald-400 font-semibold">
-              {bids.length} Solver Bids Received
+            <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-950 border border-emerald-800 text-emerald-400 font-semibold font-mono">
+              Solvers Reached: {bids.length}/3
             </span>
           </div>
           <p className="text-xs text-slate-400 mt-1">
@@ -103,7 +103,7 @@ export const SolverBidTable: React.FC<SolverBidTableProps> = ({
           </div>
         )}
 
-        {isClearWinner && onCancelAutoProceed && (
+        {isClearWinner && onCancelAutoProceed && autoProceedCountdownSec !== null && (
           <button
             type="button"
             onClick={onCancelAutoProceed}
@@ -120,7 +120,7 @@ export const SolverBidTable: React.FC<SolverBidTableProps> = ({
           <Info className="w-4 h-4 text-indigo-400 shrink-0 mt-0.5" />
           <div>
             <span className="font-bold text-white font-mono uppercase text-[10px] tracking-wider block mb-0.5">
-              Protocol Scoring Synthesis:
+              Why This Ranked #1:
             </span>
             <p>{topBid.synthesisRationale}</p>
           </div>
@@ -136,13 +136,13 @@ export const SolverBidTable: React.FC<SolverBidTableProps> = ({
           return (
             <div
               key={bid.solverId}
-              className={`p-5 rounded-xl border transition-all ${
+              className={`p-5 rounded-xl border transition-all animate-in fade-in duration-300 ${
                 isWinner
                   ? 'bg-slate-900/90 border-indigo-500/80 shadow-lg shadow-indigo-950/50'
                   : 'bg-slate-900/50 border-slate-800/80 hover:border-slate-700'
               } ${isSelected ? 'ring-2 ring-indigo-400' : ''}`}
             >
-              {/* Card Top: Profile Name & Final Score */}
+              {/* Card Top: Profile Name, Summary Pill & Final Score */}
               <div className="flex items-center justify-between pb-3 border-b border-slate-800">
                 <div className="flex items-center gap-3">
                   {isWinner ? (
@@ -158,6 +158,15 @@ export const SolverBidTable: React.FC<SolverBidTableProps> = ({
                   <div>
                     <div className="flex items-center gap-2">
                       <h4 className="text-sm font-bold text-white">{bid.solverName}</h4>
+
+                      {/* Plain Language Summary Pill */}
+                      {bid.summaryPill && (
+                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-cyan-300 border border-slate-700 font-mono flex items-center gap-1">
+                          <Tag className="w-2.5 h-2.5" />
+                          <span>{bid.summaryPill}</span>
+                        </span>
+                      )}
+
                       {isWinner && (
                         <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-indigo-950 text-indigo-300 border border-indigo-800">
                           Rank #1 Winner

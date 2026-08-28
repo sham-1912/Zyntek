@@ -1,4 +1,4 @@
-import type { UserIntent, SolverBid, SubScores } from './types';
+import type { UserIntent, SolverBid, SubScores, PrioritySliders } from './types';
 
 function normalize(value: number, min: number, max: number): number {
   if (min === max) return 1.0;
@@ -10,6 +10,16 @@ function getMinMax(values: number[]) {
   const min = Math.min(...values);
   const max = Math.max(...values);
   return { min, max };
+}
+
+export function getSliderMeaningPreview(sliders: PrioritySliders): string {
+  if (sliders.cost >= sliders.speed && sliders.cost >= sliders.safety) {
+    return `You're prioritizing Cost (${sliders.cost}%) — expect maximum asset output and lowest fees, with standard execution speed.`;
+  } else if (sliders.speed >= sliders.cost && sliders.speed >= sliders.safety) {
+    return `You're prioritizing Speed (${sliders.speed}%) — expect ultra-fast execution (~3.5s) and tightest slippage, at slightly higher priority fees.`;
+  } else {
+    return `You're prioritizing Safety (${sliders.safety}%) — expect maximum solver collateral bond (150%) and highest reputation scores (99/100).`;
+  }
 }
 
 export function generateSynthesisRationale(bid: SolverBid, rankIndex: number): string {
@@ -28,7 +38,18 @@ export function generateSynthesisRationale(bid: SolverBid, rankIndex: number): s
   }
 }
 
-export function calculateBidScores(intent: UserIntent, rawBids: Omit<SolverBid, 'subScores' | 'finalScore' | 'synthesisRationale'>[]): SolverBid[] {
+export function getSummaryPill(profile: 'alpha' | 'flash' | 'shield'): string {
+  switch (profile) {
+    case 'alpha':
+      return 'Cheaper but slower';
+    case 'flash':
+      return 'Fast but pricier';
+    case 'shield':
+      return 'Best reputation & bond';
+  }
+}
+
+export function calculateBidScores(intent: UserIntent, rawBids: Omit<SolverBid, 'subScores' | 'finalScore' | 'synthesisRationale' | 'summaryPill'>[]): SolverBid[] {
   const count = rawBids.length;
   if (count === 0) return [];
 
@@ -87,6 +108,7 @@ export function calculateBidScores(intent: UserIntent, rawBids: Omit<SolverBid, 
       ...bid,
       subScores,
       finalScore: Number(finalScore.toFixed(3)),
+      summaryPill: getSummaryPill(bid.solverProfile),
     };
   });
 

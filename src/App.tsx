@@ -6,6 +6,7 @@ import { checkAmbiguity, isHighValueIntent } from './services/scoringEngine';
 import { contractSimulator } from './services/contractSimulator';
 
 import { Header } from './components/Header';
+import { LandingPrimerBar } from './components/LandingPrimerBar';
 import { IntentForm } from './components/IntentForm';
 import { SolverBidTable } from './components/SolverBidTable';
 import { SensitiveDecisionModal } from './components/SensitiveDecisionModal';
@@ -68,7 +69,7 @@ export default function App() {
     setSelectedBid(null);
     setSettlementResult(undefined);
     setStage('escrow_mining');
-    setSubStatusText('Mining EVM Escrow deposit on Sepolia testnet...');
+    setSubStatusText('Confirming EVM Escrow deposit on Sepolia testnet...');
 
     const highVal = isHighValueIntent(intent);
     setIsHighValue(highVal);
@@ -77,11 +78,11 @@ export default function App() {
     contractSimulator.addOrUpdateHistory(intent, 'escrow_mining');
     updateContractState();
 
-    // Staggered simulation timeline
+    // Stage 3 & 4: Staggered simulation timeline
     setTimeout(() => {
       setStage('broadcasting_solvers');
       setIsBroadcasting(true);
-      setSubStatusText('Broadcasting intent to 3 solver agents...');
+      setSubStatusText('Broadcasting intent to 3 distributed solver agents...');
 
       const allBids = generateSolverBids(intent);
 
@@ -90,19 +91,18 @@ export default function App() {
         setBids([allBids[0]]);
         setIsBroadcasting(false);
         setStage('bidding_window');
-        setSubStatusText('Solver A (Alpha) bid received.');
+        setSubStatusText('Solver A (Alpha) bid received (1/3).');
       }, 1200);
 
       setTimeout(() => {
         setBids([allBids[0], allBids[1]]);
-        setSubStatusText('Solver B (Flash) bid received.');
+        setSubStatusText('Solver B (Flash) bid received (2/3).');
       }, 2500);
 
       setTimeout(() => {
         setBids(allBids);
-        setSubStatusText('Solver C (Shield) bid received. Auction complete.');
+        setSubStatusText('Solver C (Shield) bid received (3/3). Auction complete.');
 
-        // Ambiguity & high value checks
         const ambCheck = checkAmbiguity(allBids);
         setIsAmbiguous(ambCheck.isAmbiguous);
         setScoreGap(ambCheck.scoreGap);
@@ -110,7 +110,6 @@ export default function App() {
         if (ambCheck.isAmbiguous || highVal) {
           setIsSensitiveModalOpen(true);
         } else {
-          // Clear winner -> start 3s auto proceed countdown
           setAutoProceedCountdownSec(3);
         }
       }, 3800);
@@ -162,38 +161,40 @@ export default function App() {
     setIsSensitiveModalOpen(false);
     setAutoProceedCountdownSec(null);
 
-    // 1. Lock EVM Escrow
+    // Stage 2: Lock EVM Escrow
     setStage('escrow_locked');
-    setSubStatusText('Confirming EVM Escrow lock on-chain...');
+    setSubStatusText('Confirming EVM Escrow deposit on-chain...');
     await contractSimulator.lockUserEscrow(currentIntent);
     contractSimulator.addOrUpdateHistory(currentIntent, 'escrow_locked', solver);
     updateContractState();
 
-    // 2. Commit Solver Collateral Bond
+    // Stage 5: Commit Solver Collateral Bond
     setStage('solver_committed');
-    setSubStatusText(`Winning Solver (${solver.solverName}) posting $${solver.collateralOfferedUsd} collateral bond...`);
+    setSubStatusText(`Winning Solver (${solver.solverName}) staking $${solver.collateralOfferedUsd} bond (${Math.round((solver.collateralOfferedUsd / currentIntent.sourceAmount) * 100)}% collateralized)...`);
     await contractSimulator.commitSolverBond(currentIntent, solver);
     contractSimulator.addOrUpdateHistory(currentIntent, 'solver_committed', solver);
     updateContractState();
 
-    // 3. Solana Cross-Chain Leg Execution with rotating sub-status
+    // Stage 6: Paced Multi-Substep Solana Execution (6s total delay)
     setStage('executing_cross_chain');
-    setSubStatusText('Broadcasting transaction on Solana destination network...');
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    setSubStatusText('Awaiting Solana block finality confirmation...');
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    setSubStatusText('Substep 1/3: Solver broadcasting on Solana destination network...');
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+    setSubStatusText('Substep 2/3: Awaiting Solana block finality confirmation...');
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+    setSubStatusText('Substep 3/3: Finalizing cross-chain delivery attestation...');
+    await new Promise((resolve) => setTimeout(resolve, 2000));
 
-    // 4. Hybrid Verification
+    // Stage 7: Hybrid Verification
     setStage('verifying');
     setChallengeCountdownSec(15);
     setSubStatusText(
       verificationType === 'zk_oracle'
-        ? 'Verifying ZK/Oracle attestation proof on-chain...'
-        : 'Optimistic challenge window active. Monitoring for challenges...'
+        ? 'Stage 7: Verifying ZK/Oracle attestation proof on-chain...'
+        : 'Stage 7: Optimistic challenge window active (0:15). Monitoring for challenges...'
     );
     await new Promise((resolve) => setTimeout(resolve, 3000));
 
-    // 5. Final Settlement or Slashing
+    // Stage 8 or 9: Final Settlement or Slashing
     const result = await contractSimulator.executeVerificationAndSettlement(
       currentIntent,
       solver,
@@ -204,7 +205,7 @@ export default function App() {
     setSettlementResult(result);
     const finalStage = result.success ? 'settled' : 'slashed_refunded';
     setStage(finalStage);
-    setSubStatusText(result.success ? '✓ Settlement finalized on-chain!' : '⚠ Solver failed. Bond slashed & user refunded.');
+    setSubStatusText(result.success ? '✓ Stage 8: Settlement finalized on-chain!' : '⚠ Stage 9: Verification Failed. Bond slashed & user refunded.');
     
     contractSimulator.addOrUpdateHistory(currentIntent, finalStage, solver, result);
     updateContractState();
@@ -241,6 +242,9 @@ export default function App() {
 
       <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         
+        {/* Stage 0: Landing Bar & Live Stats */}
+        <LandingPrimerBar contractState={contractState} />
+
         {/* Banner */}
         <div className="glass-panel p-6 flex flex-col md:flex-row items-center justify-between gap-4 border-indigo-900/40">
           <div className="space-y-1">
@@ -264,7 +268,7 @@ export default function App() {
           </div>
         </div>
 
-        {/* Intent Form & Status Tracker Grid */}
+        {/* Stage 1: Intent Form & Status Tracker Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           <div className="lg:col-span-6">
             <IntentForm onPreCommitTrigger={handlePreCommitTrigger} disabled={stage !== 'idle' && stage !== 'bidding_window'} />
@@ -278,11 +282,13 @@ export default function App() {
               subStatusText={subStatusText}
               settlementResult={settlementResult}
               intentId={currentIntent?.intentId}
+              solverBondUsd={selectedBid?.collateralOfferedUsd}
+              intentAmountUsd={currentIntent?.sourceAmount}
             />
           </div>
         </div>
 
-        {/* Solver Bids Table Section */}
+        {/* Stage 3 & 4: Solver Bids Table Section */}
         {(bids.length > 0 || isBroadcasting) && currentIntent && (
           <SolverBidTable
             bids={bids}
@@ -323,14 +329,14 @@ export default function App() {
         />
       )}
 
-      {/* Intent History Drawer */}
+      {/* Stage 10: Intent History Drawer */}
       <IntentHistoryDrawer
         isOpen={isHistoryDrawerOpen}
         history={history}
         onClose={() => setIsHistoryDrawerOpen(false)}
       />
 
-      {/* Collapsed Judge Debug Instrumentation Panel */}
+      {/* Stage 9: Collapsed Judge Debug Instrumentation Panel */}
       {currentIntent && selectedBid && stage !== 'settled' && stage !== 'slashed_refunded' && (
         <JudgeToolsPanel
           onTriggerFailure={() => executePipeline(selectedBid, true)}

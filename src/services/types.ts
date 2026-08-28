@@ -45,6 +45,7 @@ export interface SolverBid {
   finalScore: number; // 0.0 - 1.0
   routeDescription: string;
   synthesisRationale?: string; // Plain language "why"
+  summaryPill?: string; // Short 2-3 word summary
 }
 
 export type PipelineStage = 
@@ -75,18 +76,43 @@ export interface BlockReceipt {
   proofData?: string;
 }
 
+export interface ProofPayload {
+  intentId: string;
+  verificationType: VerificationType;
+  zkProofHash: string;
+  solanaBlockNumber: number;
+  solanaTxSignature: string;
+  attestationSigner: string;
+  timestamp: number;
+  status: 'VALIDATED' | 'CHALLENGED' | 'REJECTED';
+}
+
+export interface BalanceComparison {
+  beforeSourceAmount: number;
+  beforeSourceAsset: string;
+  beforeSourceChain: string;
+  afterDestinationAmount: number;
+  afterDestinationAsset: string;
+  afterDestinationChain: string;
+  solverPayoutUsd: number;
+  solverFeeUsd: number;
+}
+
 export interface SettlementResult {
   intentId: string;
   winningSolverId: string;
   escrowReleasedUsd: number;
   solverBondSlashedUsd?: number;
   userRefundedUsd?: number;
+  protocolReserveUsd?: number;
   verificationType: VerificationType;
   txHash: string;
   success: boolean;
   failureReason?: string;
   executionTimeMs: number;
   receipts: BlockReceipt[];
+  proofPayload?: ProofPayload;
+  balanceComparison?: BalanceComparison;
 }
 
 export interface IntentHistoryItem {
