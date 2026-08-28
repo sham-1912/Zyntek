@@ -390,7 +390,37 @@ export default function App() {
     setSliders({ cost: 50, speed: 30, safety: 20 });
     ganacheLedger.resetLedger(0);
     addLog('PROTOCOL STATE RESET: Block ledger reset to #0 & clean baseline restored', 'info');
+    scrollToSection('intent-section');
   };
+
+  // Auto-scroll tour director: smoothly navigates to each active section without manual scrolling
+  const scrollToSection = (sectionId: string) => {
+    setTimeout(() => {
+      const el = document.getElementById(sectionId);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 150);
+  };
+
+  // Automatically scroll between sections as lifecycle progresses
+  useEffect(() => {
+    if (viewMode !== 'user') return;
+
+    if (stage === 'intent' || stage === 'escrow') {
+      scrollToSection('pipeline-section');
+    } else if (stage === 'auction') {
+      scrollToSection('auction-section');
+    } else if (stage === 'winner' || stage === 'commitment' || stage === 'execution') {
+      scrollToSection('pipeline-section');
+    } else if (stage === 'verifying') {
+      scrollToSection('verification-section');
+    } else if (stage === 'settlement') {
+      scrollToSection('settlement-section');
+    } else if (stage === 'slashed_refunded') {
+      scrollToSection('verification-section');
+    }
+  }, [stage, viewMode]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -455,7 +485,7 @@ export default function App() {
           {/* =========================================================================
               ROW 2 — ① WHAT IS HAPPENING: ACTIVE INTENT HERO (8 Cols) + NETWORK/TRUST (4 Cols)
              ========================================================================= */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+          <div id="intent-section" className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch scroll-mt-24">
             <div className="lg:col-span-8 flex flex-col">
               <IntentForm
                 onPreCommitTrigger={handlePreCommitTrigger}
@@ -478,7 +508,7 @@ export default function App() {
           {/* =========================================================================
               ROW 3 — ② EXECUTION LIFECYCLE CENTERPIECE (Full Width: 12 Columns)
              ========================================================================= */}
-          <div className="w-full">
+          <div id="pipeline-section" className="w-full scroll-mt-24">
             <TransactionLifecycleTracker
               currentStepId={lifecycleStep}
               isFailed={isFailed}
@@ -494,7 +524,7 @@ export default function App() {
           {/* =========================================================================
               ROW 4 — ③ WHO IS COMPETING & WHY SOLVER WON (8 Cols + 4 Cols)
              ========================================================================= */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+          <div id="auction-section" className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch scroll-mt-24">
             <div className="lg:col-span-8 flex flex-col">
               <SolverBidTable
                 bids={visibleBids}
@@ -520,7 +550,7 @@ export default function App() {
           {/* =========================================================================
               ROW 5 — ④ IS IT SAFE & LIVE PROTOCOL STREAM (7 Cols + 5 Cols)
              ========================================================================= */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+          <div id="verification-section" className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch scroll-mt-24">
             <div className="lg:col-span-7 flex flex-col">
               {isFailed ? (
                 <FailureSlashingPanel
@@ -552,7 +582,7 @@ export default function App() {
               ROW 6 — ⑤ VISUAL CLIMAX: ✓ INTENT SUCCESSFULLY SETTLED (12 Cols)
              ========================================================================= */}
           {stage === 'settlement' && currentIntent && winningSolver && settlementResult && (
-            <div className="w-full">
+            <div id="settlement-section" className="w-full scroll-mt-24">
               <FinalSettlementRecordCard
                 intent={currentIntent}
                 winningBid={winningSolver}
