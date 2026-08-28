@@ -1,25 +1,26 @@
 import { useState, useEffect } from 'react';
 import confetti from 'canvas-confetti';
-import type { UserIntent, SolverBid, PipelineStage, VerificationType, SettlementResult, BlockReceipt } from './services/types';
+import type { UserIntent, SolverBid, PipelineStage, VerificationType, SettlementResult } from './services/types';
 import { generateSolverBids } from './services/solverSimulator';
 import { checkAmbiguity, isHighValueIntent } from './services/scoringEngine';
 import { contractSimulator } from './services/contractSimulator';
 
 import { Header } from './components/Header';
-import { LandingPrimerBar } from './components/LandingPrimerBar';
+import { Sidebar } from './components/Sidebar';
+import { Footer } from './components/Footer';
 import { IntentForm } from './components/IntentForm';
-import { SolverBidTable } from './components/SolverBidTable';
-import { SensitiveDecisionModal } from './components/SensitiveDecisionModal';
+import { SolversMarketplace } from './components/SolversMarketplace';
 import { PipelineStatusTracker } from './components/PipelineStatusTracker';
+import { MyIntentsTable } from './components/MyIntentsTable';
+import { SettlementSummaryCard } from './components/SettlementSummaryCard';
+import { DashboardView } from './components/DashboardView';
 import { PreCommitModal } from './components/PreCommitModal';
-import { IntentHistoryDrawer } from './components/IntentHistoryDrawer';
+import { SensitiveDecisionModal } from './components/SensitiveDecisionModal';
 import { JudgeToolsPanel } from './components/JudgeToolsPanel';
-import { BlockExplorerModal } from './components/BlockExplorerModal';
 import { SolverDashboard } from './components/SolverDashboard';
 
-import { Sparkles, RefreshCw } from 'lucide-react';
-
 export default function App() {
+  const [activeTab, setActiveTab] = useState<'swap' | 'dashboard' | 'intents' | 'solvers' | 'result'>('swap');
   const [viewMode, setViewMode] = useState<'user' | 'solver'>('user');
 
   const [currentIntent, setCurrentIntent] = useState<UserIntent | null>(null);
@@ -45,18 +46,16 @@ export default function App() {
   const [scoreGap, setScoreGap] = useState<number>(0);
   const [isHighValue, setIsHighValue] = useState<boolean>(false);
 
-  // History & explorer drawer state
-  const [isHistoryDrawerOpen, setIsHistoryDrawerOpen] = useState<boolean>(false);
-  const [activeReceiptForExplorer, setActiveReceiptForExplorer] = useState<BlockReceipt | undefined>(undefined);
+  // Contract state & history
   const [history, setHistory] = useState(contractSimulator.getHistory());
-  const [contractState, setContractState] = useState(contractSimulator.getContractState());
+  const [, setContractState] = useState(contractSimulator.getContractState());
 
   const updateContractState = () => {
     setContractState(contractSimulator.getContractState());
     setHistory(contractSimulator.getHistory());
   };
 
-  // Step 1: User fills form and clicks broadcast -> Trigger Pre-Commit Modal
+  // Step 1: Form trigger pre-commit modal
   const handlePreCommitTrigger = (intent: UserIntent) => {
     setDraftIntent(intent);
     setIsPreCommitOpen(true);
@@ -74,7 +73,7 @@ export default function App() {
     setSelectedBid(null);
     setSettlementResult(undefined);
     setStage('escrow_mining');
-    setSubStatusText('Confirming EVM Escrow deposit on Ganache localnet (Chain #5777)...');
+    setSubStatusText('Confirming EVM Escrow deposit on Ganache localnet...');
 
     const highVal = isHighValueIntent(intent);
     setIsHighValue(highVal);
@@ -83,11 +82,14 @@ export default function App() {
     contractSimulator.addOrUpdateHistory(intent, 'escrow_mining');
     updateContractState();
 
-    // Stage 3 & 4: Staggered simulation timeline
+    // Automatically switch to /solvers to view live auction bidding competition!
+    setActiveTab('solvers');
+
+    // Staggered solver bidding timeline
     setTimeout(() => {
       setStage('broadcasting_solvers');
       setIsBroadcasting(true);
-      setSubStatusText('Broadcasting intent to 3 distributed Ganache solver accounts...');
+      setSubStatusText('Broadcasting intent parameters to 3 distributed Ganache solvers...');
 
       const allBids = generateSolverBids(intent);
 
@@ -101,7 +103,7 @@ export default function App() {
       setTimeout(() => {
         setBids([allBids[0], allBids[1]]);
         setSubStatusText('Solver B (Flash) bid received (2/3).');
-      }, 2500);
+      }, 2400);
 
       setTimeout(() => {
         setBids(allBids);
@@ -116,11 +118,11 @@ export default function App() {
         } else {
           setAutoProceedCountdownSec(3);
         }
-      }, 3800);
-    }, 2000);
+      }, 3600);
+    }, 1500);
   };
 
-  // Bidding window 5s countdown effect
+  // Bidding window countdown effect
   useEffect(() => {
     if (stage === 'bidding_window' && biddingCountdownSec > 0) {
       const timer = setInterval(() => {
@@ -130,7 +132,7 @@ export default function App() {
     }
   }, [stage, biddingCountdownSec]);
 
-  // Auto-proceed countdown effect for clear winner
+  // Auto-proceed countdown effect
   useEffect(() => {
     if (autoProceedCountdownSec !== null && autoProceedCountdownSec > 0 && stage === 'bidding_window' && bids.length === 3) {
       const timer = setInterval(() => {
@@ -147,7 +149,7 @@ export default function App() {
     }
   }, [autoProceedCountdownSec, stage, bids]);
 
-  // Challenge window 15s countdown effect during verification
+  // Challenge window countdown effect
   useEffect(() => {
     if (stage === 'verifying' && challengeCountdownSec > 0) {
       const timer = setInterval(() => {
@@ -157,7 +159,7 @@ export default function App() {
     }
   }, [stage, challengeCountdownSec]);
 
-  // Step 3: Accept Bid & Execute Pipeline with Sub-Status Updates
+  // Step 3: Execute Pipeline
   const executePipeline = async (solver: SolverBid, forceFailure = false) => {
     if (!currentIntent) return;
 
@@ -165,54 +167,60 @@ export default function App() {
     setIsSensitiveModalOpen(false);
     setAutoProceedCountdownSec(null);
 
-    // Stage 2: Lock EVM Escrow
+    // Switch to /intents live execution telemetry view!
+    setActiveTab('intents');
+
+    // Stage 2: Escrow Locked
     setStage('escrow_locked');
-    setSubStatusText('Confirming EVM Escrow deposit transaction on Ganache...');
+    setSubStatusText('Confirming EVM Escrow deposit on Ganache...');
     await contractSimulator.lockUserEscrow(currentIntent);
     contractSimulator.addOrUpdateHistory(currentIntent, 'escrow_locked', solver);
     updateContractState();
 
-    // Stage 5: Commit Solver Collateral Bond
+    // Stage 5: Solver Bond Committed
     setStage('solver_committed');
-    setSubStatusText(`Winning Solver (${solver.solverName}) transferring $${solver.collateralOfferedUsd} collateral bond to SolverBonding.sol...`);
+    setSubStatusText(`Winning Solver (${solver.solverName}) committing $${solver.collateralOfferedUsd} collateral bond...`);
     await contractSimulator.commitSolverBond(currentIntent, solver);
     contractSimulator.addOrUpdateHistory(currentIntent, 'solver_committed', solver);
     updateContractState();
 
-    // Stage 6: Paced Multi-Substep Solana Execution (6s total delay)
+    // Stage 6: Cross-Chain Transit Execution
     setStage('executing_cross_chain');
-    setSubStatusText('Substep 1/3: Solver broadcasting transaction on Solana network...');
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    setSubStatusText('Substep 2/3: Awaiting block finality confirmation (Slot #2847192)...');
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    setSubStatusText('Substep 1/3: Solver broadcasting cross-chain transaction...');
+    await new Promise((r) => setTimeout(r, 1500));
+    setSubStatusText('Substep 2/3: Awaiting destination block finality confirmation...');
+    await new Promise((r) => setTimeout(r, 1500));
     setSubStatusText('Substep 3/3: Finalizing cross-chain delivery attestation proof...');
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    await new Promise((r) => setTimeout(r, 1500));
 
     // Stage 7: Hybrid Verification
     setStage('verifying');
     setChallengeCountdownSec(15);
     setSubStatusText(
       verificationType === 'zk_oracle'
-        ? 'Stage 7: Verifying ZK/Oracle attestation proof on-chain...'
-        : 'Stage 7: Optimistic challenge window active (0:15). Monitoring for challenges...'
+        ? 'Verifying ZK/Oracle attestation proof on-chain...'
+        : 'Optimistic challenge window active (0:15)...'
     );
-    await new Promise((resolve) => setTimeout(resolve, 3000));
+    await new Promise((r) => setTimeout(r, 2500));
 
-    // Stage 8 or 9: Final Settlement or Slashing
+    // Stage 8 / 9: Settlement or Slashing
     const result = await contractSimulator.executeVerificationAndSettlement(
       currentIntent,
       solver,
       forceFailure,
-      forceFailure ? 'Solver failed to confirm Solana destination delivery within deadline' : undefined
+      forceFailure ? 'Solver failed to deliver destination asset within deadline' : undefined
     );
 
     setSettlementResult(result);
     const finalStage = result.success ? 'settled' : 'slashed_refunded';
     setStage(finalStage);
-    setSubStatusText(result.success ? '✓ Stage 8: Settlement finalized on Ganache!' : '⚠ Stage 9: Verification Failed. Bond slashed & user refunded.');
-    
+    setSubStatusText(result.success ? '✓ Settlement finalized on Ganache!' : '⚠ Verification Failed. Bond slashed & user refunded.');
+
     contractSimulator.addOrUpdateHistory(currentIntent, finalStage, solver, result);
     updateContractState();
+
+    // Switch to /result page view!
+    setActiveTab('result');
 
     if (result.success) {
       confetti({
@@ -223,103 +231,128 @@ export default function App() {
     }
   };
 
-  const handleReset = () => {
-    setCurrentIntent(null);
-    setDraftIntent(null);
-    setBids([]);
-    setStage('idle');
-    setSettlementResult(undefined);
-    setIsSensitiveModalOpen(false);
-    setIsPreCommitOpen(false);
-    setAutoProceedCountdownSec(null);
-    setBiddingCountdownSec(5);
-    setSubStatusText('');
+  const handleSelectHistoricalIntent = (item: (typeof history)[0]) => {
+    setCurrentIntent(item.intent);
+    if (item.winningBid) setSelectedBid(item.winningBid);
+    if (item.result) setSettlementResult(item.result);
+    setStage(item.status);
+    setActiveTab('intents');
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#090d16] text-white relative">
+    <div className="min-h-screen flex flex-col bg-[#FAF8F5] text-[#1A1915]">
+      
+      {/* Top Navigation Header */}
       <Header
-        contractState={contractState}
-        onOpenHistory={() => setIsHistoryDrawerOpen(true)}
-        historyCount={history.length}
+        activeTab={activeTab}
+        onSelectTab={setActiveTab}
         viewMode={viewMode}
         onToggleViewMode={setViewMode}
       />
 
-      <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      <div className="flex-1 flex w-full">
         
-        {/* Render View Mode: Solver Dashboard vs. User View */}
-        {viewMode === 'solver' ? (
-          <SolverDashboard history={history} />
-        ) : (
-          <>
-            {/* Stage 0: Landing Bar & Live Stats */}
-            <LandingPrimerBar contractState={contractState} />
+        {/* Left Sidebar */}
+        <Sidebar
+          activeTab={activeTab}
+          onSelectTab={setActiveTab}
+          pendingIntentsCount={history.filter((h) => h.status !== 'settled' && h.status !== 'slashed_refunded').length}
+        />
 
-            {/* Banner */}
-            <div className="glass-panel p-6 flex flex-col md:flex-row items-center justify-between gap-4 border-indigo-900/40">
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <Sparkles className="w-5 h-5 text-indigo-400" />
-                  <h2 className="text-xl font-bold gradient-text">Decentralized Intent Solver Marketplace</h2>
-                </div>
-                <p className="text-xs text-slate-300 max-w-2xl">
-                  State desired financial outcomes without manually navigating bridges or routes. Independent solvers compete on cost, speed, and safety, backed by EVM escrow, hybrid verifiers, and full-bond slashing accountability.
-                </p>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={handleReset}
-                  className="px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs font-mono text-slate-300 flex items-center gap-1.5 transition-all"
-                >
-                  <RefreshCw className="w-3.5 h-3.5" />
-                  <span>Reset State</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Stage 1: Intent Form & Status Tracker Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-              <div className="lg:col-span-6">
-                <IntentForm onPreCommitTrigger={handlePreCommitTrigger} disabled={stage !== 'idle' && stage !== 'bidding_window'} />
-              </div>
-
-              <div className="lg:col-span-6 space-y-6">
-                <PipelineStatusTracker
-                  stage={stage}
-                  verificationType={verificationType}
-                  challengeCountdownSec={challengeCountdownSec}
-                  subStatusText={subStatusText}
-                  settlementResult={settlementResult}
-                  intentId={currentIntent?.intentId}
-                  solverBondUsd={selectedBid?.collateralOfferedUsd}
-                  intentAmountUsd={currentIntent?.sourceAmount}
+        {/* Main Content Area */}
+        <main className="flex-1 p-6 md:p-8 max-w-7xl mx-auto w-full overflow-x-hidden">
+          
+          {/* Solver Operator View Mode */}
+          {viewMode === 'solver' ? (
+            <SolverDashboard history={history} />
+          ) : (
+            <>
+              {/* Route 1: /dashboard */}
+              {activeTab === 'dashboard' && (
+                <DashboardView
+                  onNavigate={setActiveTab}
+                  intentsCount={history.length > 0 ? history.length : 1204}
                 />
-              </div>
-            </div>
+              )}
 
-            {/* Stage 3 & 4: Solver Bids Table Section */}
-            {(bids.length > 0 || isBroadcasting) && currentIntent && (
-              <SolverBidTable
-                bids={bids}
-                intent={currentIntent}
-                isBroadcasting={isBroadcasting}
-                biddingCountdownSec={biddingCountdownSec}
-                autoProceedCountdownSec={autoProceedCountdownSec}
-                onSelectBid={(bid) => executePipeline(bid, false)}
-                selectedBidId={selectedBid?.solverId}
-                isAmbiguous={isAmbiguous}
-                scoreGap={scoreGap}
-                isHighValue={isHighValue}
-                onCancelAutoProceed={() => setAutoProceedCountdownSec(null)}
-              />
-            )}
-          </>
-        )}
-      </main>
+              {/* Route 2: /swap (Create Intent Form) */}
+              {activeTab === 'swap' && (
+                <IntentForm
+                  onPreCommitTrigger={handlePreCommitTrigger}
+                  disabled={stage !== 'idle' && stage !== 'settled' && stage !== 'slashed_refunded'}
+                />
+              )}
 
-      {/* Pre-Commit EIP-712 Signature Confirmation Modal */}
+              {/* Route 3: /solvers (Marketplace Directory & Live Auction Bidding) */}
+              {activeTab === 'solvers' && (
+                <SolversMarketplace
+                  bids={bids}
+                  intent={currentIntent}
+                  isBroadcasting={isBroadcasting}
+                  biddingCountdownSec={biddingCountdownSec}
+                  autoProceedCountdownSec={autoProceedCountdownSec}
+                  onSelectBid={(bid) => executePipeline(bid, false)}
+                  selectedBidId={selectedBid?.solverId}
+                  isAmbiguous={isAmbiguous}
+                  scoreGap={scoreGap}
+                  isHighValue={isHighValue}
+                  onCancelAutoProceed={() => setAutoProceedCountdownSec(null)}
+                />
+              )}
+
+              {/* Route 4: /intents (Live Execution Telemetry & My Intents History) */}
+              {activeTab === 'intents' && (
+                <div className="space-y-8">
+                  {stage !== 'idle' && (
+                    <PipelineStatusTracker
+                      stage={stage}
+                      verificationType={verificationType}
+                      challengeCountdownSec={challengeCountdownSec}
+                      subStatusText={subStatusText}
+                      settlementResult={settlementResult}
+                      intentId={currentIntent?.intentId}
+                      solverBondUsd={selectedBid?.collateralOfferedUsd}
+                      intentAmountUsd={currentIntent?.sourceAmount}
+                      solverName={selectedBid?.solverName}
+                    />
+                  )}
+
+                  <MyIntentsTable
+                    history={history}
+                    onSelectIntent={handleSelectHistoricalIntent}
+                  />
+                </div>
+              )}
+
+              {/* Route 5: /result (Settlement Result Breakdown / Slashing Proof) */}
+              {activeTab === 'result' && (
+                <div>
+                  {settlementResult ? (
+                    <SettlementSummaryCard
+                      result={settlementResult}
+                      onResetToSwap={() => setActiveTab('swap')}
+                    />
+                  ) : (
+                    <div className="ix-card p-12 text-center space-y-3">
+                      <p className="text-sm font-sans text-[#7A7568]">No settlement result available yet. Execute an intent to view results!</p>
+                      <button
+                        type="button"
+                        onClick={() => setActiveTab('swap')}
+                        className="ix-btn-gold px-4 py-2 text-xs font-bold uppercase"
+                      >
+                        Create Intent
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </>
+          )}
+
+        </main>
+      </div>
+
+      {/* Pre-Commit EIP-712 Signature Modal */}
       {draftIntent && (
         <PreCommitModal
           isOpen={isPreCommitOpen}
@@ -329,7 +362,7 @@ export default function App() {
         />
       )}
 
-      {/* Sensitive Decision Modal */}
+      {/* Sensitive Decision Checkpoint Modal */}
       {currentIntent && (
         <SensitiveDecisionModal
           isOpen={isSensitiveModalOpen}
@@ -338,18 +371,11 @@ export default function App() {
           isAmbiguous={isAmbiguous}
           isHighValue={isHighValue}
           onApproveBid={(bid) => executePipeline(bid, false)}
-          onCancel={handleReset}
+          onCancel={() => setIsSensitiveModalOpen(false)}
         />
       )}
 
-      {/* Stage 10: Intent History Drawer */}
-      <IntentHistoryDrawer
-        isOpen={isHistoryDrawerOpen}
-        history={history}
-        onClose={() => setIsHistoryDrawerOpen(false)}
-      />
-
-      {/* Stage 9: Collapsed Judge Debug Instrumentation Panel */}
+      {/* Judge Tools Simulation Controls */}
       {currentIntent && selectedBid && stage !== 'settled' && stage !== 'slashed_refunded' && (
         <JudgeToolsPanel
           onTriggerFailure={() => executePipeline(selectedBid, true)}
@@ -357,18 +383,12 @@ export default function App() {
         />
       )}
 
-      {/* In-App Block Explorer Modal */}
-      {settlementResult?.receipts && settlementResult.receipts.length > 0 && (
-        <BlockExplorerModal
-          isOpen={!!activeReceiptForExplorer}
-          receipt={activeReceiptForExplorer || settlementResult.receipts[0]}
-          onClose={() => setActiveReceiptForExplorer(undefined)}
-        />
-      )}
+      {/* Bottom Status Bar / Footer */}
+      <Footer
+        solversActiveCount={142}
+        intentsPendingCount={history.length > 0 ? history.length : 1204}
+      />
 
-      <footer className="border-t border-slate-900 py-6 text-center text-xs text-slate-500 font-mono">
-        Zyntek Protocol &copy; 2026 | CSI ORIGIN Problem Statement #10 | Cross-Chain Intent Solver Network
-      </footer>
     </div>
   );
 }

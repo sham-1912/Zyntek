@@ -1,9 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import type { UserIntent, ChainId, PrioritySliders as SlidersType } from '../services/types';
-import { PrioritySliders } from './PrioritySliders';
-import { web3Provider } from '../services/web3Provider';
-import type { WalletState } from '../services/web3Provider';
-import { Send, ArrowDownUp, Lock, HelpCircle, Plug } from 'lucide-react';
+import { ArrowRight, ChevronDown, Search } from 'lucide-react';
 
 interface IntentFormProps {
   onPreCommitTrigger: (intent: UserIntent) => void;
@@ -11,39 +8,58 @@ interface IntentFormProps {
 }
 
 export const IntentForm: React.FC<IntentFormProps> = ({ onPreCommitTrigger, disabled }) => {
-  const [walletState, setWalletState] = useState<WalletState>(web3Provider.getWalletState());
+  const [sourceChain, setSourceChain] = useState<ChainId>('ethereum');
+  const [sourceAsset] = useState<string>('USDC');
+  const [sourceAmount, setSourceAmount] = useState<number>(1000);
 
-  useEffect(() => {
-    const unsubscribe = web3Provider.subscribe((updated) => {
-      setWalletState(updated);
-    });
-    return unsubscribe;
-  }, []);
+  const [destinationChain, setDestinationChain] = useState<ChainId>('solana');
+  const [destinationAsset] = useState<string>('USDC');
 
-  const [sourceChain] = useState<ChainId>('ethereum');
-  const [sourceAsset, setSourceAsset] = useState<string>('USDC');
-  const [sourceAmount, setSourceAmount] = useState<number>(500);
-
-  const [destinationChain] = useState<ChainId>('solana');
-  const [destinationAsset, setDestinationAsset] = useState<string>('USDC');
-
+  // Sliders with auto-rebalancing to sum to 100%
   const [sliders, setSliders] = useState<SlidersType>({
-    cost: 50,
-    speed: 30,
+    cost: 30,
+    speed: 50,
     safety: 20,
   });
 
-  const estimatedMinOutput = Number((sourceAmount * 0.985).toFixed(2));
-  const isHighValue = sourceAmount >= 1000;
+  const handleSliderChange = (changedKey: keyof SlidersType, newValue: number) => {
+    const clampedVal = Math.min(100, Math.max(0, newValue));
+    const otherKeys = (['cost', 'speed', 'safety'] as (keyof SlidersType)[]).filter(
+      (k) => k !== changedKey
+    );
+    const oldOtherSum = sliders[otherKeys[0]] + sliders[otherKeys[1]];
+    const newOtherSum = 100 - clampedVal;
 
-  const handleConnectWalletClick = async () => {
-    const updated = await web3Provider.connectWallet();
-    setWalletState(updated);
+    let newOther1 = 0;
+    let newOther2 = 0;
+
+    if (oldOtherSum === 0) {
+      newOther1 = Math.round(newOtherSum / 2);
+      newOther2 = newOtherSum - newOther1;
+    } else {
+      newOther1 = Math.round((sliders[otherKeys[0]] / oldOtherSum) * newOtherSum);
+      newOther2 = newOtherSum - newOther1;
+    }
+
+    setSliders({
+      cost: changedKey === 'cost' ? clampedVal : (otherKeys[0] === 'cost' ? newOther1 : newOther2),
+      speed: changedKey === 'speed' ? clampedVal : (otherKeys[0] === 'speed' ? newOther1 : newOther2),
+      safety: changedKey === 'safety' ? clampedVal : (otherKeys[0] === 'safety' ? newOther1 : newOther2),
+    });
   };
+
+  const getStrategyPreviewText = () => {
+    if (sliders.speed >= 50) return 'Strategy: Fast-path priority execution relayers via private Flashbots pool';
+    if (sliders.cost >= 50) return 'Strategy: Low-cost DEX aggregator routing with minimal protocol fees';
+    if (sliders.safety >= 50) return 'Strategy: Maximum collateral security (150% bond) with ZK-Oracle verification';
+    return 'Strategy: Balanced execution route with optimal fee & speed trade-offs';
+  };
+
+  const estimatedMinOutput = Number((sourceAmount * 0.99).toFixed(2));
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (disabled) return;
+    if (disabled || sourceAmount <= 0) return;
 
     const newIntent: UserIntent = {
       intentId: `int_${Math.random().toString(36).substr(2, 8)}`,
@@ -61,169 +77,219 @@ export const IntentForm: React.FC<IntentFormProps> = ({ onPreCommitTrigger, disa
     onPreCommitTrigger(newIntent);
   };
 
-  const handleApplyPreset = (amount: number) => {
-    setSourceAmount(amount);
-  };
-
   return (
-    <form onSubmit={handleSubmit} className="glass-panel p-6 space-y-6">
-      {/* Header & Connected Wallet Badge */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-4">
-        <div>
-          <h2 className="text-lg font-bold text-white font-mono flex items-center gap-2">
-            <span>State Cross-Chain Intent</span>
-          </h2>
-          <p className="text-xs text-slate-400 mt-0.5">
-            Specify source deposit & target destination. Solvers compete to fulfill.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2 font-mono text-xs">
-          {walletState.isConnected ? (
-            <span className="px-2.5 py-1 rounded bg-indigo-950/80 border border-indigo-800 text-indigo-300 font-semibold flex items-center gap-1.5 shadow-sm">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span>{walletState.address.slice(0, 6)}...{walletState.address.slice(-4)}</span>
-              <span className="text-slate-500 font-normal">({walletState.balanceEth} ETH)</span>
-            </span>
-          ) : (
-            <button
-              type="button"
-              onClick={handleConnectWalletClick}
-              className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-semibold flex items-center gap-1.5 shadow-md transition-all animate-pulse-glow"
-            >
-              <Plug className="w-3.5 h-3.5" />
-              <span>Connect Wallet</span>
-            </button>
-          )}
-        </div>
+    <div className="max-w-3xl mx-auto space-y-8 animate-in fade-in zoom-in-95 duration-200">
+      
+      {/* Header (Matching Image 1: CREATE AN INTENT) */}
+      <div className="text-center space-y-2">
+        <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[#1A1915] uppercase font-sans">
+          CREATE AN INTENT
+        </h1>
+        <p className="text-sm text-[#6B6659]">
+          Define your cross-chain transaction parameters.
+        </p>
       </div>
 
-      {/* Preset Buttons for Quick Demo Testing */}
-      <div className="flex items-center gap-2 text-xs font-mono">
-        <span className="text-slate-400 text-[11px]">Quick Amount Presets:</span>
+      <form onSubmit={handleSubmit} className="space-y-6">
+        
+        {/* Card 1: Networks & Amount (Matching Image 1) */}
+        <div className="ix-card p-6 space-y-6">
+          
+          {/* Source & Destination Network Selection */}
+          <div className="relative grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+            
+            {/* Source Network */}
+            <div className="ix-card-subtle p-4 space-y-2 relative">
+              <span className="text-[11px] font-mono font-medium text-[#7A7568] uppercase tracking-wider block">
+                Source Network
+              </span>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-[#EFECE6] border border-[#DFD9CD] flex items-center justify-center font-bold text-xs font-mono text-[#38352F]">
+                    Ξ
+                  </div>
+                  <div>
+                    <div className="font-semibold text-sm text-[#1A1915]">
+                      {sourceChain === 'ethereum' ? 'Ethereum' : 'Arbitrum'}
+                    </div>
+                    <div className="text-xs font-mono text-[#7A7568]">{sourceAsset}</div>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setSourceChain(sourceChain === 'ethereum' ? 'arbitrum' : 'ethereum')}
+                  className="text-[#7A7568] hover:text-[#1A1915] p-1"
+                >
+                  <ChevronDown className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* Middle Circle Arrow (Overlay) */}
+            <div className="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 w-7 h-7 rounded-full bg-white border border-[#DFD9CD] shadow-xs items-center justify-center text-[#7A7568]">
+              <ArrowRight className="w-3.5 h-3.5" />
+            </div>
+
+            {/* Destination Network */}
+            <div className="ix-card-subtle p-4 space-y-2 relative">
+              <span className="text-[11px] font-mono font-medium text-[#7A7568] uppercase tracking-wider block">
+                Destination Network
+              </span>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-[#FAF5E8] border border-[#E5D19E] flex items-center justify-center font-bold text-xs font-mono text-[#8C6407]">
+                    S
+                  </div>
+                  <div>
+                    <div className="font-semibold text-sm text-[#1A1915]">
+                      {destinationChain === 'solana' ? 'Solana' : 'Polygon'}
+                    </div>
+                    <div className="text-xs font-mono text-[#7A7568]">{destinationAsset}</div>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setDestinationChain(destinationChain === 'solana' ? 'polygon' : 'solana')}
+                  className="text-[#7A7568] hover:text-[#1A1915] p-1"
+                >
+                  <ChevronDown className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+          </div>
+
+          {/* Amount to Transfer Box */}
+          <div className="space-y-2">
+            <label className="text-[11px] font-mono font-medium text-[#7A7568] uppercase tracking-wider block">
+              Amount to Transfer
+            </label>
+
+            <div className="ix-card-subtle p-3 sm:p-4 flex items-center justify-between gap-4 border border-[#E8E4DA] focus-within:border-[#C69214] transition-colors">
+              <input
+                type="number"
+                min="10"
+                max="100000"
+                value={sourceAmount}
+                onChange={(e) => setSourceAmount(Number(e.target.value))}
+                className="w-full bg-transparent text-2xl sm:text-3xl font-mono font-bold text-[#1A1915] outline-none border-none p-0 focus:ring-0"
+                placeholder="1,000"
+              />
+
+              <div className="px-3 py-1.5 rounded-lg bg-white border border-[#DFD9CD] font-mono font-bold text-sm text-[#38352F] shrink-0 shadow-2xs">
+                USDC
+              </div>
+            </div>
+
+            {/* Quick Presets */}
+            <div className="flex items-center gap-2 pt-1">
+              {[100, 500, 1000, 5000].map((amt) => (
+                <button
+                  key={amt}
+                  type="button"
+                  onClick={() => setSourceAmount(amt)}
+                  className={`px-2.5 py-1 rounded text-xs font-mono transition-all ${
+                    sourceAmount === amt
+                      ? 'bg-[#C69214] text-white font-bold'
+                      : 'bg-white border border-[#E8E4DA] text-[#6B6659] hover:border-[#C69214]'
+                  }`}
+                >
+                  ${amt.toLocaleString()}
+                </button>
+              ))}
+            </div>
+          </div>
+
+        </div>
+
+        {/* Card 2: Solver Priorities Sliders (Matching Image 1) */}
+        <div className="ix-card p-6 space-y-6">
+          <div className="flex items-center justify-between border-b border-[#E8E4DA] pb-3">
+            <span className="text-[11px] font-mono font-medium text-[#7A7568] uppercase tracking-wider">
+              Solver Priorities
+            </span>
+            <span className="text-xs font-mono text-[#C69214] font-semibold">
+              Auto-Balanced (Total: 100%)
+            </span>
+          </div>
+
+          <div className="space-y-5">
+            {/* Slider 1: Cost Efficiency */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-xs font-medium text-[#1A1915]">
+                <div className="flex items-center gap-2">
+                  <span>💳</span>
+                  <span>Cost Efficiency</span>
+                </div>
+                <span className="font-mono font-bold text-[#1A1915]">{sliders.cost}%</span>
+              </div>
+              <input
+                type="range"
+                min="0"
+                max="100"
+                value={sliders.cost}
+                onChange={(e) => handleSliderChange('cost', Number(e.target.value))}
+                className="ix-slider"
+              />
+            </div>
+
+            {/* Slider 2: Execution Speed */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-xs font-medium text-[#1A1915]">
+                <div className="flex items-center gap-2">
+                  <span>⚡</span>
+                  <span>Execution Speed</span>
+                </div>
+                <span className="font-mono font-bold text-[#1A1915]">{sliders.speed}%</span>
+              </div>
+              <input
+                type="range"
+                min="0"
+                max="100"
+                value={sliders.speed}
+                onChange={(e) => handleSliderChange('speed', Number(e.target.value))}
+                className="ix-slider"
+              />
+            </div>
+
+            {/* Slider 3: Security Margin */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-xs font-medium text-[#1A1915]">
+                <div className="flex items-center gap-2">
+                  <span>🛡️</span>
+                  <span>Security Margin</span>
+                </div>
+                <span className="font-mono font-bold text-[#1A1915]">{sliders.safety}%</span>
+              </div>
+              <input
+                type="range"
+                min="0"
+                max="100"
+                value={sliders.safety}
+                onChange={(e) => handleSliderChange('safety', Number(e.target.value))}
+                className="ix-slider"
+              />
+            </div>
+          </div>
+
+          {/* Live Strategy Preview Line */}
+          <div className="pt-2 border-t border-[#E8E4DA] text-xs text-[#6B6659] italic flex items-center gap-2 font-sans">
+            <span>{getStrategyPreviewText()}</span>
+          </div>
+        </div>
+
+        {/* Submit Action Button (Matching Image 1: FIND SOLVERS 🔍) */}
         <button
-          type="button"
-          onClick={() => handleApplyPreset(500)}
-          className={`px-2.5 py-1 rounded border transition-all ${
-            sourceAmount === 500
-              ? 'bg-indigo-600 text-white border-indigo-500 font-bold'
-              : 'bg-slate-900 hover:bg-slate-800 text-slate-300 border-slate-700'
-          }`}
+          type="submit"
+          disabled={disabled}
+          className="w-full py-4 px-6 ix-btn-gold text-base uppercase font-bold tracking-wider flex items-center justify-center gap-2 shadow-md hover:shadow-lg disabled:opacity-50 transition-all cursor-pointer"
         >
-          $500 (Standard)
+          <span>FIND SOLVERS</span>
+          <Search className="w-4 h-4 stroke-[2.5]" />
         </button>
 
-        <button
-          type="button"
-          onClick={() => handleApplyPreset(1500)}
-          className={`px-2.5 py-1 rounded border transition-all flex items-center gap-1 ${
-            sourceAmount === 1500
-              ? 'bg-indigo-600 text-white border-indigo-500 font-bold'
-              : 'bg-slate-900 hover:bg-slate-800 text-slate-300 border-slate-700'
-          }`}
-        >
-          <Lock className="w-3 h-3 text-amber-400" />
-          <span>$1,500 (High-Value Gate)</span>
-        </button>
-      </div>
+      </form>
 
-      {/* Source Asset & Amount Box */}
-      <div className="bg-slate-900/80 p-4 rounded-xl border border-slate-800 space-y-3">
-        <div className="flex justify-between items-center text-xs text-slate-400">
-          <span>YOU PAY (Source Escrow Deposit)</span>
-          <span>Sepolia Testnet</span>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <input
-            type="number"
-            value={sourceAmount}
-            disabled={disabled}
-            onChange={(e) => setSourceAmount(Math.max(1, Number(e.target.value)))}
-            className="w-full bg-transparent text-2xl font-bold font-mono text-white focus:outline-none"
-            placeholder="0.00"
-          />
-
-          <div className="flex items-center gap-2 bg-slate-950 p-2 rounded-lg border border-slate-800 shrink-0">
-            <select
-              value={sourceAsset}
-              onChange={(e) => setSourceAsset(e.target.value)}
-              disabled={disabled}
-              className="bg-transparent text-xs font-bold text-white font-mono focus:outline-none cursor-pointer"
-            >
-              <option value="USDC">USDC</option>
-              <option value="ETH">ETH</option>
-              <option value="USDT">USDT</option>
-            </select>
-          </div>
-        </div>
-      </div>
-
-      {/* Switch Arrow Icon */}
-      <div className="flex justify-center -my-3 relative z-10">
-        <div className="w-8 h-8 rounded-full bg-slate-900 border border-slate-700 flex items-center justify-center text-indigo-400 shadow-md">
-          <ArrowDownUp className="w-4 h-4" />
-        </div>
-      </div>
-
-      {/* Destination Asset & Minimum Output Box */}
-      <div className="bg-slate-900/80 p-4 rounded-xl border border-slate-800 space-y-3">
-        <div className="flex justify-between items-center text-xs text-slate-400">
-          <span>YOU RECEIVE (Target Outcome Delivered)</span>
-          <span>Solana Network</span>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <div className="w-full text-2xl font-bold font-mono text-emerald-400">
-            ~${estimatedMinOutput}
-          </div>
-
-          <div className="flex items-center gap-2 bg-slate-950 p-2 rounded-lg border border-slate-800 shrink-0">
-            <select
-              value={destinationAsset}
-              onChange={(e) => setDestinationAsset(e.target.value)}
-              disabled={disabled}
-              className="bg-transparent text-xs font-bold text-white font-mono focus:outline-none cursor-pointer"
-            >
-              <option value="USDC">USDC (Solana)</option>
-              <option value="SOL">SOL</option>
-            </select>
-          </div>
-        </div>
-      </div>
-
-      {/* Priority Sliders Component */}
-      <PrioritySliders sliders={sliders} onChange={setSliders} disabled={disabled} />
-
-      {/* Inline Tooltip for High-Value Gate */}
-      {isHighValue && (
-        <div className="bg-indigo-950/60 border border-indigo-800 p-3 rounded-lg flex items-start gap-2.5 text-xs text-indigo-200 font-mono">
-          <HelpCircle className="w-4 h-4 text-indigo-400 shrink-0 mt-0.5" />
-          <div>
-            <span className="font-bold text-white uppercase text-[10px] tracking-wider block mb-0.5">
-              High-Value Verification Gate Active ($1,500 &ge; $1,000):
-            </span>
-            <p className="font-sans text-[11px] leading-tight text-slate-300">
-              Above $1,000, delivery is verified with a stronger cryptographic ZK/Oracle attestation proof before funds release — slightly slower, much safer.
-            </p>
-          </div>
-        </div>
-      )}
-
-      {/* Upfront Expectation Note */}
-      <div className="text-center text-[11px] text-slate-400 font-mono">
-        ⚡ Solvers typically respond within ~10–15 seconds.
-      </div>
-
-      {/* Submit Button */}
-      <button
-        type="submit"
-        disabled={disabled}
-        className="w-full py-3.5 px-4 rounded-xl gradient-bg hover:opacity-95 text-white font-bold text-sm font-mono flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/30 transition-all disabled:opacity-50"
-      >
-        <Send className="w-4 h-4" />
-        <span>Review & Broadcast Intent</span>
-      </button>
-    </form>
+    </div>
   );
 };

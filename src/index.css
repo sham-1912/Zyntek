@@ -1,73 +1,141 @@
 @import "tailwindcss";
 
-:root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-  color-scheme: dark;
-  color: rgba(255, 255, 255, 0.92);
-  background-color: #090d16;
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+@layer base {
+  :root {
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.5;
+    font-weight: 400;
+    color-scheme: light;
+    color: #1A1915;
+    background-color: #FAF8F5;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    margin: 0;
+    min-width: 320px;
+    min-height: 100vh;
+    background-color: #FAF8F5;
+    color: #1A1915;
+    font-family: 'Inter', sans-serif;
+  }
 }
 
-body {
-  margin: 0;
-  min-width: 320px;
-  min-height: 100vh;
-  background: radial-gradient(circle at 50% -20%, #171e38 0%, #090d16 80%);
+/* Monospace font class utility */
+.font-mono {
+  font-family: 'JetBrains Mono', monospace !important;
 }
 
-/* Custom Cyber Glass Card Styling */
-.glass-panel {
-  background: rgba(18, 26, 44, 0.75);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-  border-radius: 1rem;
+/* IntentX Clean Ivory Card Styling (Matching Reference Specs) */
+.ix-card {
+  background-color: #FFFFFF;
+  border: 1px solid #E8E4DA;
+  border-radius: 0.75rem; /* rounded-xl */
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.02);
 }
 
-.glass-panel-glow {
-  background: rgba(22, 32, 54, 0.85);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(99, 102, 241, 0.3);
-  box-shadow: 0 0 25px rgba(99, 102, 241, 0.2);
-  border-radius: 1rem;
+.ix-card-subtle {
+  background-color: #F7F4EE;
+  border: 1px solid #E8E4DA;
+  border-radius: 0.5rem;
 }
 
-/* Accent Gradients */
-.gradient-text {
-  background: linear-gradient(135deg, #818cf8 0%, #c084fc 50%, #38bdf8 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+.ix-card-gold {
+  background-color: #FAF5E8;
+  border: 1px solid #E5D19E;
+  border-radius: 0.75rem;
 }
 
-.gradient-bg {
-  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+/* IntentX Gold Button Styling */
+.ix-btn-gold {
+  background-color: #C69214;
+  color: #FFFFFF;
+  font-weight: 600;
+  border-radius: 0.5rem;
+  transition: all 0.15s ease-in-out;
 }
 
-.gradient-bg-success {
-  background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+.ix-btn-gold:hover {
+  background-color: #B0810F;
+  box-shadow: 0 2px 8px rgba(198, 146, 20, 0.25);
 }
 
-.gradient-bg-danger {
-  background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+.ix-btn-gold:active {
+  background-color: #99700C;
 }
 
-/* Slider Custom Styling */
-input[type="range"] {
-  accent-color: #6366f1;
+.ix-btn-outline {
+  background-color: #FFFFFF;
+  border: 1px solid #D8D2C4;
+  color: #38352F;
+  font-weight: 500;
+  border-radius: 0.5rem;
+  transition: all 0.15s ease-in-out;
 }
 
-/* Pulse animation for broadcast delay */
-@keyframes pulse-glow {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 0.9; }
+.ix-btn-outline:hover {
+  background-color: #F5F2EA;
+  border-color: #C69214;
+  color: #1A1915;
 }
 
-.animate-pulse-glow {
-  animation: pulse-glow 1.5s infinite ease-in-out;
+/* IntentX Range Slider Styling (Dark Gold Accent) */
+input[type="range"].ix-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  background: #E8E4DA;
+  border-radius: 3px;
+  outline: none;
+}
+
+input[type="range"].ix-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  border: 3px solid #C69214;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+  transition: transform 0.1s ease;
+}
+
+input[type="range"].ix-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+  border-color: #A3770D;
+}
+
+input[type="range"].ix-slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  border: 3px solid #C69214;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+}
+
+/* Custom Scrollbar for Ivory theme */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #FAF8F5;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #D8D2C4;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #B5AD9C;
 }

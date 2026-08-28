@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import type { UserIntent } from '../services/types';
 import { getEip712TypedData } from '../services/eip712Service';
 import { web3Provider } from '../services/web3Provider';
-import { Lock, ShieldCheck, ArrowRight, Wallet, X, Loader2, FileCode, CheckCircle2 } from 'lucide-react';
+import { Lock, ShieldCheck, ArrowRight, X, Loader2, FileCode, CheckCircle2 } from 'lucide-react';
 
 interface PreCommitModalProps {
   isOpen: boolean;
@@ -41,26 +41,26 @@ export const PreCommitModal: React.FC<PreCommitModalProps> = ({ isOpen, intent, 
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md">
-      <div className="glass-panel-glow max-w-xl w-full p-6 space-y-5 animate-in fade-in zoom-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#1A1915]/60 backdrop-blur-sm">
+      <div className="ix-card max-w-xl w-full p-6 space-y-5 animate-in fade-in zoom-in-95 duration-200 shadow-xl border-[#E5D19E]">
         
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-indigo-900/50 pb-3">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-indigo-600/20 border border-indigo-500/40 flex items-center justify-center">
-              <Lock className="w-4 h-4 text-indigo-400" />
+        <div className="flex items-center justify-between border-b border-[#E8E4DA] pb-3">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-[#FAF5E8] border border-[#E5D19E] flex items-center justify-center text-[#8C6407]">
+              <Lock className="w-4 h-4" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-base font-bold text-white font-mono">Two-Step ERC-20 Token Deposit</h3>
-                <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-indigo-950 text-indigo-300 border border-indigo-800 font-mono">
-                  Standard ERC-20 Flow
+                <h3 className="text-base font-bold text-[#1A1915] font-sans">Two-Step ERC-20 Token Deposit</h3>
+                <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-[#FAF5E8] text-[#8C6407] border border-[#E5D19E] font-mono">
+                  ERC-20 Security Flow
                 </span>
               </div>
-              <p className="text-[11px] text-slate-400">Step 1: Approve Allowance &rarr; Step 2: EIP-712 Escrow Lock</p>
+              <p className="text-xs text-[#6B6659]">Step 1: Approve Allowance &rarr; Step 2: EIP-712 Escrow Lock</p>
             </div>
           </div>
-          <button onClick={onCancel} className="text-slate-400 hover:text-white" disabled={isSigning || isApproving}>
+          <button onClick={onCancel} className="text-[#7A7568] hover:text-[#1A1915]" disabled={isSigning || isApproving}>
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -70,92 +70,85 @@ export const PreCommitModal: React.FC<PreCommitModalProps> = ({ isOpen, intent, 
           <div
             className={`p-3 rounded-xl border flex items-center gap-2 ${
               approvalDone
-                ? 'bg-emerald-950/60 border-emerald-800 text-emerald-300'
+                ? 'bg-[#EAF6ED] border-[#A8E0B7] text-[#1B5E20]'
                 : isApproving
-                ? 'bg-indigo-950/80 border-indigo-500 text-indigo-200 animate-pulse'
-                : 'bg-slate-900 border-slate-800 text-slate-400'
+                ? 'bg-[#FAF5E8] border-[#C69214] text-[#8C6407] animate-pulse'
+                : 'bg-[#FAF8F5] border-[#E8E4DA] text-[#7A7568]'
             }`}
           >
             {approvalDone ? (
-              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
             ) : isApproving ? (
-              <Loader2 className="w-4 h-4 text-indigo-400 animate-spin" />
+              <Loader2 className="w-4 h-4 text-[#C69214] animate-spin" />
             ) : (
-              <span className="w-4 h-4 rounded-full bg-slate-800 flex items-center justify-center text-[10px] font-bold">1</span>
+              <span className="w-4 h-4 rounded-full bg-[#E8E4DA] flex items-center justify-center text-[10px] font-bold text-[#1A1915]">1</span>
             )}
-            <span className="font-bold">1. Approve USDC Spending</span>
+            <span className="font-bold">1. Approve USDC Allowance</span>
           </div>
 
           <div
             className={`p-3 rounded-xl border flex items-center gap-2 ${
               isSigning
-                ? 'bg-indigo-950/80 border-indigo-500 text-indigo-200 animate-pulse'
+                ? 'bg-[#FAF5E8] border-[#C69214] text-[#8C6407] animate-pulse'
                 : approvalDone
-                ? 'bg-slate-900 border-indigo-500/80 text-white'
-                : 'bg-slate-900/50 border-slate-800 text-slate-600'
+                ? 'bg-white border-[#C69214] text-[#1A1915]'
+                : 'bg-[#FAF8F5] border-[#E8E4DA] text-[#7A7568]'
             }`}
           >
             {isSigning ? (
-              <Loader2 className="w-4 h-4 text-indigo-400 animate-spin" />
+              <Loader2 className="w-4 h-4 text-[#C69214] animate-spin" />
             ) : (
-              <span className="w-4 h-4 rounded-full bg-slate-800 flex items-center justify-center text-[10px] font-bold">2</span>
+              <span className="w-4 h-4 rounded-full bg-[#E8E4DA] flex items-center justify-center text-[10px] font-bold text-[#1A1915]">2</span>
             )}
-            <span className="font-bold">2. EIP-712 Deposit Lock</span>
+            <span className="font-bold">2. Sign EIP-712 & Deposit</span>
           </div>
         </div>
 
-        {/* Upfront EIP-712 Schema Code Box */}
-        <div className="space-y-2 font-mono text-xs">
-          <div className="flex justify-between items-center text-slate-300">
-            <span className="flex items-center gap-1.5 font-bold text-indigo-300">
-              <FileCode className="w-4 h-4 text-indigo-400" />
-              <span>EIP-712 Typed Data Message Schema (Upfront Preview):</span>
+        {/* Intent Summary Box */}
+        <div className="ix-card-subtle p-4 space-y-2 text-xs font-mono">
+          <div className="flex items-center justify-between text-[#6B6659]">
+            <span>Intent ID:</span>
+            <span className="font-bold text-[#1A1915]">{intent.intentId}</span>
+          </div>
+
+          <div className="flex items-center justify-between text-[#6B6659]">
+            <span>Source Deposit:</span>
+            <span className="font-bold text-[#1A1915]">${intent.sourceAmount.toLocaleString()} USDC</span>
+          </div>
+
+          <div className="flex items-center justify-between text-[#6B6659]">
+            <span>Min Target Output:</span>
+            <span className="font-bold text-[#C69214]">${intent.minAcceptableOutput.toLocaleString()} USDC</span>
+          </div>
+
+          <div className="flex items-center justify-between text-[#6B6659]">
+            <span>Origin Account:</span>
+            <span className="font-bold text-[#38352F]">{walletState.address.slice(0, 8)}...{walletState.address.slice(-6)}</span>
+          </div>
+        </div>
+
+        {/* EIP-712 Cryptographic Payload Inspector */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between text-[11px] font-mono text-[#7A7568] uppercase">
+            <span className="flex items-center gap-1">
+              <FileCode className="w-3.5 h-3.5 text-[#C69214]" />
+              <span>EIP-712 Structured Data Payload</span>
             </span>
-            <span className="text-[10px] text-slate-500 font-mono">ChainId: {typedData.domain.chainId} (Ganache)</span>
+            <span>Verifying Contract: 0x71C8...845</span>
           </div>
 
-          <div className="bg-slate-950 p-4 rounded-xl border border-indigo-900/80 text-[11px] space-y-2 text-indigo-200 max-h-44 overflow-y-auto">
-            <div>
-              <span className="font-bold text-white block text-[10px] uppercase tracking-wider mb-1 text-slate-400">1. EIP-712 Domain Separator</span>
-              <pre className="bg-slate-900 p-2 rounded text-[10px] border border-slate-800 text-indigo-300">
-                {JSON.stringify(typedData.domain, null, 2)}
-              </pre>
-            </div>
-
-            <div>
-              <span className="font-bold text-white block text-[10px] uppercase tracking-wider mb-1 text-slate-400">2. Intent Struct Message Payload</span>
-              <pre className="bg-slate-900 p-2 rounded text-[10px] border border-slate-800 text-emerald-400">
-                {JSON.stringify(typedData.value, null, 2)}
-              </pre>
-            </div>
+          <div className="bg-[#FAF8F5] p-3 rounded-lg border border-[#E8E4DA] max-h-36 overflow-y-auto text-[11px] font-mono text-[#38352F]">
+            <pre className="whitespace-pre-wrap">{JSON.stringify(typedData.value, null, 2)}</pre>
           </div>
-        </div>
-
-        {/* Wallet Signer Details Summary */}
-        <div className="bg-slate-900/80 p-3 rounded-xl border border-slate-800 space-y-1.5 font-mono text-xs">
-          <div className="flex justify-between items-center text-slate-400 text-[11px]">
-            <span>Authenticated Wallet Address:</span>
-            <span className="text-indigo-400 font-bold">{walletState.address}</span>
-          </div>
-          <div className="flex justify-between items-center text-slate-400 text-[11px]">
-            <span>Escrow Deposit Amount:</span>
-            <span className="text-emerald-400 font-bold">${intent.sourceAmount} USDC</span>
-          </div>
-        </div>
-
-        {/* Security Note */}
-        <div className="text-[11px] text-slate-400 font-sans flex items-center gap-1.5 bg-slate-950 p-2.5 rounded-lg border border-slate-800">
-          <ShieldCheck className="w-4 h-4 text-indigo-400 shrink-0" />
-          <span>Off-chain signed EIP-712 intent is released from escrow only upon verified solver settlement.</span>
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center gap-3 pt-1 font-mono">
+        <div className="pt-2 flex items-center justify-end gap-3">
           <button
             type="button"
             onClick={onCancel}
-            disabled={isSigning || isApproving}
-            className="px-4 py-2.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs font-semibold text-slate-300 transition-all disabled:opacity-50"
+            disabled={isApproving || isSigning}
+            className="ix-btn-outline px-4 py-2 text-xs"
           >
             Cancel
           </button>
@@ -165,18 +158,17 @@ export const PreCommitModal: React.FC<PreCommitModalProps> = ({ isOpen, intent, 
               type="button"
               onClick={handleApproveUsdc}
               disabled={isApproving}
-              className="flex-1 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/30 transition-all disabled:opacity-60"
+              className="ix-btn-gold px-5 py-2 text-xs flex items-center gap-2"
             >
               {isApproving ? (
                 <>
-                  <Loader2 className="w-4 h-4 text-white animate-spin" />
-                  <span>Approving USDC in Ganache...</span>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Approving USDC Allowance...</span>
                 </>
               ) : (
                 <>
-                  <Wallet className="w-3.5 h-3.5" />
-                  <span>Step 1: Approve USDC Allowance ($500)</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
+                  <span>Step 1: Approve USDC Allowance (${intent.sourceAmount})</span>
+                  <ArrowRight className="w-4 h-4" />
                 </>
               )}
             </button>
@@ -185,23 +177,23 @@ export const PreCommitModal: React.FC<PreCommitModalProps> = ({ isOpen, intent, 
               type="button"
               onClick={handleSignAndDeposit}
               disabled={isSigning}
-              className="flex-1 py-2.5 rounded-lg gradient-bg hover:opacity-95 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/30 transition-all disabled:opacity-60"
+              className="ix-btn-gold px-5 py-2 text-xs flex items-center gap-2"
             >
               {isSigning ? (
                 <>
-                  <Loader2 className="w-4 h-4 text-white animate-spin" />
-                  <span>Signing EIP-712 & Depositing...</span>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Signing & Depositing to Ganache...</span>
                 </>
               ) : (
                 <>
-                  <Lock className="w-3.5 h-3.5" />
+                  <ShieldCheck className="w-4 h-4" />
                   <span>Step 2: Sign EIP-712 & Deposit Escrow</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
                 </>
               )}
             </button>
           )}
         </div>
+
       </div>
     </div>
   );
