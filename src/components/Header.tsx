@@ -4,8 +4,8 @@ import type { WalletState } from '../services/web3Provider';
 import { Settings, Bell, AlertTriangle, Hexagon, UserCheck, Bot } from 'lucide-react';
 
 interface HeaderProps {
-  activeTab: 'swap' | 'dashboard' | 'intents' | 'solvers' | 'result';
-  onSelectTab: (tab: 'swap' | 'dashboard' | 'intents' | 'solvers' | 'result') => void;
+  activeTab: 'swap' | 'dashboard' | 'intents' | 'solvers' | 'result' | 'activity';
+  onSelectTab: (tab: 'swap' | 'dashboard' | 'intents' | 'solvers' | 'result' | 'activity') => void;
   viewMode: 'user' | 'solver';
   onToggleViewMode: (mode: 'user' | 'solver') => void;
   unreadNotificationsCount?: number;

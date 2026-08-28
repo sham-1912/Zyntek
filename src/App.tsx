@@ -14,6 +14,7 @@ import { PipelineStatusTracker } from './components/PipelineStatusTracker';
 import { MyIntentsTable } from './components/MyIntentsTable';
 import { SettlementSummaryCard } from './components/SettlementSummaryCard';
 import { DashboardView } from './components/DashboardView';
+import { ActivityLogView } from './components/ActivityLogView';
 import { PreCommitModal } from './components/PreCommitModal';
 import { SensitiveDecisionModal } from './components/SensitiveDecisionModal';
 import { JudgeToolsPanel } from './components/JudgeToolsPanel';
@@ -22,7 +23,7 @@ import { NotificationDrawer } from './components/NotificationDrawer';
 import type { NotificationItem } from './components/NotificationDrawer';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<'swap' | 'dashboard' | 'intents' | 'solvers' | 'result'>('swap');
+  const [activeTab, setActiveTab] = useState<'swap' | 'dashboard' | 'intents' | 'solvers' | 'result' | 'activity'>('swap');
   const [viewMode, setViewMode] = useState<'user' | 'solver'>('user');
 
   const [currentIntent, setCurrentIntent] = useState<UserIntent | null>(null);
@@ -464,6 +465,14 @@ export default function App() {
                     </div>
                   )}
                 </div>
+              )}
+
+              {/* Route 6: /activity (Protocol Event Stream & Ledger History) */}
+              {activeTab === 'activity' && (
+                <ActivityLogView
+                  history={history}
+                  onSelectIntent={handleSelectHistoricalIntent}
+                />
               )}
             </>
           )}

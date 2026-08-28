@@ -2,8 +2,8 @@ import React from 'react';
 import { LayoutGrid, FileText, Cpu, Clock, Plus } from 'lucide-react';
 
 interface SidebarProps {
-  activeTab: 'swap' | 'dashboard' | 'intents' | 'solvers' | 'result';
-  onSelectTab: (tab: 'swap' | 'dashboard' | 'intents' | 'solvers' | 'result') => void;
+  activeTab: 'swap' | 'dashboard' | 'intents' | 'solvers' | 'result' | 'activity';
+  onSelectTab: (tab: 'swap' | 'dashboard' | 'intents' | 'solvers' | 'result' | 'activity') => void;
   pendingIntentsCount?: number;
 }
 
@@ -26,7 +26,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, onSelectTab, pendin
       icon: Cpu,
     },
     {
-      id: 'intents' as const,
+      id: 'activity' as const,
       label: 'Activity',
       icon: Clock,
     },
@@ -39,7 +39,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, onSelectTab, pendin
       <div className="flex flex-col items-center gap-6 w-full px-2">
         {navItems.map((item, index) => {
           const Icon = item.icon;
-          const isActive = activeTab === item.id || (item.label === 'Activity' && activeTab === 'intents');
+          const isActive = activeTab === item.id;
 
           return (
             <button
