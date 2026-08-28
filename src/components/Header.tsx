@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { web3Provider } from '../services/web3Provider';
+import type { WalletState } from '../services/web3Provider';
 import { Layers, ShieldCheck, Cpu, Wallet, History, Plug } from 'lucide-react';
 
 interface HeaderProps {
@@ -14,7 +15,14 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({ contractState, onOpenHistory, historyCount }) => {
-  const [wallet, setWallet] = useState(web3Provider.getWalletState());
+  const [wallet, setWallet] = useState<WalletState>(web3Provider.getWalletState());
+
+  useEffect(() => {
+    const unsubscribe = web3Provider.subscribe((updatedState) => {
+      setWallet(updatedState);
+    });
+    return unsubscribe;
+  }, []);
 
   const handleToggleWallet = async () => {
     const updated = await web3Provider.connectWallet();
