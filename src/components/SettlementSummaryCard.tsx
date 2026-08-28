@@ -1,252 +1,131 @@
-import React, { useState } from 'react';
+import React from 'react';
 import type { SettlementResult } from '../services/types';
-import { ProofModal } from './ProofModal';
-import { useAnimatedNumber } from '../hooks/useAnimatedNumber';
-import { ShieldAlert, ExternalLink } from 'lucide-react';
+import { CheckCircle2, Wallet, ShieldCheck } from 'lucide-react';
 
 interface SettlementSummaryCardProps {
   result: SettlementResult;
-  onResetToSwap?: () => void;
 }
 
-export const SettlementSummaryCard: React.FC<SettlementSummaryCardProps> = ({ result, onResetToSwap }) => {
-  const [showProofModal, setShowProofModal] = useState<boolean>(false);
+export const SettlementSummaryCard: React.FC<SettlementSummaryCardProps> = ({ result }) => {
   const comparison = result.balanceComparison;
 
-  const targetRefund = result.userRefundedUsd ?? 1000;
-  const targetBondSlashed = result.solverBondSlashedUsd ?? 50;
-  const targetNetOutcome = comparison?.afterDestinationAmount ?? 998.25;
-
-  const animatedRefund = useAnimatedNumber(result.success ? 0 : targetRefund, { duration: 1000, decimals: 2 });
-  const animatedNetOutcome = useAnimatedNumber(result.success ? targetNetOutcome : 0, { duration: 1000, decimals: 2 });
-
-  // Failure & Slashing State (Matching Image 8)
   if (!result.success) {
     return (
-      <div className="max-w-4xl mx-auto space-y-6 animate-in fade-in zoom-in-95 duration-200">
-        
-        <div className="space-y-1">
-          <h1 className="text-3xl font-extrabold tracking-tight text-[#922B21] font-sans">
-            Intent Execution Failed — Solver Stake Slashed
-          </h1>
-          <p className="text-sm text-[#6B6659] font-sans">
-            Solver failed to deliver destination asset within deadline. Automated slashing and full user refund executed.
-          </p>
+      <div className="bg-rose-950/60 border border-rose-800 rounded-xl p-5 space-y-4 font-mono text-xs text-rose-200">
+        <div className="flex items-center justify-between font-bold text-sm border-b border-rose-900/60 pb-3">
+          <span className="flex items-center gap-2">
+            <ShieldCheck className="w-5 h-5 text-rose-400" />
+            <span>⚠ Verification Failure & Automated Refund Executed</span>
+          </span>
+          <span className="text-[11px] text-slate-400">Tx: {result.txHash.slice(0, 10)}...</span>
         </div>
 
-        {/* Solver Stake Slashed Card (Matching Image 8) */}
-        <div className="ix-card p-6 space-y-6 border-[#F5B7B1] bg-[#FDEDEC]/30">
-          
-          <div className="flex items-center justify-between border-b border-[#F5B7B1] pb-3">
-            <div className="flex items-center gap-2">
-              <ShieldAlert className="w-5 h-5 text-[#922B21] animate-pulse" />
-              <span className="font-bold text-sm text-[#922B21] font-sans">Solver Collateral Slashing Receipt</span>
-            </div>
-            <span className="text-xs font-mono font-bold text-[#922B21] px-2.5 py-0.5 rounded bg-[#FDEDEC] border border-[#F5B7B1]">
-              Status: SLASHED & REFUNDED
-            </span>
+        <p className="text-slate-300 font-sans text-xs">
+          The solver failed to confirm destination asset delivery within deadline. Per protocol rules, the solver&apos;s collateral bond was slashed and full escrow refunded.
+        </p>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+          <div className="bg-slate-950 p-3 rounded-lg border border-slate-800">
+            <span className="text-slate-400 block text-[10px]">User Escrow Refunded</span>
+            <span className="text-emerald-400 font-bold text-sm">${result.userRefundedUsd} USDC</span>
           </div>
 
-          <p className="text-xs text-[#5D6D7E] leading-relaxed font-sans">
-            Per IntentX protocol rules, the solver&apos;s collateral bond was partially slashed to cover full user compensation, protocol treasury fee, and the decentralized insurance reserve.
-          </p>
-
-          {/* Draining Collateral Bar Animation */}
-          <div className="space-y-1 font-mono text-xs">
-            <div className="flex justify-between text-[#7A7568]">
-              <span>Collateral Stake Status:</span>
-              <span className="text-[#922B21] font-bold">DRAINED (0.00 USDC)</span>
-            </div>
-            <div className="w-full h-2.5 bg-[#FADBD8] rounded-full overflow-hidden border border-[#F5B7B1]">
-              <div className="h-full bg-[#922B21] rounded-full w-0 transition-all duration-1200 ease-out" />
-            </div>
+          <div className="bg-slate-950 p-3 rounded-lg border border-slate-800">
+            <span className="text-slate-400 block text-[10px]">Solver Collateral Slashed</span>
+            <span className="text-rose-400 font-bold text-sm">${result.solverBondSlashedUsd} USDC</span>
           </div>
 
-          {/* Partial Slashing Math & Protocol Fee Breakdown */}
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 font-mono text-xs">
-            <div className="ix-card-subtle p-3 space-y-1 border-[#F5B7B1] bg-white">
-              <span className="text-[10px] text-[#7A7568] uppercase block">Full User Refund</span>
-              <span className="text-base font-bold text-[#1B5E20]">${animatedRefund.toFixed(2)} USDC</span>
-            </div>
-
-            <div className="ix-card-subtle p-3 space-y-1 border-[#F5B7B1] bg-white">
-              <span className="text-[10px] text-[#7A7568] uppercase block">Total Bond Slashed</span>
-              <span className="text-base font-bold text-[#922B21]">${targetBondSlashed.toFixed(2)} USDC</span>
-            </div>
-
-            <div className="ix-card-subtle p-3 space-y-1 border-[#F5B7B1] bg-white">
-              <span className="text-[10px] text-[#7A7568] uppercase block">Protocol Treasury</span>
-              <span className="text-base font-bold text-[#38352F]">${(result.protocolReserveUsd || 25).toFixed(2)} USDC</span>
-            </div>
-
-            <div className="ix-card-subtle p-3 space-y-1 border-[#F5B7B1] bg-white">
-              <span className="text-[10px] text-[#7A7568] uppercase block">Insurance Pool</span>
-              <span className="text-base font-bold text-[#8C6407]">${(result.protocolReserveUsd || 25).toFixed(2)} USDC</span>
-            </div>
+          <div className="bg-slate-950 p-3 rounded-lg border border-slate-800">
+            <span className="text-slate-400 block text-[10px]">Protocol Insurance Reserve</span>
+            <span className="text-indigo-400 font-bold text-sm">${result.protocolReserveUsd || 25} USDC</span>
           </div>
-
-          {/* Links Row */}
-          <div className="pt-3 border-t border-[#F5B7B1] flex flex-wrap items-center justify-between gap-3 text-xs font-mono">
-            <button
-              type="button"
-              onClick={() => setShowProofModal(true)}
-              className="text-[#922B21] hover:underline font-semibold flex items-center gap-1 ix-btn-active"
-            >
-              <span>Inspect Slashing Proof Payload</span>
-              <ExternalLink className="w-3.5 h-3.5" />
-            </button>
-
-            {onResetToSwap && (
-              <button
-                type="button"
-                onClick={onResetToSwap}
-                className="ix-btn-gold ix-btn-active px-4 py-2 text-xs"
-              >
-                Create New Intent
-              </button>
-            )}
-          </div>
-
         </div>
-
-        {showProofModal && (
-          <ProofModal
-            isOpen={showProofModal}
-            onClose={() => setShowProofModal(false)}
-            verificationType="zk_oracle"
-            intentId="INT-8492"
-            settlementResult={result}
-          />
-        )}
-
       </div>
     );
   }
 
-  // Success Settlement View (Matching Image 6)
+  if (!comparison) return null;
+
   return (
-    <div className="max-w-4xl mx-auto space-y-6 animate-in fade-in zoom-in-95 duration-200">
-      
-      {/* Title (Matching Image 6) */}
-      <div className="space-y-1">
-        <h1 className="text-3xl font-extrabold tracking-tight text-[#1A1915] font-sans">
-          Intent Settlement Complete
-        </h1>
-        <p className="text-sm text-[#6B6659] font-sans">
-          Cross-chain execution verified and settled on-chain.
-        </p>
+    <div className="glass-panel p-6 space-y-5 border-emerald-900/50">
+      {/* Header */}
+      <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center">
+            <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+          </div>
+          <div>
+            <h3 className="text-base font-bold text-white font-mono">Stage 8 — Settlement Finalized</h3>
+            <p className="text-[11px] text-slate-400">Two-Sided Verified Outcome Ledger</p>
+          </div>
+        </div>
+        <span className="text-[11px] font-mono text-emerald-400 px-2.5 py-1 rounded bg-emerald-950 border border-emerald-800 font-bold">
+          Status: SETTLED (100% Verified)
+        </span>
       </div>
 
-      {/* Main Settlement Cards Grid (Matching Image 6) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        
-        {/* Card 1: Verification Status */}
-        <div className="ix-card p-6 space-y-4 ix-card-hover">
-          <span className="text-[11px] font-mono font-medium text-[#7A7568] uppercase tracking-wider block">
-            Verification Status
+      {/* Before / After User Asset Comparison Card */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Before (Source Deposited) */}
+        <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-1.5 font-mono text-xs">
+          <span className="text-slate-400 text-[10px] uppercase tracking-wider block font-bold">1. Escrow Deposited (Before)</span>
+          <div className="text-lg font-bold text-indigo-400">
+            ${comparison.beforeSourceAmount.toFixed(2)} {comparison.beforeSourceAsset}
+          </div>
+          <span className="text-[11px] text-slate-500 block">Chain: {comparison.beforeSourceChain}</span>
+        </div>
+
+        {/* After (Destination Received) */}
+        <div className="bg-slate-950 p-4 rounded-xl border border-emerald-800/80 space-y-1.5 font-mono text-xs">
+          <span className="text-emerald-400 text-[10px] uppercase tracking-wider block font-bold">2. Outcome Delivered (After)</span>
+          <div className="text-lg font-bold text-emerald-400">
+            ${comparison.afterDestinationAmount.toFixed(2)} {comparison.afterDestinationAsset}
+          </div>
+          <span className="text-[11px] text-slate-400 block">Chain: {comparison.afterDestinationChain}</span>
+        </div>
+      </div>
+
+      {/* Explicit Line-Item Arithmetic Payout Ledger */}
+      <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-2 font-mono text-xs">
+        <span className="text-slate-400 text-[10px] uppercase tracking-wider block font-bold border-b border-slate-900 pb-1">
+          Exact Protocol Payout Arithmetic Ledger ($500.00 Total Match)
+        </span>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+          <div className="bg-slate-900/60 p-2.5 rounded-lg border border-slate-800">
+            <span className="text-slate-400 block text-[10px]">Delivered Outcome</span>
+            <span className="text-emerald-400 font-bold text-xs">${comparison.afterDestinationAmount.toFixed(2)} USDC</span>
+          </div>
+
+          <div className="bg-slate-900/60 p-2.5 rounded-lg border border-slate-800">
+            <span className="text-slate-400 block text-[10px]">Solver Execution Fee</span>
+            <span className="text-cyan-400 font-bold text-xs">${comparison.solverFeeUsd.toFixed(2)} USDC</span>
+          </div>
+
+          <div className="bg-slate-900/60 p-2.5 rounded-lg border border-slate-800">
+            <span className="text-slate-400 block text-[10px]">Protocol Security & Routing Fee</span>
+            <span className="text-indigo-400 font-bold text-xs">${comparison.protocolFeeUsd.toFixed(2)} USDC</span>
+          </div>
+        </div>
+
+        <div className="text-[11px] text-slate-400 font-sans pt-1 text-right">
+          Sum: ${comparison.afterDestinationAmount.toFixed(2)} + ${comparison.solverFeeUsd.toFixed(2)} + ${comparison.protocolFeeUsd.toFixed(2)} = <strong className="text-white font-mono">${comparison.beforeSourceAmount.toFixed(2)} USDC</strong>
+        </div>
+      </div>
+
+      {/* Two-Sided Protocol Fairness Summary */}
+      <div className="bg-slate-900/80 p-4 rounded-xl border border-slate-800 font-mono text-xs flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <Wallet className="w-4 h-4 text-cyan-400 shrink-0" />
+          <span className="text-slate-300">
+            Solver Total Payout: <strong className="text-cyan-400">${comparison.solverPayoutUsd} USDC</strong> (${comparison.afterDestinationAmount} delivery + ${comparison.solverFeeUsd} fee)
           </span>
-
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-[#EAF6ED] border border-[#A8E0B7] flex items-center justify-center text-[#1B5E20] shadow-xs">
-              <svg className="w-6 h-6 stroke-current fill-none stroke-[2.5]" viewBox="0 0 24 24">
-                <path className="animate-stroke-draw" strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-              </svg>
-            </div>
-            <div>
-              <div className="text-xl font-extrabold text-[#1B5E20] font-mono">VERIFIED</div>
-              <div className="text-xs font-mono text-[#7A7568]">100% Cryptographically Validated</div>
-            </div>
-          </div>
-
-          <div className="space-y-2 text-xs font-mono border-t border-[#E8E4DA] pt-3 text-[#6B6659]">
-            <div className="flex justify-between">
-              <span>Method:</span>
-              <span className="font-bold text-[#1A1915]">Optimistic + ZK-Oracle Path</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Challenge Window:</span>
-              <span className="font-bold text-[#1A1915]">Passed (No Disputes)</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Attestation Signer:</span>
-              <span className="font-bold text-[#1A1915]">0xOracle...77A1</span>
-            </div>
-          </div>
         </div>
 
-        {/* Card 2: Settlement Details / Payout Breakdown */}
-        <div className="ix-card p-6 space-y-4 ix-card-hover">
-          <span className="text-[11px] font-mono font-medium text-[#7A7568] uppercase tracking-wider block">
-            Settlement Details
-          </span>
-
-          <div className="space-y-2 text-xs font-mono text-[#6B6659]">
-            <div className="flex justify-between">
-              <span>User Escrow Released:</span>
-              <span className="font-bold text-[#1A1915]">${(comparison?.beforeSourceAmount || 1000).toFixed(2)} USDC</span>
-            </div>
-
-            <div className="flex justify-between">
-              <span>Solver Execution Fee:</span>
-              <span className="font-bold text-[#1A1915]">$1.50 USDC</span>
-            </div>
-
-            <div className="flex justify-between">
-              <span>Protocol Reserve Cut:</span>
-              <span className="font-bold text-[#1A1915]">$0.25 USDC</span>
-            </div>
-
-            <div className="flex justify-between border-t border-[#E8E4DA] pt-2 font-bold text-sm text-[#1B5E20]">
-              <span>Net User Outcome Delivered:</span>
-              <span className="transition-all duration-300">${animatedNetOutcome.toFixed(2)} USDC</span>
-            </div>
-          </div>
-        </div>
-
+        <span className="text-[11px] text-slate-400 font-sans">
+          ✓ Released from Escrow automatically upon proof validation.
+        </span>
       </div>
-
-      {/* Links & Ganache Verification Bar (Matching Image 6) */}
-      <div className="ix-card p-4 flex flex-wrap items-center justify-between gap-4 font-mono text-xs">
-        <div className="flex items-center gap-4">
-          <button
-            type="button"
-            onClick={() => setShowProofModal(true)}
-            className="text-[#C69214] hover:underline font-semibold flex items-center gap-1"
-          >
-            <span>View Proof / Inspect Payload</span>
-            <ExternalLink className="w-3.5 h-3.5" />
-          </button>
-
-          <a
-            href={`#ganache-${result.txHash}`}
-            className="text-[#7A7568] hover:text-[#1A1915] flex items-center gap-1"
-          >
-            <span>View in Explorer ({result.txHash.slice(0, 10)}...)</span>
-            <ExternalLink className="w-3.5 h-3.5" />
-          </a>
-        </div>
-
-        {onResetToSwap && (
-          <button
-            type="button"
-            onClick={onResetToSwap}
-            className="ix-btn-gold px-5 py-2 text-xs"
-          >
-            Create Next Intent
-          </button>
-        )}
-      </div>
-
-      {showProofModal && (
-        <ProofModal
-          isOpen={showProofModal}
-          onClose={() => setShowProofModal(false)}
-          verificationType="optimistic"
-          intentId="INT-8492"
-          settlementResult={result}
-        />
-      )}
-
     </div>
   );
 };

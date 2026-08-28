@@ -1,6 +1,6 @@
 import React from 'react';
 import type { SolverBid, UserIntent } from '../services/types';
-import { ShieldAlert, AlertTriangle, Lock, ArrowRight, X } from 'lucide-react';
+import { ShieldAlert, AlertTriangle, CheckCircle, Lock, ArrowRight, XCircle } from 'lucide-react';
 
 interface SensitiveDecisionModalProps {
   isOpen: boolean;
@@ -27,40 +27,35 @@ export const SensitiveDecisionModal: React.FC<SensitiveDecisionModalProps> = ({
   const bid2 = bids[1];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#1A1915]/60 backdrop-blur-sm">
-      <div className="ix-card max-w-2xl w-full p-6 space-y-6 animate-in fade-in zoom-in-95 duration-200 border-[#E5D19E] shadow-xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
+      <div className="glass-panel-glow max-w-2xl w-full p-6 space-y-6 animate-in fade-in zoom-in duration-200">
         
         {/* Modal Header */}
-        <div className="flex items-start justify-between border-b border-[#E8E4DA] pb-4">
-          <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#FAF5E8] border border-[#E5D19E] flex items-center justify-center shrink-0 text-[#8C6407]">
-              <ShieldAlert className="w-6 h-6" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h3 className="text-lg font-bold text-[#1A1915] font-sans">Sensitive Decision Checkpoint</h3>
-                <span className="text-[10px] uppercase font-mono font-bold px-2 py-0.5 rounded bg-[#FAF5E8] text-[#8C6407] border border-[#E5D19E]">
-                  User Sign-off Required
-                </span>
-              </div>
-              <p className="text-xs text-[#6B6659] mt-1">
-                Automated execution paused. The protocol escalated this transaction because:
-              </p>
-            </div>
+        <div className="flex items-start gap-4 border-b border-amber-900/50 pb-4">
+          <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center shrink-0">
+            <ShieldAlert className="w-6 h-6 text-amber-400" />
           </div>
-          <button onClick={onCancel} className="text-[#7A7568] hover:text-[#1A1915]">
-            <X className="w-4 h-4" />
-          </button>
+          <div>
+            <div className="flex items-center gap-2">
+              <h3 className="text-lg font-bold text-white">Sensitive Decision Checkpoint</h3>
+              <span className="text-[10px] uppercase font-mono font-bold px-2 py-0.5 rounded bg-amber-950 text-amber-400 border border-amber-800">
+                User Authorization Required
+              </span>
+            </div>
+            <p className="text-xs text-slate-300 mt-1">
+              Automated execution paused. The protocol escalated this transaction because:
+            </p>
+          </div>
         </div>
 
         {/* Trigger Badges */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {isAmbiguous && (
-            <div className="bg-[#FAF5E8] border border-[#E5D19E] p-3 rounded-lg flex items-start gap-2 text-[#8C6407]">
-              <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5 text-[#C69214]" />
+            <div className="bg-amber-950/40 border border-amber-800/60 p-3 rounded-lg flex items-start gap-2">
+              <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
               <div className="text-xs">
-                <span className="font-bold block">Ambiguous Top Bids Score</span>
-                <p className="text-[#6B6659] text-[11px] mt-0.5">
+                <span className="font-bold text-amber-300">Ambiguous Top Bids Score:</span>
+                <p className="text-slate-400 mt-0.5">
                   Top 2 bids score within 5% of each other ({(bid1.finalScore * 100).toFixed(1)} vs {(bid2.finalScore * 100).toFixed(1)}).
                 </p>
               </div>
@@ -68,105 +63,91 @@ export const SensitiveDecisionModal: React.FC<SensitiveDecisionModalProps> = ({
           )}
 
           {isHighValue && (
-            <div className="bg-[#FAF5E8] border border-[#E5D19E] p-3 rounded-lg flex items-start gap-2 text-[#8C6407]">
-              <Lock className="w-4 h-4 shrink-0 mt-0.5 text-[#C69214]" />
+            <div className="bg-indigo-950/40 border border-indigo-800/60 p-3 rounded-lg flex items-start gap-2">
+              <Lock className="w-4 h-4 text-indigo-400 shrink-0 mt-0.5" />
               <div className="text-xs">
-                <span className="font-bold block">High-Value Threshold</span>
-                <p className="text-[#6B6659] text-[11px] mt-0.5">
-                  Intent amount (${intent.sourceAmount.toLocaleString()} ≥ $1,000) requires ZK-Oracle verification gate.
+                <span className="font-bold text-indigo-300">High-Value Threshold Exceeded:</span>
+                <p className="text-slate-400 mt-0.5">
+                  Intent amount (${intent.sourceAmount}) &ge; $1,000 USD limit. Escalate to ZK/Oracle Verification Path.
                 </p>
               </div>
             </div>
           )}
         </div>
 
-        {/* Side-by-Side Bid Comparison (Matching Reference Card Language) */}
-        <div className="space-y-2">
-          <span className="text-[11px] font-mono font-medium text-[#7A7568] uppercase tracking-wider block">
-            Side-by-Side Competitive Bid Comparison
-          </span>
-
+        {/* Side-by-Side Bid Comparison */}
+        <div className="space-y-3">
+          <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider">Compare Top Solver Options:</h4>
+          
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            
-            {/* Bid 1 Card */}
-            <div className="ix-card p-4 space-y-3 border-[#C69214]">
-              <div className="flex items-center justify-between">
-                <h4 className="font-bold text-sm text-[#1A1915] font-sans">{bid1.solverName}</h4>
-                <span className="text-xs font-mono font-bold text-[#C69214]">
-                  {(bid1.finalScore * 100).toFixed(1)} Pts
+            {/* Bid 1 */}
+            <div className="bg-slate-900 p-4 rounded-xl border border-indigo-500/60 space-y-3">
+              <div className="flex justify-between items-start">
+                <div>
+                  <h5 className="text-sm font-bold text-white">{bid1.solverName}</h5>
+                  <span className="text-[10px] font-mono text-indigo-400">Score: {(bid1.finalScore * 100).toFixed(1)}</span>
+                </div>
+                <span className="text-xs px-2 py-0.5 rounded bg-indigo-950 text-indigo-300 font-mono font-bold">
+                  Option #1
                 </span>
               </div>
-
-              <div className="space-y-1 text-xs font-mono text-[#6B6659]">
-                <div className="flex justify-between">
-                  <span>Output:</span>
-                  <span className="font-bold text-[#1A1915]">${bid1.proposedOutput.toFixed(2)} USDC</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Fee:</span>
-                  <span className="font-bold text-[#1A1915]">${bid1.feeUsd.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Speed:</span>
-                  <span className="font-bold text-[#1A1915]">{bid1.estimatedExecutionTimeSec}s</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Collateral:</span>
-                  <span className="font-bold text-[#8C6407]">${bid1.collateralOfferedUsd.toFixed(2)}</span>
-                </div>
+              <div className="text-xs space-y-1 font-mono text-slate-300">
+                <div>Output: <span className="text-emerald-400 font-bold">${bid1.proposedOutput}</span></div>
+                <div>Fee: ${bid1.feeUsd}</div>
+                <div>Time: {bid1.estimatedExecutionTimeSec}s</div>
+                <div>Bond: ${bid1.collateralOfferedUsd}</div>
               </div>
-
               <button
                 type="button"
                 onClick={() => onApproveBid(bid1)}
-                className="w-full py-2 ix-btn-gold text-xs font-bold flex items-center justify-center gap-1"
+                className="w-full py-2 px-3 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold flex items-center justify-center gap-1 transition-all shadow-md shadow-indigo-600/30"
               >
-                <span>Select {bid1.solverName}</span>
-                <ArrowRight className="w-3.5 h-3.5" />
+                <span>Authorize Option #1</span>
+                <CheckCircle className="w-3.5 h-3.5" />
               </button>
             </div>
 
-            {/* Bid 2 Card */}
-            <div className="ix-card p-4 space-y-3">
-              <div className="flex items-center justify-between">
-                <h4 className="font-bold text-sm text-[#1A1915] font-sans">{bid2.solverName}</h4>
-                <span className="text-xs font-mono font-bold text-[#7A7568]">
-                  {(bid2.finalScore * 100).toFixed(1)} Pts
+            {/* Bid 2 */}
+            <div className="bg-slate-900 p-4 rounded-xl border border-slate-700 space-y-3">
+              <div className="flex justify-between items-start">
+                <div>
+                  <h5 className="text-sm font-bold text-white">{bid2.solverName}</h5>
+                  <span className="text-[10px] font-mono text-cyan-400">Score: {(bid2.finalScore * 100).toFixed(1)}</span>
+                </div>
+                <span className="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-300 font-mono font-bold">
+                  Option #2
                 </span>
               </div>
-
-              <div className="space-y-1 text-xs font-mono text-[#6B6659]">
-                <div className="flex justify-between">
-                  <span>Output:</span>
-                  <span className="font-bold text-[#1A1915]">${bid2.proposedOutput.toFixed(2)} USDC</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Fee:</span>
-                  <span className="font-bold text-[#1A1915]">${bid2.feeUsd.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Speed:</span>
-                  <span className="font-bold text-[#1A1915]">{bid2.estimatedExecutionTimeSec}s</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Collateral:</span>
-                  <span className="font-bold text-[#8C6407]">${bid2.collateralOfferedUsd.toFixed(2)}</span>
-                </div>
+              <div className="text-xs space-y-1 font-mono text-slate-300">
+                <div>Output: <span className="text-emerald-400 font-bold">${bid2.proposedOutput}</span></div>
+                <div>Fee: ${bid2.feeUsd}</div>
+                <div>Time: {bid2.estimatedExecutionTimeSec}s</div>
+                <div>Bond: ${bid2.collateralOfferedUsd}</div>
               </div>
-
               <button
                 type="button"
                 onClick={() => onApproveBid(bid2)}
-                className="w-full py-2 ix-btn-outline text-xs font-bold hover:border-[#C69214] flex items-center justify-center gap-1"
+                className="w-full py-2 px-3 rounded-lg bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold flex items-center justify-center gap-1 transition-all"
               >
-                <span>Select {bid2.solverName}</span>
+                <span>Authorize Option #2</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>
-
           </div>
         </div>
 
+        {/* Visually Confident Exit/Refund Button */}
+        <div className="flex items-center justify-between pt-2 border-t border-slate-800">
+          <span className="text-[11px] text-slate-400">Not satisfied with solver bids?</span>
+          <button
+            type="button"
+            onClick={onCancel}
+            className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-rose-950/80 border border-rose-800/80 text-rose-300 text-xs font-semibold flex items-center gap-1.5 transition-all shadow-md"
+          >
+            <XCircle className="w-4 h-4 text-rose-400" />
+            <span>Cancel Intent & Refund Escrow</span>
+          </button>
+        </div>
       </div>
     </div>
   );

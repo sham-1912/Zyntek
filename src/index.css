@@ -1,246 +1,73 @@
 @import "tailwindcss";
 
-@layer base {
-  :root {
-    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    line-height: 1.5;
-    font-weight: 400;
-    color-scheme: light;
-    color: #1A1915;
-    background-color: #FAF8F5;
-    font-synthesis: none;
-    text-rendering: optimizeLegibility;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
-
-  body {
-    margin: 0;
-    min-width: 320px;
-    min-height: 100vh;
-    background-color: #FAF8F5;
-    color: #1A1915;
-    font-family: 'Inter', sans-serif;
-  }
+:root {
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  color-scheme: dark;
+  color: rgba(255, 255, 255, 0.92);
+  background-color: #090d16;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Monospace font class utility */
-.font-mono {
-  font-family: 'JetBrains Mono', monospace !important;
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background: radial-gradient(circle at 50% -20%, #171e38 0%, #090d16 80%);
 }
 
-/* IntentX Clean Ivory Card Styling (Matching Reference Specs) */
-.ix-card {
-  background-color: #FFFFFF;
-  border: 1px solid #E8E4DA;
-  border-radius: 0.75rem; /* rounded-xl */
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.02);
+/* Custom Cyber Glass Card Styling */
+.glass-panel {
+  background: rgba(18, 26, 44, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  border-radius: 1rem;
 }
 
-.ix-card-subtle {
-  background-color: #F7F4EE;
-  border: 1px solid #E8E4DA;
-  border-radius: 0.5rem;
+.glass-panel-glow {
+  background: rgba(22, 32, 54, 0.85);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  box-shadow: 0 0 25px rgba(99, 102, 241, 0.2);
+  border-radius: 1rem;
 }
 
-.ix-card-gold {
-  background-color: #FAF5E8;
-  border: 1px solid #E5D19E;
-  border-radius: 0.75rem;
+/* Accent Gradients */
+.gradient-text {
+  background: linear-gradient(135deg, #818cf8 0%, #c084fc 50%, #38bdf8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
-/* IntentX Gold Button Styling */
-.ix-btn-gold {
-  background-color: #C69214;
-  color: #FFFFFF;
-  font-weight: 600;
-  border-radius: 0.5rem;
-  transition: all 0.15s ease-in-out;
+.gradient-bg {
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
 }
 
-.ix-btn-gold:hover {
-  background-color: #B0810F;
-  box-shadow: 0 2px 8px rgba(198, 146, 20, 0.25);
+.gradient-bg-success {
+  background: linear-gradient(135deg, #059669 0%, #10b981 100%);
 }
 
-.ix-btn-gold:active {
-  background-color: #99700C;
+.gradient-bg-danger {
+  background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
 }
 
-.ix-btn-outline {
-  background-color: #FFFFFF;
-  border: 1px solid #D8D2C4;
-  color: #38352F;
-  font-weight: 500;
-  border-radius: 0.5rem;
-  transition: all 0.15s ease-in-out;
+/* Slider Custom Styling */
+input[type="range"] {
+  accent-color: #6366f1;
 }
 
-.ix-btn-outline:hover {
-  background-color: #F5F2EA;
-  border-color: #C69214;
-  color: #1A1915;
+/* Pulse animation for broadcast delay */
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.9; }
 }
 
-/* IntentX Range Slider Styling (Dark Gold Accent) */
-input[type="range"].ix-slider {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 100%;
-  height: 6px;
-  background: #E8E4DA;
-  border-radius: 3px;
-  outline: none;
+.animate-pulse-glow {
+  animation: pulse-glow 1.5s infinite ease-in-out;
 }
-
-input[type="range"].ix-slider::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: #FFFFFF;
-  border: 3px solid #C69214;
-  cursor: pointer;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.15);
-  transition: transform 0.1s ease;
-}
-
-input[type="range"].ix-slider::-webkit-slider-thumb:hover {
-  transform: scale(1.15);
-  border-color: #A3770D;
-}
-
-input[type="range"].ix-slider::-moz-range-thumb {
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: #FFFFFF;
-  border: 3px solid #C69214;
-  cursor: pointer;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.15);
-}
-
-/* Custom Scrollbar for Ivory theme */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: #FAF8F5;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #D8D2C4;
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #B5AD9C;
-}
-
-/* Micro-Interaction Utilities */
-.ix-btn-active {
-  transition: transform 0.12s cubic-bezier(0.22, 1, 0.36, 1);
-}
-.ix-btn-active:active {
-  transform: scale(0.97);
-}
-
-.ix-card-hover {
-  transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
-}
-.ix-card-hover:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-}
-
-/* FLIP Layout Item Swap Transition */
-.ix-flip-item {
-  transition: transform 350ms cubic-bezier(0.22, 1, 0.36, 1), opacity 250ms ease-out;
-}
-
-/* Keyframe Animations */
-@keyframes strokeDraw {
-  0% {
-    stroke-dasharray: 50;
-    stroke-dashoffset: 50;
-  }
-  100% {
-    stroke-dasharray: 50;
-    stroke-dashoffset: 0;
-  }
-}
-.animate-stroke-draw {
-  animation: strokeDraw 450ms ease-out forwards;
-}
-
-@keyframes shimmerIndeterminate {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
-}
-.animate-shimmer-indeterminate {
-  background: linear-gradient(90deg, #FAF5E8 25%, #E5D19E 50%, #FAF5E8 75%);
-  background-size: 200% 100%;
-  animation: shimmerIndeterminate 1.5s infinite linear;
-}
-
-@keyframes redPulseFail {
-  0%, 100% {
-    box-shadow: 0 0 0 0 rgba(146, 43, 33, 0);
-    background-color: rgba(253, 237, 236, 1);
-  }
-  50% {
-    box-shadow: 0 0 12px 4px rgba(146, 43, 33, 0.3);
-    background-color: rgba(245, 183, 177, 0.6);
-  }
-}
-.animate-red-pulse-fail {
-  animation: redPulseFail 800ms ease-in-out infinite;
-}
-
-@keyframes toastTimer {
-  0% {
-    width: 100%;
-  }
-  100% {
-    width: 0%;
-  }
-}
-.animate-toast-timer {
-  animation: toastTimer 4000ms linear forwards;
-}
-
-@keyframes transitDotPulse {
-  0% {
-    left: 0%;
-  }
-  50% {
-    left: 50%;
-  }
-  100% {
-    left: 100%;
-  }
-}
-.animate-transit-dot {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  animation: transitDotPulse 2.5s ease-in-out infinite;
-}
-
-/* Reduced Motion Fallback */
-@media (prefers-reduced-motion: reduce) {
-  *, ::before, ::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
-}
-
