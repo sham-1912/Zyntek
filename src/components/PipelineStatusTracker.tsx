@@ -1,244 +1,175 @@
-import React, { useState } from 'react';
-import type { PipelineStage, VerificationType, SettlementResult } from '../services/types';
-import { ProofModal } from './ProofModal';
-import { SettlementSummaryCard } from './SettlementSummaryCard';
-import { CheckCircle2, Loader2, ShieldCheck, ShieldAlert, Lock, Cpu, ArrowRight, Clock, FileText, Info, Award } from 'lucide-react';
+import React from 'react';
+import type { PipelineStage } from '../services/types';
+import { Check, Circle, Loader2, Sparkles } from 'lucide-react';
 
 interface PipelineStatusTrackerProps {
   stage: PipelineStage;
-  verificationType: VerificationType;
-  challengeCountdownSec: number;
-  subStatusText: string;
-  settlementResult?: SettlementResult;
+  subStatusText?: string;
   intentId?: string;
-  solverBondUsd?: number;
-  intentAmountUsd?: number;
+  winningSolverName?: string;
 }
+
+interface StepDef {
+  key: PipelineStage;
+  label: string;
+  description: string;
+}
+
+const PIPELINE_STEPS: StepDef[] = [
+  { key: 'intent', label: 'INTENT', description: 'User state declared' },
+  { key: 'escrow', label: 'ESCROW', description: 'Locked on EVM L1' },
+  { key: 'auction', label: 'SOLVER AUCTION', description: 'Real-time bidding' },
+  { key: 'winner', label: 'WINNER', description: 'Top scored solver' },
+  { key: 'commitment', label: 'SOLVER COMMITMENT', description: 'Collateral bonded' },
+  { key: 'execution', label: 'CROSS-CHAIN EXECUTION', description: 'Solana leg fulfilled' },
+  { key: 'verification', label: 'VERIFICATION', description: 'Hybrid proof / window' },
+  { key: 'settlement', label: 'SETTLEMENT', description: 'Final escrow released' },
+];
+
+const STAGE_ORDER: PipelineStage[] = [
+  'intent',
+  'escrow',
+  'auction',
+  'winner',
+  'commitment',
+  'execution',
+  'verification',
+  'settlement',
+];
 
 export const PipelineStatusTracker: React.FC<PipelineStatusTrackerProps> = ({
   stage,
-  verificationType,
-  challengeCountdownSec,
   subStatusText,
-  settlementResult,
   intentId,
-  solverBondUsd,
-  intentAmountUsd,
+  winningSolverName,
 }) => {
-  const [showProofModal, setShowProofModal] = useState<boolean>(false);
-
   if (stage === 'idle') return null;
 
-  const steps = [
-    { id: 'escrow', label: '1. EVM Escrow Locked', icon: Lock },
-    { id: 'commit', label: '2. Solver Bond Committed', icon: Cpu },
-    { id: 'execute', label: '3. Solana Leg Executed', icon: ArrowRight },
-    { id: 'verify', label: `4. Hybrid Verify (${verificationType === 'zk_oracle' ? 'ZK/Oracle' : 'Optimistic'})`, icon: ShieldCheck },
-    { id: 'settle', label: stage === 'slashed_refunded' ? '5. Bond Slashed & Refunded' : '5. Settlement Finalized', icon: CheckCircle2 },
-  ];
-
-  const getStepStatus = (index: number) => {
-    switch (stage) {
-      case 'escrow_mining':
-      case 'escrow_locked':
-        return index === 0 ? 'active' : index < 0 ? 'completed' : 'pending';
-      case 'solver_committed':
-        return index === 1 ? 'active' : index < 1 ? 'completed' : 'pending';
-      case 'executing_cross_chain':
-        return index === 2 ? 'active' : index < 2 ? 'completed' : 'pending';
-      case 'verifying':
-        return index === 3 ? 'active' : index < 3 ? 'completed' : 'pending';
-      case 'settled':
-        return 'completed';
-      case 'slashed_refunded':
-        return index === 4 ? 'failed' : 'completed';
-      default:
-        return 'pending';
-    }
-  };
-
-  const collateralRatio = solverBondUsd && intentAmountUsd ? Math.round((solverBondUsd / intentAmountUsd) * 100) : 100;
+  const currentIdx = STAGE_ORDER.indexOf(stage);
 
   return (
-    <div className="glass-panel p-6 space-y-6">
+    <div className="bg-[#151526] border border-white/10 rounded-2xl p-6 space-y-6 shadow-xl">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-4">
         <div>
-          <h3 className="text-section font-bold text-white font-mono flex items-center gap-2">
-            <Cpu className="w-5 h-5 text-indigo-400" />
-            <span>Cross-Chain Protocol Pipeline</span>
+          <div className="flex items-center gap-2">
+            <span className="text-xs uppercase font-mono tracking-widest text-[#A9A7FF] font-bold">
+              Protocol Lifecycle
+            </span>
+            {winningSolverName && stage !== 'intent' && stage !== 'escrow' && stage !== 'auction' && (
+              <span className="text-[10px] px-2 py-0.5 rounded bg-[#20203A] text-[#D1FE5D] border border-[#D1FE5D]/30 font-mono font-bold">
+                Winner: {winningSolverName}
+              </span>
+            )}
+          </div>
+          <h3 className="text-lg font-bold text-white font-mono mt-0.5">
+            Intent → Settlement Live Pipeline
           </h3>
-          <p className="text-body text-slate-400 mt-0.5">{subStatusText || 'Live protocol state transitions across EVM & Solana'}</p>
+          <p className="text-xs text-[#A5A5B8] mt-1 font-sans">
+            {subStatusText || 'Live protocol state transitions across EVM & Solana SVM'}
+          </p>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
-          {solverBondUsd && (
-            <span className="text-metadata text-safety px-2.5 py-1 rounded bg-slate-900 border border-safety/40 font-bold">
-              {collateralRatio}% Collateralized
-            </span>
-          )}
-          {intentId && (
-            <span className="text-metadata text-indigo-300 px-2.5 py-1 rounded bg-indigo-950 border border-indigo-800">
-              ID: {intentId}
-            </span>
-          )}
-        </div>
+        {intentId && (
+          <div className="px-3 py-1.5 rounded-lg bg-[#20203A] border border-white/10 text-xs font-mono text-[#A9A7FF] shrink-0 self-start sm:self-auto">
+            ID: {intentId}
+          </div>
+        )}
       </div>
 
-      {/* Requirement 4: Hero Treatment for Stage Nodes */}
-      <div className="grid grid-cols-1 sm:grid-cols-5 gap-3">
-        {steps.map((step, idx) => {
-          const status = getStepStatus(idx);
-          const Icon = step.icon;
+      {/* 8-Stage Pipeline Steps Container */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2.5 relative">
+        {PIPELINE_STEPS.map((step, idx) => {
+          const isCompleted = currentIdx > idx || stage === 'settlement';
+          const isActive = currentIdx === idx && stage !== 'settlement';
+          const isUpcoming = currentIdx < idx && stage !== 'settlement';
 
           return (
             <div
-              key={step.id}
-              className={`p-4 rounded-xl border-2 flex flex-col justify-between transition-all ${
-                status === 'completed'
-                  ? 'bg-emerald-950/40 border-cost text-cost shadow-md shadow-cost/10'
-                  : status === 'active'
-                  ? 'bg-indigo-950/80 border-indigo-500 text-indigo-200 animate-pulse-glow shadow-lg shadow-indigo-900/50'
-                  : status === 'failed'
-                  ? 'bg-alert/15 border-alert text-alert'
-                  : 'bg-slate-900/50 border-slate-800/80 text-slate-500'
+              key={step.key}
+              className={`p-3 rounded-xl border flex flex-col justify-between transition-all duration-300 relative ${
+                isCompleted
+                  ? 'bg-[#151526] border-[#D1FE5D]/60 text-white'
+                  : isActive
+                  ? 'bg-[#20203A] border-[#1053D4] text-white shadow-lg shadow-[#1053D4]/20 ring-1 ring-[#1053D4]'
+                  : 'bg-[#151526]/50 border-white/5 text-[#A5A5B8] opacity-60'
               }`}
             >
-              <div className="flex items-center justify-between">
-                <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                  status === 'completed'
-                    ? 'bg-cost/20 border border-cost/40'
-                    : status === 'active'
-                    ? 'bg-indigo-500/20 border border-indigo-500/40'
-                    : status === 'failed'
-                    ? 'bg-alert/20 border border-alert/40'
-                    : 'bg-slate-800'
-                }`}>
-                  <Icon className="w-4 h-4" />
-                </div>
-                {status === 'completed' && <CheckCircle2 className="w-5 h-5 text-cost" />}
-                {status === 'active' && <Loader2 className="w-5 h-5 text-indigo-400 animate-spin" />}
-                {status === 'failed' && <ShieldAlert className="w-5 h-5 text-alert" />}
+              {/* Top Indicator */}
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[10px] font-mono font-bold opacity-60">
+                  0{idx + 1}
+                </span>
+
+                {isCompleted && (
+                  <div className="w-5 h-5 rounded-full bg-[#D1FE5D]/20 border border-[#D1FE5D] flex items-center justify-center text-[#D1FE5D]">
+                    <Check className="w-3 h-3 stroke-[3]" />
+                  </div>
+                )}
+
+                {isActive && (
+                  <div className="flex items-center gap-1">
+                    <span className="w-2 h-2 rounded-full bg-[#1053D4] animate-ping" />
+                    <Loader2 className="w-4 h-4 text-[#A9A7FF] animate-spin" />
+                  </div>
+                )}
+
+                {isUpcoming && (
+                  <div className="w-4 h-4 rounded-full border border-white/20 flex items-center justify-center">
+                    <Circle className="w-2 h-2 text-white/20" />
+                  </div>
+                )}
               </div>
 
-              <div className="mt-3">
-                <p className="text-xs font-bold leading-tight">{step.label}</p>
-                <span className="text-metadata font-mono capitalize mt-1 block">
-                  {status}
-                </span>
+              {/* Step Label & Status */}
+              <div>
+                <h4
+                  className={`text-[11px] font-mono font-bold uppercase tracking-tight ${
+                    isCompleted
+                      ? 'text-[#D1FE5D]'
+                      : isActive
+                      ? 'text-[#FFFFFF]'
+                      : 'text-[#A5A5B8]'
+                  }`}
+                >
+                  {step.label}
+                </h4>
+
+                <div className="mt-1">
+                  {isCompleted && (
+                    <span className="text-[9px] font-mono text-[#D1FE5D] font-bold">
+                      ✓ Completed
+                    </span>
+                  )}
+                  {isActive && (
+                    <span className="text-[9px] font-mono text-[#A9A7FF] font-bold flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#1053D4]" />
+                      ACTIVE
+                    </span>
+                  )}
+                  {isUpcoming && (
+                    <span className="text-[9px] font-mono text-[#A5A5B8]">
+                      ○ Upcoming
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
           );
         })}
       </div>
 
-      {/* Requirement 4: Standalone Hero Settlement Amount Readout */}
-      {settlementResult && (
-        <div className="bg-slate-950/90 border-2 border-cost rounded-2xl p-6 text-center space-y-2 shadow-2xl shadow-cost/10 animate-in fade-in zoom-in duration-300">
-          <div className="flex items-center justify-center gap-2 text-cost font-mono text-xs uppercase font-bold tracking-widest">
-            <Award className="w-4 h-4 text-cost" />
-            <span>Final Settlement Outcome Delivered</span>
+      {/* Settlement Finalized Hero Highlight */}
+      {stage === 'settlement' && (
+        <div className="bg-[#20203A] border-2 border-[#D1FE5D] rounded-xl p-4 text-center space-y-1 animate-in fade-in zoom-in duration-300">
+          <div className="flex items-center justify-center gap-2 text-[#D1FE5D] font-mono text-xs uppercase font-bold tracking-wider">
+            <Sparkles className="w-4 h-4 text-[#D1FE5D]" />
+            <span>Settlement Finalized on Solana SVM</span>
           </div>
-          <div className="text-hero text-cost font-mono tracking-tight">
-            ${settlementResult.escrowReleasedUsd} USDC
-          </div>
-          <p className="text-body text-slate-300 font-sans">
-            Delivered directly to destination wallet on Solana (TX: {settlementResult.proofPayload?.solanaTxSignature.slice(0, 10) || settlementResult.txHash.slice(0, 10)}...)
+          <p className="text-xs text-[#A5A5B8]">
+            Funds delivered to recipient. Solver collateral returned with execution fee reward.
           </p>
         </div>
-      )}
-
-      {/* Stage Execution Details */}
-      {stage === 'executing_cross_chain' && (
-        <div className="bg-slate-900/90 border border-cyan-500/50 p-4 rounded-xl space-y-2 font-mono text-xs text-cyan-200">
-          <span className="font-bold text-white uppercase text-[10px] tracking-wider block border-b border-cyan-900/60 pb-1">
-            Solana Destination Leg Execution Substeps:
-          </span>
-          <div className="space-y-1 text-[11px]">
-            <div className="flex items-center gap-2 text-cost font-bold">
-              <span>✓ 3a. Solver broadcasting transaction on Solana network</span>
-            </div>
-            <div className="flex items-center gap-2 text-amber-300">
-              <Loader2 className="w-3 h-3 animate-spin shrink-0 text-amber-400" />
-              <span>3b. Awaiting block finality confirmation (Slot #2847192)...</span>
-            </div>
-            <div className="flex items-center gap-2 text-slate-500">
-              <span>⏳ 3c. Finalizing cross-chain delivery attestation proof</span>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Verification Challenge Note */}
-      {stage === 'verifying' && (
-        <div className="bg-indigo-950/60 border border-indigo-800 p-4 rounded-xl space-y-3 font-mono text-xs">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2 text-indigo-300">
-              <Clock className="w-4 h-4 text-indigo-400 animate-spin shrink-0" />
-              <div>
-                <span className="font-bold block">
-                  {verificationType === 'zk_oracle'
-                    ? 'ZK/Oracle Attestation Verification Active'
-                    : 'Optimistic Challenge Window Active'}
-                </span>
-                <span className="text-metadata text-slate-400 font-sans">
-                  In production, this window is typically 15–30 minutes. Compressed for demo.
-                </span>
-              </div>
-            </div>
-            <div className="text-right shrink-0">
-              <span className="text-hero-sm font-bold text-amber-400 font-mono">0:{challengeCountdownSec.toString().padStart(2, '0')}</span>
-              <span className="block text-metadata">Auto-settles if unchallenged</span>
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between pt-2 border-t border-indigo-900/60 text-metadata">
-            <span className="text-slate-400 flex items-center gap-1 font-sans">
-              <Info className="w-3.5 h-3.5 text-indigo-400" />
-              {verificationType === 'zk_oracle'
-                ? 'High-Value Intent Path ($1,000+): Stronger ZK/Oracle attestation required.'
-                : 'Standard Intent Path (<$1,000): Fast optimistic verification window.'}
-            </span>
-
-            {settlementResult?.proofPayload && (
-              <button
-                type="button"
-                onClick={() => setShowProofModal(true)}
-                className="text-indigo-400 hover:text-indigo-300 flex items-center gap-1 font-bold font-mono"
-              >
-                <FileText className="w-3.5 h-3.5 text-indigo-400" />
-                <span>View Proof ↗</span>
-              </button>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Settlement Details */}
-      {settlementResult && (
-        <>
-          <SettlementSummaryCard result={settlementResult} />
-
-          <div className="flex justify-end pt-1">
-            <button
-              type="button"
-              onClick={() => setShowProofModal(true)}
-              className="text-xs font-mono text-indigo-400 hover:text-indigo-300 flex items-center gap-1.5 font-bold"
-            >
-              <FileText className="w-4 h-4 text-indigo-400" />
-              <span>Inspect Cryptographic Proof Payload & Receipts ↗</span>
-            </button>
-          </div>
-        </>
-      )}
-
-      {/* Proof Modal */}
-      {settlementResult?.proofPayload && (
-        <ProofModal
-          isOpen={showProofModal}
-          proofPayload={settlementResult.proofPayload}
-          onClose={() => setShowProofModal(false)}
-        />
       )}
     </div>
   );

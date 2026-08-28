@@ -17,7 +17,7 @@ export interface UserIntent {
   deadlineMinutes: number;
   sliders: PrioritySliders;
   timestamp: number;
-  eip712Signature?: string; // 65-byte ECDSA Typed Signature
+  eip712Signature?: string;
 }
 
 export interface Eip712Domain {
@@ -28,50 +28,58 @@ export interface Eip712Domain {
 }
 
 export interface SubScores {
-  costScore: number; // 0.0 - 1.0
-  speedScore: number; // 0.0 - 1.0
-  safetyScore: number; // 0.0 - 1.0
-  outputNorm: number;
-  feeNorm: number;
-  slippageNorm: number;
-  executionTimeNorm: number;
-  reputationNorm: number;
-  collateralNorm: number;
+  costScore: number; // 0-100
+  speedScore: number; // 0-100
+  safetyScore: number; // 0-100
+  outputNorm?: number;
+  feeNorm?: number;
+  slippageNorm?: number;
+  executionTimeNorm?: number;
+  reputationNorm?: number;
+  collateralNorm?: number;
 }
 
 export interface SolverBid {
   solverId: string;
   solverName: string;
-  solverProfile: 'alpha' | 'flash' | 'shield';
-  solverAddress: string; // Ganache wallet address for this solver
-  proposedOutput: number;
+  expectedOutput: number;
+  proposedOutput: number; // Backwards compatible alias
   feeUsd: number;
-  estimatedSlippagePct: number;
-  estimatedExecutionTimeSec: number;
-  collateralOfferedUsd: number;
-  reputationScore: number; // 0 - 100
+  etaSec: number;
+  estimatedExecutionTimeSec: number; // Backwards compatible alias
+  liquidityUsd: number;
+  safetyRating: number; // 0 - 100
+  reputationScore?: number;
+  solverProfile?: 'alpha' | 'flash' | 'shield';
+  solverAddress?: string;
   subScores: SubScores;
-  finalScore: number; // 0.0 - 1.0
-  routeDescription: string;
+  finalScore: number; // 0 - 100
+  routeDescription?: string;
+  collateralOfferedUsd: number;
   synthesisRationale?: string;
   summaryPill?: string;
 }
 
 export type PipelineStage = 
   | 'idle'
-  | 'pre_commit_confirm'
-  | 'intent_submitted'
-  | 'escrow_mining'
+  | 'intent'
+  | 'escrow'
+  | 'auction'
+  | 'winner'
+  | 'commitment'
+  | 'execution'
+  | 'verification'
+  | 'settlement'
+  | 'settled'
+  | 'slashed_refunded'
   | 'broadcasting_solvers'
   | 'bidding_window'
   | 'scoring_bids'
-  | 'sensitive_gate'
+  | 'escrow_mining'
   | 'escrow_locked'
   | 'solver_committed'
   | 'executing_cross_chain'
-  | 'verifying'
-  | 'settled'
-  | 'slashed_refunded';
+  | 'verifying';
 
 export type VerificationType = 'optimistic' | 'zk_oracle';
 

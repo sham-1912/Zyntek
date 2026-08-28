@@ -1,108 +1,132 @@
 import React from 'react';
+import { Check, Loader2, Circle, Layers, ShieldCheck } from 'lucide-react';
 import type { UserIntent, SolverBid, PipelineStage } from '../services/types';
-import { Layers, RefreshCw } from 'lucide-react';
 
 interface CrossChainVisualizerProps {
-  intent?: UserIntent | null;
-  selectedBid?: SolverBid | null;
+  intent: UserIntent | null;
+  selectedBid: SolverBid | null;
   stage: PipelineStage;
 }
 
-export const CrossChainVisualizer: React.FC<CrossChainVisualizerProps> = ({ intent, selectedBid, stage }) => {
-  const isExecuting = stage !== 'idle' && stage !== 'settled' && stage !== 'slashed_refunded';
+export const CrossChainVisualizer: React.FC<CrossChainVisualizerProps> = ({
+  intent,
+  selectedBid,
+  stage,
+}) => {
+  const isEscrowLocked = stage !== 'idle' && stage !== 'intent';
+  const isExecuting = stage === 'execution' || stage === 'executing_cross_chain';
+  const isDelivered = stage === 'verification' || stage === 'settlement' || stage === 'settled';
+  const isVerified = stage === 'settlement' || stage === 'settled';
 
   return (
-    <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 backdrop-blur-md shadow-2xl space-y-4">
-      {/* Title Header */}
-      <div className="flex items-center justify-between">
+    <div className="bg-[#151526] border border-white/10 rounded-2xl p-5 space-y-4 shadow-xl">
+      {/* Header */}
+      <div className="flex items-center justify-between border-b border-white/10 pb-3">
         <div className="flex items-center gap-2">
-          <Layers className="w-5 h-5 text-indigo-400" />
-          <h3 className="text-sm font-bold text-white font-mono uppercase tracking-wider">
-            Live Cross-Chain Architecture Visualizer
+          <Layers className="w-4 h-4 text-[#A9A7FF]" />
+          <h3 className="text-xs font-bold text-white uppercase tracking-wider font-mono">
+            Cross-Chain Topology: Ethereum L1 → Solver Mesh → Solana SVM
           </h3>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-indigo-950 text-indigo-300 border border-indigo-800">
-            EVM → SVM CPI
-          </span>
-          {isExecuting && (
-            <span className="flex items-center gap-1 text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-amber-500/10 text-amber-300 border border-amber-500/30">
-              <RefreshCw className="w-3 h-3 animate-spin" /> Live Pipeline
-            </span>
-          )}
-        </div>
+        <span className="text-[10px] font-mono text-[#D1FE5D] font-bold">
+          {stage === 'settlement' || stage === 'settled' ? '✓ Settled' : stage !== 'idle' ? '◉ Live' : '○ Standby'}
+        </span>
       </div>
 
-      {/* 3-Node Cross-Chain Flow */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 relative">
-        {/* Stage 1: Ethereum EVM Escrow */}
-        <div className="bg-slate-950/80 border border-indigo-900/50 rounded-xl p-4 space-y-2 relative overflow-hidden group hover:border-indigo-500/50 transition-colors">
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-400 font-mono">
-              Source Chain (EVM)
-            </span>
-            <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">
-              Ethereum L1
-            </span>
+      {/* 4 Connected Nodes Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 font-mono text-xs">
+        {/* Node 1: Ethereum Source */}
+        <div className={`p-3.5 rounded-xl border transition-all ${
+          isEscrowLocked
+            ? 'bg-[#20203A] border-[#D1FE5D]/50 text-white'
+            : 'bg-[#0B0B14] border-white/5 text-[#A5A5B8]'
+        }`}>
+          <div className="flex justify-between items-center mb-1.5">
+            <span className="text-[10px] text-[#A5A5B8] uppercase">1. Ethereum Source</span>
+            {isEscrowLocked ? (
+              <Check className="w-3.5 h-3.5 text-[#D1FE5D]" />
+            ) : (
+              <Circle className="w-3 h-3 text-white/20" />
+            )}
           </div>
-          <div className="space-y-1">
-            <h4 className="text-sm font-bold text-white">IntentEscrow.sol</h4>
-            <p className="text-[11px] font-mono text-slate-400">0x71C8...4A92</p>
+          <div className="font-bold text-white text-xs">
+            {intent ? `$${intent.sourceAmount} ${intent.sourceAsset}` : '500 USDC'}
           </div>
-          <div className="border-t border-slate-800/80 pt-2 flex items-center justify-between text-[11px] font-mono">
-            <span className="text-slate-400">Locked Deposit:</span>
-            <span className="text-emerald-400 font-bold">
-              ${intent ? intent.sourceAmount : 500} USDC
-            </span>
-          </div>
+          <span className={`text-[10px] mt-1 block font-bold ${isEscrowLocked ? 'text-[#D1FE5D]' : 'text-[#A5A5B8]'}`}>
+            {isEscrowLocked ? '✓ Funds in Escrow' : '○ Awaiting Deposit'}
+          </span>
         </div>
 
-        {/* Stage 2: Off-Chain Solver Competition Mesh */}
-        <div className="bg-slate-950/80 border border-amber-900/50 rounded-xl p-4 space-y-2 relative overflow-hidden group hover:border-amber-500/50 transition-colors">
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400 font-mono">
-              Auction & Relayer Mesh
-            </span>
-            <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-amber-950/80 text-amber-300 border border-amber-800/60">
-              3 Solvers Active
-            </span>
+        {/* Node 2: Solver Network */}
+        <div className={`p-3.5 rounded-xl border transition-all ${
+          isExecuting
+            ? 'bg-[#20203A] border-[#1053D4] text-white shadow-lg shadow-[#1053D4]/20'
+            : isDelivered
+            ? 'bg-[#20203A] border-[#D1FE5D]/50 text-white'
+            : 'bg-[#0B0B14] border-white/5 text-[#A5A5B8]'
+        }`}>
+          <div className="flex justify-between items-center mb-1.5">
+            <span className="text-[10px] text-[#A5A5B8] uppercase">2. Solver Mesh</span>
+            {isExecuting ? (
+              <Loader2 className="w-3.5 h-3.5 text-[#1053D4] animate-spin" />
+            ) : isDelivered ? (
+              <Check className="w-3.5 h-3.5 text-[#D1FE5D]" />
+            ) : (
+              <Circle className="w-3 h-3 text-white/20" />
+            )}
           </div>
-          <div className="space-y-1">
-            <h4 className="text-sm font-bold text-white">
-              {selectedBid ? selectedBid.solverName : 'Scoring Engine'}
-            </h4>
-            <p className="text-[11px] font-mono text-slate-400">
-              {selectedBid ? `Bond: $${selectedBid.collateralOfferedUsd} USDC` : 'Bidding in Progress...'}
-            </p>
+          <div className="font-bold text-white text-xs">
+            {selectedBid ? selectedBid.solverName.split('—')[0] : 'Alpha / Flash'}
           </div>
-          <div className="border-t border-slate-800/80 pt-2 flex items-center justify-between text-[11px] font-mono">
-            <span className="text-slate-400">Verification:</span>
-            <span className="text-cyan-400 font-bold">
-              {intent && intent.sourceAmount >= 1000 ? 'ZK-Oracle Proof' : 'Optimistic 15s'}
-            </span>
-          </div>
+          <span className={`text-[10px] mt-1 block font-bold ${
+            isExecuting ? 'text-[#A9A7FF]' : isDelivered ? 'text-[#D1FE5D]' : 'text-[#A5A5B8]'
+          }`}>
+            {isExecuting ? '◉ Executing Leg' : isDelivered ? '✓ Fulfill Completed' : '○ Standby'}
+          </span>
         </div>
 
-        {/* Stage 3: Solana SVM Destination CPI */}
-        <div className="bg-slate-950/80 border border-cyan-900/50 rounded-xl p-4 space-y-2 relative overflow-hidden group hover:border-cyan-500/50 transition-colors">
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-cyan-400 font-mono">
-              Destination Chain (SVM)
-            </span>
-            <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">
-              Solana Mainnet
-            </span>
+        {/* Node 3: Solana Destination */}
+        <div className={`p-3.5 rounded-xl border transition-all ${
+          isDelivered
+            ? 'bg-[#20203A] border-[#D1FE5D]/50 text-white'
+            : 'bg-[#0B0B14] border-white/5 text-[#A5A5B8]'
+        }`}>
+          <div className="flex justify-between items-center mb-1.5">
+            <span className="text-[10px] text-[#A5A5B8] uppercase">3. Solana Target</span>
+            {isDelivered ? (
+              <Check className="w-3.5 h-3.5 text-[#D1FE5D]" />
+            ) : (
+              <Circle className="w-3 h-3 text-white/20" />
+            )}
           </div>
-          <div className="space-y-1">
-            <h4 className="text-sm font-bold text-white">ZyntekSolanaCPI</h4>
-            <p className="text-[11px] font-mono text-slate-400">ZynT1111...1111</p>
+          <div className="font-bold text-[#D1FE5D] text-xs">
+            {selectedBid ? `~$${selectedBid.expectedOutput} USDC` : '~496.50 USDC'}
           </div>
-          <div className="border-t border-slate-800/80 pt-2 flex items-center justify-between text-[11px] font-mono">
-            <span className="text-slate-400">Output Delivered:</span>
-            <span className="text-cyan-300 font-bold">
-              {selectedBid ? `$${selectedBid.proposedOutput} USDC` : '$496.00 USDC'}
-            </span>
+          <span className={`text-[10px] mt-1 block font-bold ${isDelivered ? 'text-[#D1FE5D]' : 'text-[#A5A5B8]'}`}>
+            {isDelivered ? '✓ Delivered' : '○ Awaiting Delivery'}
+          </span>
+        </div>
+
+        {/* Node 4: Verification & Release */}
+        <div className={`p-3.5 rounded-xl border transition-all ${
+          isVerified
+            ? 'bg-[#20203A] border-[#D1FE5D]/50 text-white'
+            : 'bg-[#0B0B14] border-white/5 text-[#A5A5B8]'
+        }`}>
+          <div className="flex justify-between items-center mb-1.5">
+            <span className="text-[10px] text-[#A5A5B8] uppercase">4. Verification</span>
+            {isVerified ? (
+              <ShieldCheck className="w-3.5 h-3.5 text-[#D1FE5D]" />
+            ) : (
+              <Circle className="w-3 h-3 text-white/20" />
+            )}
           </div>
+          <div className="font-bold text-white text-xs">
+            Optimistic / ZK
+          </div>
+          <span className={`text-[10px] mt-1 block font-bold ${isVerified ? 'text-[#D1FE5D]' : 'text-[#A5A5B8]'}`}>
+            {isVerified ? '✓ Settlement Final' : '○ Pending Proof'}
+          </span>
         </div>
       </div>
     </div>
