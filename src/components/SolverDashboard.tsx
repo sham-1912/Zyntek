@@ -368,16 +368,88 @@ export const SolverDashboard: React.FC<SolverDashboardProps> = () => {
             </div>
           </div>
 
-          {/* 30-day sparkline representation */}
-          <div className="bg-[#2B2B2B] text-[#FFFDF5] p-3 rounded-xl font-mono text-[11px] space-y-1 shadow-inner">
-            <span className="text-[#F0C94C] font-bold block">30-DAY REPUTATION TREND</span>
-            <pre className="text-[#CEF26D] text-[10px] leading-tight">
-{`100 ┤             ╭─╮
- 95 ┤       ╭─────╯ ╰── (94.0)
- 90 ┤ ──────╯
-    └──────────────────
-       30d      NOW`}
-            </pre>
+          {/* 30-day Interactive SVG Reputation Graph */}
+          <div className="bg-[#2B2B2B] text-[#FFFDF5] p-4 rounded-xl font-mono text-xs space-y-2.5 shadow-inner border border-black/20">
+            <div className="flex items-center justify-between">
+              <span className="text-[#F0C94C] font-bold text-xs uppercase tracking-wider flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-[#CEF26D] animate-pulse" />
+                30-Day Historical Reputation Graph
+              </span>
+              <span className="text-[11px] text-[#CEF26D] font-bold bg-white/10 px-2 py-0.5 rounded">
+                Current: 94.0 pts (+4.0)
+              </span>
+            </div>
+
+            {/* Real SVG Chart */}
+            <div className="relative w-full h-36 pt-2">
+              <svg viewBox="0 0 400 120" className="w-full h-full overflow-visible">
+                <defs>
+                  <linearGradient id="repGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#D4A017" stopOpacity="0.45" />
+                    <stop offset="100%" stopColor="#D4A017" stopOpacity="0.0" />
+                  </linearGradient>
+                  <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+                    <feGaussianBlur stdDeviation="2" result="blur" />
+                    <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                  </filter>
+                </defs>
+
+                {/* Grid Lines */}
+                <line x1="30" y1="20" x2="390" y2="20" stroke="#444" strokeDasharray="3,3" strokeWidth="0.5" />
+                <line x1="30" y1="50" x2="390" y2="50" stroke="#444" strokeDasharray="3,3" strokeWidth="0.5" />
+                <line x1="30" y1="80" x2="390" y2="80" stroke="#444" strokeDasharray="3,3" strokeWidth="0.5" />
+                <line x1="30" y1="110" x2="390" y2="110" stroke="#555" strokeWidth="1" />
+
+                {/* Y-Axis Labels */}
+                <text x="24" y="23" textAnchor="end" fill="#888" fontSize="8" fontFamily="monospace">100</text>
+                <text x="24" y="53" textAnchor="end" fill="#888" fontSize="8" fontFamily="monospace">95</text>
+                <text x="24" y="83" textAnchor="end" fill="#888" fontSize="8" fontFamily="monospace">90</text>
+                <text x="24" y="113" textAnchor="end" fill="#888" fontSize="8" fontFamily="monospace">85</text>
+
+                {/* Gradient Area Fill */}
+                <polygon
+                  points="30,80 80,80 140,50 200,50 260,25 320,38 385,38 385,110 30,110"
+                  fill="url(#repGradient)"
+                />
+
+                {/* Curved Trend Line */}
+                <polyline
+                  points="30,80 80,80 140,50 200,50 260,25 320,38 385,38"
+                  fill="none"
+                  stroke="#F0C94C"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  filter="url(#glow)"
+                />
+
+                {/* Data Points */}
+                <circle cx="30" cy="80" r="3" fill="#FFFDF5" stroke="#D4A017" strokeWidth="1.5" />
+                <circle cx="80" cy="80" r="3" fill="#FFFDF5" stroke="#D4A017" strokeWidth="1.5" />
+                <circle cx="140" cy="50" r="3" fill="#FFFDF5" stroke="#D4A017" strokeWidth="1.5" />
+                <circle cx="200" cy="50" r="3" fill="#FFFDF5" stroke="#D4A017" strokeWidth="1.5" />
+                <circle cx="260" cy="25" r="3.5" fill="#CEF26D" stroke="#2B2B2B" strokeWidth="1.5" />
+                <circle cx="320" cy="38" r="3" fill="#FFFDF5" stroke="#D4A017" strokeWidth="1.5" />
+                <circle cx="385" cy="38" r="4.5" fill="#F0C94C" stroke="#FFFDF5" strokeWidth="2" />
+
+                {/* Floating Tooltip at Peak */}
+                <rect x="235" y="6" width="50" height="14" rx="3" fill="#CEF26D" />
+                <text x="260" y="16" textAnchor="middle" fill="#2B2B2B" fontSize="8" fontWeight="bold" fontFamily="monospace">98.0 Peak</text>
+
+                {/* Current Value Marker */}
+                <rect x="355" y="20" width="38" height="14" rx="3" fill="#D4A017" />
+                <text x="374" y="30" textAnchor="middle" fill="#2B2B2B" fontSize="8" fontWeight="bold" fontFamily="monospace">94.0</text>
+              </svg>
+            </div>
+
+            {/* X-Axis Timeline */}
+            <div className="flex justify-between text-[10px] text-[#888] font-mono px-6 pt-1 border-t border-white/10">
+              <span>30d ago (90.0)</span>
+              <span>21d</span>
+              <span>14d</span>
+              <span>7d (98.0)</span>
+              <span className="text-[#F0C94C] font-bold">Today (94.0)</span>
+            </div>
           </div>
         </div>
 
