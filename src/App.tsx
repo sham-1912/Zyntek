@@ -380,7 +380,7 @@ export default function App() {
   const defaultTopBid = visibleBids.length > 0 ? visibleBids[0] : undefined;
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#101C2C] text-[#F3F6FF] relative font-sans">
+    <div className="min-h-screen flex flex-col bg-[#FFFDF5] text-[#2B2B2B] relative font-sans">
       <Header
         contractState={contractState}
         onOpenHistory={() => setIsHistoryDrawerOpen(true)}

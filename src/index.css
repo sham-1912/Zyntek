@@ -5,25 +5,22 @@
   font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-  color-scheme: dark;
-  color: #F3F6FF;
-  background-color: #101C2C;
+  color-scheme: light;
+  color: #2B2B2B;
+  background-color: #FFFDF5;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  /* Color System */
-  --color-bg-main: #101C2C;       /* Midnight Harbor */
-  --color-glass-surface: rgba(22, 42, 70, 0.55);
-  --color-glass-sub: rgba(14, 30, 56, 0.65);
-  --color-primary-blue: #2F6690;  /* Harbor Blue */
-  --color-ice-blue: #8DC2FF;      /* Ice Blue */
-  --color-sunny-herb: #CEF26D;    /* Sunny Herb / Verified */
-  --color-moon-tint: #F3F6FF;     /* Moon Tint */
-  --color-amber: #E9B872;         /* Protocol Amber */
-  --color-signal-red: #D96C75;    /* Muted Signal */
-  --color-deep-slate: #243244;    /* Deep Slate */
+  /* Zyntix Signature Warm Palette */
+  --color-bg-main: #FFFDF5;         /* Off White */
+  --color-surface-cream: #F7E7B5;   /* Pale Cream */
+  --color-mustard: #D4A017;         /* Mustard Brand / Winner */
+  --color-warm-yellow: #F0C94C;     /* Warm Yellow Active / Progress */
+  --color-charcoal: #2B2B2B;        /* Charcoal Navigation / Text / Terminal */
+  --color-muted-brick: #B84A39;     /* Muted Brick Failure / Slashing */
+  --color-olive: #607A3A;           /* Olive Verified / Restrained Success */
 }
 
 body {
@@ -31,61 +28,53 @@ body {
   min-width: 320px;
   min-height: 100vh;
   font-family: 'DM Sans', sans-serif;
-  background: #101C2C;
+  background: #FFFDF5;
   background-image: 
-    radial-gradient(at 15% 15%, rgba(47, 102, 144, 0.12) 0px, transparent 50%),
-    radial-gradient(at 85% 25%, rgba(22, 42, 70, 0.18) 0px, transparent 50%),
-    radial-gradient(at 50% 85%, rgba(47, 102, 144, 0.08) 0px, transparent 50%);
+    radial-gradient(at 10% 10%, rgba(247, 231, 181, 0.45) 0px, transparent 40%),
+    radial-gradient(at 90% 20%, rgba(212, 160, 23, 0.08) 0px, transparent 45%),
+    radial-gradient(at 50% 90%, rgba(240, 201, 76, 0.12) 0px, transparent 50%);
   background-attachment: fixed;
-  color: #F3F6FF;
+  color: #2B2B2B;
 }
 
 h1, h2, h3, h4, h5, h6, .font-headline {
   font-family: 'Space Grotesk', sans-serif;
 }
 
-/* Subtle Glassmorphism Card System */
+/* Warm Light Glassmorphism Card System */
 .glass-card {
-  background: rgba(22, 42, 70, 0.55);
-  backdrop-filter: blur(12px) saturate(130%);
-  -webkit-backdrop-filter: blur(12px) saturate(130%);
-  border: 1px solid rgba(141, 194, 255, 0.12);
+  background: rgba(255, 253, 245, 0.88);
+  backdrop-filter: blur(12px) saturate(120%);
+  -webkit-backdrop-filter: blur(12px) saturate(120%);
+  border: 1px solid rgba(43, 43, 43, 0.12);
   border-radius: 1rem;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 4px 20px rgba(43, 43, 43, 0.04);
 }
 
 .glass-card-elevated {
-  background: rgba(26, 49, 82, 0.7);
-  backdrop-filter: blur(14px) saturate(140%);
-  -webkit-backdrop-filter: blur(14px) saturate(140%);
-  border: 1px solid rgba(141, 194, 255, 0.22);
+  background: #F7E7B5;
+  border: 1px solid rgba(212, 160, 23, 0.35);
   border-radius: 1rem;
-  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 8px 24px rgba(212, 160, 23, 0.1);
 }
 
 .glass-sub-box {
-  background: rgba(14, 30, 56, 0.65);
-  border: 1px solid rgba(141, 194, 255, 0.08);
+  background: #F7E7B5;
+  border: 1px solid rgba(43, 43, 43, 0.08);
   border-radius: 0.75rem;
 }
 
-.glass-sub-box-hover:hover {
-  background: rgba(22, 42, 70, 0.75);
-  border-color: rgba(141, 194, 255, 0.18);
+.glass-sub-box-white {
+  background: #FFFFFF;
+  border: 1px solid rgba(43, 43, 43, 0.08);
+  border-radius: 0.75rem;
 }
 
-/* Monospace & Text Accent Helpers */
-.text-sunny { color: #CEF26D; }
-.text-ice { color: #8DC2FF; }
-.text-moon { color: #F3F6FF; }
-.text-amber-proto { color: #E9B872; }
-.text-signal { color: #D96C75; }
-
-/* Custom Sliders with Glass styling */
+/* Custom Warm Sliders */
 input[type="range"] {
   -webkit-appearance: none;
   appearance: none;
-  background: rgba(14, 30, 56, 0.8);
+  background: rgba(43, 43, 43, 0.12);
   border-radius: 9999px;
   height: 6px;
 }
@@ -97,7 +86,7 @@ input[type="range"]::-webkit-slider-thumb {
   height: 16px;
   border-radius: 50%;
   cursor: pointer;
-  box-shadow: 0 0 6px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
   transition: transform 0.15s ease;
 }
 
@@ -106,16 +95,13 @@ input[type="range"]::-webkit-slider-thumb:hover {
 }
 
 .slider-cost::-webkit-slider-thumb {
-  background: #CEF26D;
-  box-shadow: 0 0 10px rgba(206, 242, 109, 0.5);
+  background: #D4A017;
 }
 
 .slider-speed::-webkit-slider-thumb {
-  background: #8DC2FF;
-  box-shadow: 0 0 10px rgba(141, 194, 255, 0.5);
+  background: #F0C94C;
 }
 
 .slider-safety::-webkit-slider-thumb {
-  background: #2F6690;
-  box-shadow: 0 0 10px rgba(47, 102, 144, 0.7);
+  background: #2B2B2B;
 }

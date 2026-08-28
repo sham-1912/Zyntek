@@ -73,37 +73,37 @@ export const IntentForm: React.FC<IntentFormProps> = ({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="glass-card p-5 space-y-4 shadow-xl flex flex-col justify-between h-full">
+    <form onSubmit={handleSubmit} className="glass-card p-5 space-y-4 shadow-md flex flex-col justify-between h-full border border-[rgba(43,43,43,0.12)]">
       {/* Header & Connected Wallet Badge */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/10 pb-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[rgba(43,43,43,0.08)] pb-3">
         <div>
           <div className="flex items-center gap-2">
-            <h2 className="text-sm font-bold text-white font-mono flex items-center gap-2">
+            <h2 className="text-sm font-bold text-[#2B2B2B] font-headline flex items-center gap-2">
               <span>Active Cross-Chain Intent & Constraints</span>
             </h2>
-            <span className="text-[10px] font-mono px-2.5 py-0.5 rounded bg-[rgba(14,30,56,0.8)] text-[#8DC2FF] border border-[#8DC2FF]/40 font-bold shadow-sm">
+            <span className="text-[10px] font-mono px-2.5 py-0.5 rounded bg-[#F7E7B5] text-[#2B2B2B] border border-[#D4A017]/40 font-bold shadow-sm">
               Ethereum L1 → Solana SVM
             </span>
           </div>
-          <p className="text-xs text-[#E2E8F0] mt-0.5 font-sans">
+          <p className="text-xs text-[#5A5A5A] mt-0.5 font-sans">
             Declare target outcome & safety constraints. Decentralized solvers bid to execute.
           </p>
         </div>
 
         <div className="flex items-center gap-2 font-mono text-xs">
           {walletState.isConnected ? (
-            <span className="px-3 py-1 rounded-lg glass-sub-box text-white font-semibold flex items-center gap-2 shadow-sm border border-[#8DC2FF]/30">
-              <span className="w-2 h-2 rounded-full bg-[#CEF26D] animate-pulse" />
-              <span className="text-[#8DC2FF] font-bold">{walletState.address.slice(0, 6)}...{walletState.address.slice(-4)}</span>
-              <span className="text-[#CBD5E1] font-normal">({walletState.balanceEth} ETH)</span>
+            <span className="px-3 py-1 rounded-lg bg-[#F7E7B5] text-[#2B2B2B] font-semibold flex items-center gap-2 shadow-sm border border-[rgba(43,43,43,0.1)]">
+              <span className="w-2 h-2 rounded-full bg-[#D4A017] animate-pulse" />
+              <span className="font-bold">{walletState.address.slice(0, 6)}...{walletState.address.slice(-4)}</span>
+              <span className="text-[#5A5A5A] font-normal">({walletState.balanceEth} ETH)</span>
             </span>
           ) : (
             <button
               type="button"
               onClick={handleConnectWalletClick}
-              className="px-3 py-1.5 rounded-lg bg-[#2F6690] hover:bg-[#3D7BAA] text-white font-bold flex items-center gap-1.5 shadow-md transition-all font-mono text-xs cursor-pointer"
+              className="px-3 py-1.5 rounded-lg bg-[#D4A017] hover:bg-[#E0AB1E] text-[#2B2B2B] font-bold flex items-center gap-1.5 shadow-sm transition-all font-mono text-xs cursor-pointer"
             >
-              <Plug className="w-3.5 h-3.5" />
+              <Plug className="w-3.5 h-3.5 text-[#2B2B2B]" />
               <span>Connect Wallet</span>
             </button>
           )}
@@ -113,10 +113,10 @@ export const IntentForm: React.FC<IntentFormProps> = ({
       {/* Horizontal Side-by-Side Route Configuration */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 items-center">
         {/* Source Box */}
-        <div className="glass-sub-box p-3.5 space-y-1.5">
-          <div className="flex justify-between items-center text-xs text-[#E2E8F0]">
+        <div className="glass-sub-box p-3.5 space-y-1.5 bg-[#F7E7B5]/60 border border-[rgba(43,43,43,0.1)]">
+          <div className="flex justify-between items-center text-xs text-[#5A5A5A]">
             <span className="font-mono font-semibold">SOURCE (Deposit into Escrow)</span>
-            <span className="font-mono text-[#8DC2FF] font-bold">Ethereum L1</span>
+            <span className="font-mono text-[#2B2B2B] font-bold">Ethereum L1</span>
           </div>
 
           <div className="flex items-center justify-between gap-2">
@@ -125,31 +125,31 @@ export const IntentForm: React.FC<IntentFormProps> = ({
               value={sourceAmount}
               onChange={(e) => handleAmountUpdate(Math.max(1, Number(e.target.value)))}
               disabled={disabled}
-              className="w-full bg-transparent text-2xl font-mono font-bold text-white focus:outline-none"
+              className="w-full bg-transparent text-2xl font-mono font-bold text-[#2B2B2B] focus:outline-none"
               placeholder="500"
             />
 
-            <div className="flex items-center gap-1.5 bg-[rgba(22,42,70,0.85)] px-3 py-1.5 rounded-lg border border-[#8DC2FF]/40 font-mono text-xs font-bold text-white shrink-0 shadow-sm">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#2F6690]" />
+            <div className="flex items-center gap-1.5 bg-[#FFFDF5] px-3 py-1.5 rounded-lg border border-[rgba(43,43,43,0.15)] font-mono text-xs font-bold text-[#2B2B2B] shrink-0 shadow-sm">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#D4A017]" />
               <span>{sourceAsset}</span>
             </div>
           </div>
         </div>
 
         {/* Target Destination Box */}
-        <div className="glass-sub-box p-3.5 space-y-1.5">
-          <div className="flex justify-between items-center text-xs text-[#E2E8F0]">
+        <div className="glass-sub-box p-3.5 space-y-1.5 bg-[#F7E7B5]/60 border border-[rgba(43,43,43,0.1)]">
+          <div className="flex justify-between items-center text-xs text-[#5A5A5A]">
             <span className="font-mono font-semibold">DESTINATION (Target Delivery)</span>
-            <span className="font-mono text-[#8DC2FF] font-bold">Solana SVM</span>
+            <span className="font-mono text-[#2B2B2B] font-bold">Solana SVM</span>
           </div>
 
           <div className="flex items-center justify-between gap-2">
-            <div className="text-2xl font-mono font-bold text-[#CEF26D]">
+            <div className="text-2xl font-mono font-bold text-[#D4A017]">
               ~${estimatedMinOutput.toLocaleString()}
             </div>
 
-            <div className="flex items-center gap-1.5 bg-[rgba(22,42,70,0.85)] px-3 py-1.5 rounded-lg border border-[#8DC2FF]/40 font-mono text-xs font-bold text-white shrink-0 shadow-sm">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#8DC2FF]" />
+            <div className="flex items-center gap-1.5 bg-[#FFFDF5] px-3 py-1.5 rounded-lg border border-[rgba(43,43,43,0.15)] font-mono text-xs font-bold text-[#2B2B2B] shrink-0 shadow-sm">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#F0C94C]" />
               <span>{destinationAsset}</span>
             </div>
           </div>
@@ -157,24 +157,24 @@ export const IntentForm: React.FC<IntentFormProps> = ({
       </div>
 
       {/* Explicit Intent Constraints Horizontal Strip */}
-      <div className="glass-sub-box p-3 font-mono text-xs">
+      <div className="glass-sub-box p-3 font-mono text-xs bg-[#F7E7B5]/40 border border-[rgba(43,43,43,0.08)]">
         <div className="grid grid-cols-3 gap-2.5 text-center">
-          <div className="bg-[rgba(10,20,38,0.8)] p-2 rounded-lg border border-white/10">
-            <span className="text-[10px] text-[#CBD5E1] font-semibold block mb-0.5">Min Output</span>
-            <span className="text-[#CEF26D] font-bold text-xs">≥ ${estimatedMinOutput} USDC</span>
+          <div className="bg-[#FFFDF5] p-2 rounded-lg border border-[rgba(43,43,43,0.08)] shadow-xs">
+            <span className="text-[10px] text-[#5A5A5A] font-semibold block mb-0.5">Min Output</span>
+            <span className="text-[#D4A017] font-bold text-xs">≥ ${estimatedMinOutput} USDC</span>
           </div>
 
-          <div className="bg-[rgba(10,20,38,0.8)] p-2 rounded-lg border border-white/10">
-            <span className="text-[10px] text-[#CBD5E1] font-semibold block mb-0.5">Deadline</span>
-            <span className="text-white font-bold text-xs flex items-center justify-center gap-1">
-              <Clock className="w-3.5 h-3.5 text-[#8DC2FF]" /> 10:00 mins
+          <div className="bg-[#FFFDF5] p-2 rounded-lg border border-[rgba(43,43,43,0.08)] shadow-xs">
+            <span className="text-[10px] text-[#5A5A5A] font-semibold block mb-0.5">Deadline</span>
+            <span className="text-[#2B2B2B] font-bold text-xs flex items-center justify-center gap-1">
+              <Clock className="w-3.5 h-3.5 text-[#D4A017]" /> 10:00 mins
             </span>
           </div>
 
-          <div className="bg-[rgba(10,20,38,0.8)] p-2 rounded-lg border border-white/10">
-            <span className="text-[10px] text-[#CBD5E1] font-semibold block mb-0.5">Max Slippage</span>
-            <span className="text-white font-bold text-xs flex items-center justify-center gap-1">
-              <Percent className="w-3.5 h-3.5 text-[#8DC2FF]" /> 0.5% Limit
+          <div className="bg-[#FFFDF5] p-2 rounded-lg border border-[rgba(43,43,43,0.08)] shadow-xs">
+            <span className="text-[10px] text-[#5A5A5A] font-semibold block mb-0.5">Max Slippage</span>
+            <span className="text-[#2B2B2B] font-bold text-xs flex items-center justify-center gap-1">
+              <Percent className="w-3.5 h-3.5 text-[#D4A017]" /> 0.5% Limit
             </span>
           </div>
         </div>
@@ -187,14 +187,14 @@ export const IntentForm: React.FC<IntentFormProps> = ({
         disabled={disabled}
       />
 
-      {/* Broadcast Intent Button */}
+      {/* Primary CTA: Mustard background #D4A017 with Charcoal text #2B2B2B */}
       <button
         type="submit"
         disabled={disabled}
-        className="w-full py-3 rounded-xl bg-[#2F6690] hover:bg-[#3D7BAA] font-mono text-xs font-bold text-white shadow-lg shadow-[#2F6690]/30 flex items-center justify-center gap-2 transition-all disabled:opacity-50 cursor-pointer"
+        className="w-full py-3 rounded-xl bg-[#D4A017] hover:bg-[#E0AB1E] font-mono text-sm font-bold text-[#2B2B2B] shadow-md flex items-center justify-center gap-2 transition-all disabled:opacity-50 cursor-pointer"
       >
-        <Send className="w-3.5 h-3.5" />
-        <span>Broadcast Intent to Solver Mesh</span>
+        <Send className="w-4 h-4 text-[#2B2B2B]" />
+        <span>Broadcast Intent to Solver Mesh →</span>
       </button>
     </form>
   );
