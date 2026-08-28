@@ -1,0 +1,49 @@
+[
+  {
+    "type": "constructor",
+    "inputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "commitBond",
+    "inputs": [
+      { "name": "intentId", "type": "bytes32" },
+      { "name": "solver", "type": "address" },
+      { "name": "bondAmount", "type": "uint256" }
+    ],
+    "outputs": [],
+    "stateMutability": "payable"
+  },
+  {
+    "type": "function",
+    "name": "slashBond",
+    "inputs": [
+      { "name": "intentId", "type": "bytes32" },
+      { "name": "beneficiary", "type": "address" }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "event",
+    "name": "BondCommitted",
+    "inputs": [
+      { "name": "intentId", "type": "bytes32", "indexed": true },
+      { "name": "solver", "type": "address", "indexed": true },
+      { "name": "bondAmount", "type": "uint256", "indexed": false }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "BondSlashed",
+    "inputs": [
+      { "name": "intentId", "type": "bytes32", "indexed": true },
+      { "name": "solver", "type": "address", "indexed": true },
+      { "name": "bondAmount", "type": "uint256", "indexed": false },
+      { "name": "beneficiary", "type": "address", "indexed": false }
+    ],
+    "anonymous": false
+  }
+]

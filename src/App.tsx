@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import confetti from 'canvas-confetti';
-import type { UserIntent, SolverBid, PipelineStage, VerificationType, SettlementResult } from './services/types';
+import type { UserIntent, SolverBid, PipelineStage, VerificationType, SettlementResult, BlockReceipt } from './services/types';
 import { generateSolverBids } from './services/solverSimulator';
 import { checkAmbiguity, isHighValueIntent } from './services/scoringEngine';
 import { contractSimulator } from './services/contractSimulator';
@@ -14,6 +14,7 @@ import { PipelineStatusTracker } from './components/PipelineStatusTracker';
 import { PreCommitModal } from './components/PreCommitModal';
 import { IntentHistoryDrawer } from './components/IntentHistoryDrawer';
 import { JudgeToolsPanel } from './components/JudgeToolsPanel';
+import { BlockExplorerModal } from './components/BlockExplorerModal';
 
 import { Sparkles, RefreshCw } from 'lucide-react';
 
@@ -41,8 +42,9 @@ export default function App() {
   const [scoreGap, setScoreGap] = useState<number>(0);
   const [isHighValue, setIsHighValue] = useState<boolean>(false);
 
-  // History & drawer state
+  // History & explorer drawer state
   const [isHistoryDrawerOpen, setIsHistoryDrawerOpen] = useState<boolean>(false);
+  const [activeReceiptForExplorer, setActiveReceiptForExplorer] = useState<BlockReceipt | undefined>(undefined);
   const [history, setHistory] = useState(contractSimulator.getHistory());
   const [contractState, setContractState] = useState(contractSimulator.getContractState());
 
@@ -57,11 +59,11 @@ export default function App() {
     setIsPreCommitOpen(true);
   };
 
-  // Step 2: Confirm Pre-Commit Signature
-  const handlePreCommitConfirm = () => {
+  // Step 2: Confirm Pre-Commit EIP-712 Signature
+  const handlePreCommitConfirm = (signature: string) => {
     if (!draftIntent) return;
     setIsPreCommitOpen(false);
-    const intent = draftIntent;
+    const intent: UserIntent = { ...draftIntent, eip712Signature: signature };
     setCurrentIntent(intent);
     setDraftIntent(null);
 
@@ -86,7 +88,6 @@ export default function App() {
 
       const allBids = generateSolverBids(intent);
 
-      // Stagger solver arrival: Solver 1 @ 1.2s, Solver 2 @ 2.5s, Solver 3 @ 3.8s
       setTimeout(() => {
         setBids([allBids[0]]);
         setIsBroadcasting(false);
@@ -177,11 +178,11 @@ export default function App() {
 
     // Stage 6: Paced Multi-Substep Solana Execution (6s total delay)
     setStage('executing_cross_chain');
-    setSubStatusText('Substep 1/3: Solver broadcasting on Solana destination network...');
+    setSubStatusText('Substep 1/3: Solver broadcasting transaction on Solana network...');
     await new Promise((resolve) => setTimeout(resolve, 2000));
-    setSubStatusText('Substep 2/3: Awaiting Solana block finality confirmation...');
+    setSubStatusText('Substep 2/3: Awaiting block finality confirmation (Slot #2847192)...');
     await new Promise((resolve) => setTimeout(resolve, 2000));
-    setSubStatusText('Substep 3/3: Finalizing cross-chain delivery attestation...');
+    setSubStatusText('Substep 3/3: Finalizing cross-chain delivery attestation proof...');
     await new Promise((resolve) => setTimeout(resolve, 2000));
 
     // Stage 7: Hybrid Verification
@@ -306,7 +307,7 @@ export default function App() {
         )}
       </main>
 
-      {/* Pre-Commit Signature Confirmation Modal */}
+      {/* Pre-Commit EIP-712 Signature Confirmation Modal */}
       {draftIntent && (
         <PreCommitModal
           isOpen={isPreCommitOpen}
@@ -341,6 +342,15 @@ export default function App() {
         <JudgeToolsPanel
           onTriggerFailure={() => executePipeline(selectedBid, true)}
           disabled={stage === 'verifying'}
+        />
+      )}
+
+      {/* In-App Block Explorer Modal */}
+      {settlementResult?.receipts && settlementResult.receipts.length > 0 && (
+        <BlockExplorerModal
+          isOpen={!!activeReceiptForExplorer}
+          receipt={activeReceiptForExplorer || settlementResult.receipts[0]}
+          onClose={() => setActiveReceiptForExplorer(undefined)}
         />
       )}
 

@@ -1,5 +1,6 @@
-import React from 'react';
-import { Layers, ShieldCheck, Cpu, Wallet, History } from 'lucide-react';
+import React, { useState } from 'react';
+import { web3Provider } from '../services/web3Provider';
+import { Layers, ShieldCheck, Cpu, Wallet, History, Plug } from 'lucide-react';
 
 interface HeaderProps {
   contractState: {
@@ -13,6 +14,13 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({ contractState, onOpenHistory, historyCount }) => {
+  const [wallet, setWallet] = useState(web3Provider.getWalletState());
+
+  const handleToggleWallet = async () => {
+    const updated = await web3Provider.connectWallet();
+    setWallet(updated);
+  };
+
   return (
     <header className="border-b border-indigo-900/40 bg-slate-950/80 backdrop-blur-md sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
@@ -57,11 +65,11 @@ export const Header: React.FC<HeaderProps> = ({ contractState, onOpenHistory, hi
         </div>
 
         {/* My Intents & Wallet Buttons */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 font-mono">
           <button
             type="button"
             onClick={onOpenHistory}
-            className="flex items-center gap-1.5 px-3 py-2 text-xs font-mono rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-indigo-300 transition-all"
+            className="flex items-center gap-1.5 px-3 py-2 text-xs rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-indigo-300 transition-all"
           >
             <History className="w-3.5 h-3.5 text-indigo-400" />
             <span>My Intents</span>
@@ -72,9 +80,17 @@ export const Header: React.FC<HeaderProps> = ({ contractState, onOpenHistory, hi
             )}
           </button>
 
-          <button className="flex items-center gap-2 px-4 py-2 text-xs font-medium rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white transition-all shadow-md shadow-indigo-600/30">
-            <Wallet className="w-3.5 h-3.5" />
-            <span>0x71C...4A92</span>
+          <button
+            type="button"
+            onClick={handleToggleWallet}
+            className={`flex items-center gap-2 px-4 py-2 text-xs font-medium rounded-lg transition-all shadow-md ${
+              wallet.isConnected
+                ? 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-indigo-600/30'
+                : 'bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700'
+            }`}
+          >
+            {wallet.isConnected ? <Wallet className="w-3.5 h-3.5" /> : <Plug className="w-3.5 h-3.5" />}
+            <span>{wallet.isConnected ? `${wallet.address.slice(0, 6)}...${wallet.address.slice(-4)}` : 'Connect Wallet'}</span>
           </button>
         </div>
       </div>

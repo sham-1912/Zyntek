@@ -17,6 +17,14 @@ export interface UserIntent {
   deadlineMinutes: number;
   sliders: PrioritySliders;
   timestamp: number;
+  eip712Signature?: string; // 65-byte ECDSA Typed Signature
+}
+
+export interface Eip712Domain {
+  name: string;
+  version: string;
+  chainId: number;
+  verifyingContract: string;
 }
 
 export interface SubScores {
@@ -44,8 +52,8 @@ export interface SolverBid {
   subScores: SubScores;
   finalScore: number; // 0.0 - 1.0
   routeDescription: string;
-  synthesisRationale?: string; // Plain language "why"
-  summaryPill?: string; // Short 2-3 word summary
+  synthesisRationale?: string;
+  summaryPill?: string;
 }
 
 export type PipelineStage = 
@@ -66,6 +74,24 @@ export type PipelineStage =
 
 export type VerificationType = 'optimistic' | 'zk_oracle';
 
+export interface EvmEventLog {
+  eventName: string;
+  contractAddress: string;
+  signature: string;
+  topics: string[];
+  data: string;
+  blockNumber: number;
+  transactionHash: string;
+}
+
+export interface SolanaCpiLog {
+  programId: string;
+  instructionName: string;
+  slotNumber: number;
+  signature: string;
+  logs: string[];
+}
+
 export interface BlockReceipt {
   stepName: string;
   txHash: string;
@@ -74,6 +100,8 @@ export interface BlockReceipt {
   timestamp: number;
   explorerUrl: string;
   proofData?: string;
+  evmLogs?: EvmEventLog[];
+  solanaCpi?: SolanaCpiLog;
 }
 
 export interface ProofPayload {
@@ -83,6 +111,7 @@ export interface ProofPayload {
   solanaBlockNumber: number;
   solanaTxSignature: string;
   attestationSigner: string;
+  eip712Signature?: string;
   timestamp: number;
   status: 'VALIDATED' | 'CHALLENGED' | 'REJECTED';
 }
@@ -96,7 +125,7 @@ export interface BalanceComparison {
   afterDestinationChain: string;
   solverPayoutUsd: number;
   solverFeeUsd: number;
-  protocolFeeUsd: number; // Explicit line item for 100% balancing math
+  protocolFeeUsd: number;
 }
 
 export interface SettlementResult {

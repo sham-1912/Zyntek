@@ -1,0 +1,37 @@
+[
+  {
+    "type": "constructor",
+    "inputs": [{ "name": "_oracle", "type": "address" }],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "verifyOptimistic",
+    "inputs": [
+      { "name": "intentId", "type": "bytes32" },
+      { "name": "challengeRaised", "type": "bool" }
+    ],
+    "outputs": [{ "name": "", "type": "bool" }],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "verifyZkOracle",
+    "inputs": [
+      { "name": "intentId", "type": "bytes32" },
+      { "name": "signature", "type": "bytes" }
+    ],
+    "outputs": [{ "name": "", "type": "bool" }],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "event",
+    "name": "ProofVerified",
+    "inputs": [
+      { "name": "intentId", "type": "bytes32", "indexed": true },
+      { "name": "success", "type": "bool", "indexed": false },
+      { "name": "message", "type": "string", "indexed": false }
+    ],
+    "anonymous": false
+  }
+]

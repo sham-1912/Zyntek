@@ -1,0 +1,43 @@
+[
+  {
+    "type": "constructor",
+    "inputs": [
+      { "name": "_escrow", "type": "address" },
+      { "name": "_bonding", "type": "address" },
+      { "name": "_verifier", "type": "address" }
+    ],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "executeSettlement",
+    "inputs": [
+      { "name": "intentId", "type": "bytes32" },
+      { "name": "winningSolver", "type": "address" },
+      { "name": "isVerificationSuccess", "type": "bool" },
+      { "name": "failureReason", "type": "string" }
+    ],
+    "outputs": [{ "name": "", "type": "bool" }],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "event",
+    "name": "IntentSettled",
+    "inputs": [
+      { "name": "intentId", "type": "bytes32", "indexed": true },
+      { "name": "winningSolver", "type": "address", "indexed": true },
+      { "name": "amount", "type": "uint256", "indexed": false }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "IntentFailedAndSlashed",
+    "inputs": [
+      { "name": "intentId", "type": "bytes32", "indexed": true },
+      { "name": "slashedSolver", "type": "address", "indexed": true },
+      { "name": "reason", "type": "string", "indexed": false }
+    ],
+    "anonymous": false
+  }
+]
