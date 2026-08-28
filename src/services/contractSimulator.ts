@@ -12,7 +12,7 @@ import type {
   SolanaCpiLog,
 } from './types';
 import { generateEip712Signature } from './eip712Service';
-import { sendDirectGanacheTransaction } from './ganacheRpc';
+import { sendZyntekTransaction } from './ganacheRpc';
 
 interface ContractState {
   escrowLockedUsd: number;
@@ -86,8 +86,12 @@ class ContractSimulatorService {
   public async lockUserEscrow(intent: UserIntent): Promise<{ receipt: BlockReceipt; status: 'LOCKED' }> {
     this.state.escrowLockedUsd += intent.sourceAmount;
 
-    // Send direct HTTP JSON-RPC transaction to Ganache 127.0.0.1:7545!
-    const realTx = await sendDirectGanacheTransaction(`lockEscrow(${intent.intentId})`);
+    // Send real ABI-encoded lockEscrow() transaction to Ganache!
+    const realTx = await sendZyntekTransaction({
+      stage: 'lockEscrow',
+      intentId: intent.intentId,
+      amountUsdc: intent.sourceAmount,
+    });
     const txHash = realTx.txHash || `0x8f2a${Math.random().toString(16).substring(2, 8)}c91d`;
     const blockNum = realTx.blockNumber || Math.floor(Math.random() * 5) + 1;
 
@@ -117,10 +121,16 @@ class ContractSimulatorService {
     return { receipt, status: 'LOCKED' };
   }
 
-  public async commitSolverBond(_intent: UserIntent, solver: SolverBid): Promise<{ receipt: BlockReceipt; status: 'COMMITTED' }> {
+  public async commitSolverBond(intent: UserIntent, solver: SolverBid): Promise<{ receipt: BlockReceipt; status: 'COMMITTED' }> {
     this.state.solverBondLockedUsd += solver.collateralOfferedUsd;
 
-    const realTx = await sendDirectGanacheTransaction(`commitBond(${solver.solverName})`);
+    // Send real ABI-encoded commitBond() transaction to Ganache!
+    const realTx = await sendZyntekTransaction({
+      stage: 'commitBond',
+      intentId: intent.intentId,
+      solverAddress: solver.solverAddress,
+      amountUsdc: solver.collateralOfferedUsd,
+    });
     const txHash = realTx.txHash || `0x3c7b${Math.random().toString(16).substring(2, 8)}e4f1`;
     const blockNum = realTx.blockNumber || Math.floor(Math.random() * 5) + 1;
 
@@ -160,7 +170,13 @@ class ContractSimulatorService {
     const isHighValue = intent.sourceAmount >= 1000;
     const verificationType: VerificationType = isHighValue ? 'zk_oracle' : 'optimistic';
 
-    const realTx = await sendDirectGanacheTransaction(`settleIntent(${intent.intentId})`);
+    // Send real ABI-encoded settleIntent() / slashBond() transaction to Ganache!
+    const realTx = await sendZyntekTransaction({
+      stage: forceFailure ? 'slashBond' : 'settleIntent',
+      intentId: intent.intentId,
+      solverAddress: solver.solverAddress,
+      amountUsdc: intent.sourceAmount,
+    });
     const mainTxHash = realTx.txHash || `0x9e1f${Math.random().toString(16).substring(2, 8)}7a2b`;
     const blockNum = realTx.blockNumber || Math.floor(Math.random() * 5) + 1;
 

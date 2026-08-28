@@ -43,6 +43,7 @@ export interface SolverBid {
   solverId: string;
   solverName: string;
   solverProfile: 'alpha' | 'flash' | 'shield';
+  solverAddress: string; // Ganache wallet address for this solver
   proposedOutput: number;
   feeUsd: number;
   estimatedSlippagePct: number;

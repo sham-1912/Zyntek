@@ -9,6 +9,7 @@ export function generateSolverBids(intent: UserIntent): SolverBid[] {
     solverId: 'solver_a_alpha',
     solverName: 'Alpha Solver (Cost-Optimized)',
     solverProfile: 'alpha',
+    solverAddress: '0x70997970C51812dc3A010C7d01b50e0d17dc79C8', // Ganache Account #1
     proposedOutput: Number((baseAmount * 0.992).toFixed(2)), // Very high output
     feeUsd: 1.5, // Lowest fee
     estimatedSlippagePct: 0.15,
@@ -23,6 +24,7 @@ export function generateSolverBids(intent: UserIntent): SolverBid[] {
     solverId: 'solver_b_flash',
     solverName: 'Flash Solver (Speed-Optimized)',
     solverProfile: 'flash',
+    solverAddress: '0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC', // Ganache Account #2
     proposedOutput: Number((baseAmount * 0.985).toFixed(2)),
     feeUsd: 6.8, // Higher fee for priority execution
     estimatedSlippagePct: 0.05, // Ultra tight slippage
@@ -37,6 +39,7 @@ export function generateSolverBids(intent: UserIntent): SolverBid[] {
     solverId: 'solver_c_shield',
     solverName: 'Shield Solver (Safety-Optimized)',
     solverProfile: 'shield',
+    solverAddress: '0x90F79bf6EB2c4f870365E785982E1f101E93b906', // Ganache Account #3
     proposedOutput: Number((baseAmount * 0.989).toFixed(2)),
     feeUsd: 3.2, // Moderate fee
     estimatedSlippagePct: 0.1,
